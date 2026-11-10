@@ -54,6 +54,7 @@ private struct LibraryTabView: View {
                         } else if tab == .settings {
                             Form {
                                 Section("Библиотека") {
+                                    NavigationLink("Активность") { ActivityView(context: context, open: { path.append($0) }) }
                                     NavigationLink("Скрытые карточки") { ArchiveView(context: context, visibility: .hidden, open: { path.append($0) }).navigationTitle("Скрытые") }
                                     NavigationLink("Корзина · 7 дней") { ArchiveView(context: context, visibility: .trash, open: { path.append($0) }).navigationTitle("Корзина") }
                                 }

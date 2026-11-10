@@ -13,6 +13,7 @@
 		204EFA47B58B7FF6B7F22BD7 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 436AE5FA74AABD818FE7FE8C /* Assets.xcassets */; };
 		24536C6DD53B128559A57D36 /* LibraryContext.swift in Sources */ = {isa = PBXBuildFile; fileRef = C1EC736F24E97170F63BB42E /* LibraryContext.swift */; };
 		371CA04BC4A71A8AB7767D9E /* CardDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DCD55F5F7EEFE0009B1F4126 /* CardDetailView.swift */; };
+		3BC6B683DA69A9486E469B39 /* ActivityView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F2B48F6D694F4C3B92EA4FCF /* ActivityView.swift */; };
 		49D99AD76297B6273347D925 /* KeychainSessionStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 96A8296BCC16155B37CB28FA /* KeychainSessionStore.swift */; };
 		6B3E4BB7A2B60B75F24B5396 /* README.md in Resources */ = {isa = PBXBuildFile; fileRef = 1B758DB0DF8F58964AD565B4 /* README.md */; };
 		6E52253F8D1160D00181CBFB /* ReedApplication in Frameworks */ = {isa = PBXBuildFile; productRef = 387F9F5DD3CABFE8AEB345F8 /* ReedApplication */; };
@@ -57,6 +58,7 @@
 		CB9F2A086B1281DF6883650F /* HTTPAuthenticationClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HTTPAuthenticationClient.swift; sourceTree = "<group>"; };
 		DCD55F5F7EEFE0009B1F4126 /* CardDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CardDetailView.swift; sourceTree = "<group>"; };
 		F2412C52FF430907A2183039 /* ReedTheme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReedTheme.swift; sourceTree = "<group>"; };
+		F2B48F6D694F4C3B92EA4FCF /* ActivityView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActivityView.swift; sourceTree = "<group>"; };
 		FB2101A01407B9D46AE10AD8 /* ReedCore */ = {isa = PBXFileReference; lastKnownFileType = folder; name = ReedCore; path = ReedCore; sourceTree = SOURCE_ROOT; };
 		FC5930CA1D19B2FB2D27F8AE /* PhotoProcessor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhotoProcessor.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -88,6 +90,7 @@
 		3A26439587F2EA582917FB9A /* Features */ = {
 			isa = PBXGroup;
 			children = (
+				85E192A3634D46020D4D42AF /* Activity */,
 				8E4B8F8E65DE7C0543092BB7 /* Archive */,
 				EA17D7477589429399C6A438 /* Auth */,
 				F1579959B3EE8CDD7FF3A894 /* CardDetail */,
@@ -124,6 +127,14 @@
 				CB9F2A086B1281DF6883650F /* HTTPAuthenticationClient.swift */,
 			);
 			path = Networking;
+			sourceTree = "<group>";
+		};
+		85E192A3634D46020D4D42AF /* Activity */ = {
+			isa = PBXGroup;
+			children = (
+				F2B48F6D694F4C3B92EA4FCF /* ActivityView.swift */,
+			);
+			path = Activity;
 			sourceTree = "<group>";
 		};
 		8BEFEB3C19A1CFCDC1FE536F = {
@@ -300,6 +311,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				3BC6B683DA69A9486E469B39 /* ActivityView.swift in Sources */,
 				B6F9B85F7B22DCE34FF4005F /* ArchiveFiltersView.swift in Sources */,
 				7A712B3E31711DAAA6E8C7B3 /* ArchiveModel.swift in Sources */,
 				9DBB3486B76BAAAAA0434CA3 /* ArchiveView.swift in Sources */,

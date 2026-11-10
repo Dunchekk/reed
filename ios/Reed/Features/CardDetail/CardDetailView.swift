@@ -4,6 +4,8 @@ import ReedDomain
 struct CardDetailView: View {
     let context: LibraryContext
     let cardID: UUID
+    var origin: OpeningOrigin = .manual
+    @State private var recordedOpening = false
     @State private var card: Card?
     @State private var isLoading = true
     @State private var isSaving = false
@@ -56,6 +58,11 @@ struct CardDetailView: View {
         }
         .sheet(isPresented: $showsEditor) { if let card { CardEditorView(context: context, card: card) } }
         .task(id: context.revision) { await load() }
+        .task {
+            guard !recordedOpening else { return }
+            do { try await context.activity.recordOpening(cardID: cardID, origin: origin, now: Date()); recordedOpening = true }
+            catch { errorMessage = "Не удалось сохранить открытие в истории." }
+        }
     }
 
     private func load() async {

@@ -9,6 +9,7 @@ import ReedPersistence
 final class LibraryContext {
     let account: Account
     let repository: any LibraryRepository
+    let activity: any ActivityRepository
     let attachments: any AttachmentStore
     let directory: URL
     private(set) var revision = 0
@@ -16,6 +17,7 @@ final class LibraryContext {
     init(account: Account, database: LibraryDatabase) {
         self.account = account
         repository = LocalLibraryRepository(database: database)
+        activity = LocalActivityRepository(database: database)
         directory = database.directory
         attachments = FileAttachmentStore(directory: database.directory)
     }
@@ -23,6 +25,7 @@ final class LibraryContext {
     func prepare() async throws {
         let cutoff = Calendar.current.date(byAdding: .day, value: -7, to: Date()) ?? Date().addingTimeInterval(-604800)
         _ = try await repository.purgeTrash(before: cutoff)
+        _ = try await activity.activity(now: Date())
         try await attachments.collectOrphans(retaining: repository.attachmentIDs())
     }
 

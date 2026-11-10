@@ -60,6 +60,15 @@ public final class LibraryDatabase: Sendable {
         migrator.registerMigration("002_attachments") { db in
             try db.execute(sql: "ALTER TABLE cards ADD COLUMN attachment_id TEXT")
         }
+        migrator.registerMigration("003_activity") { db in
+            try db.execute(sql: """
+                CREATE TABLE activity_preferences (id INTEGER PRIMARY KEY CHECK(id=1), enabled INTEGER NOT NULL);
+                INSERT INTO activity_preferences VALUES (1, 1);
+                CREATE TABLE openings (id TEXT PRIMARY KEY NOT NULL, card_id TEXT NOT NULL REFERENCES cards(id) ON DELETE CASCADE, opened_at REAL NOT NULL, origin TEXT NOT NULL);
+                CREATE INDEX openings_card_time ON openings(card_id, opened_at);
+                CREATE INDEX openings_time ON openings(opened_at);
+                """)
+        }
         return migrator
     }
 }
