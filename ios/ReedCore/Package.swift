@@ -15,5 +15,6 @@ let package = Package(
         .target(name: "ReedApplication", dependencies: ["ReedDomain"]),
         .target(name: "ReedPersistence", dependencies: ["ReedDomain", "ReedApplication", .product(name: "GRDB", package: "GRDB.swift")]),
         .testTarget(name: "ReedDomainTests", dependencies: ["ReedDomain", "ReedApplication"]),
+        .testTarget(name: "ReedPersistenceTests", dependencies: ["ReedDomain", "ReedApplication", "ReedPersistence"]),
     ]
 )
