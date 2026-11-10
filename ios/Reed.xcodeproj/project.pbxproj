@@ -21,11 +21,14 @@
 		7A712B3E31711DAAA6E8C7B3 /* ArchiveModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65944AF392F5D88BDBAA8BFD /* ArchiveModel.swift */; };
 		7EFA7F87E2E2816E1BB480D6 /* SignInView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47D08843EC6229125741AF0C /* SignInView.swift */; };
 		8D09063F5BE1AD6B1CB9D73C /* ReedApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = B38E8F0B3C13C4EB1BD0D8C5 /* ReedApp.swift */; };
+		8E453D8AB1BAD454FCCAF592 /* ReturnCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = D385F185275C618DB1080B38 /* ReturnCoordinator.swift */; };
 		8FA53032B169C67FAA03E27F /* AppleNotificationQueue.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3DC90A6EB51B024CC29CD355 /* AppleNotificationQueue.swift */; };
 		9D77A02AC470B52213CED707 /* LibraryHostView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 321E2E043B1F508D5C2A9FFB /* LibraryHostView.swift */; };
 		9DBB3486B76BAAAAA0434CA3 /* ArchiveView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1E61FE6A3F9843744449B9FF /* ArchiveView.swift */; };
 		9E97E58B9E09CAD6EF7BF7FE /* NotificationRouter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0579E3266F9E669906F3C361 /* NotificationRouter.swift */; };
 		A252CA723E27FC496EC5AD9B /* ReedPersistence in Frameworks */ = {isa = PBXBuildFile; productRef = 4D74049788164097993B44CD /* ReedPersistence */; };
+		ADF485C313F10BD48B4557CF /* CardReturnSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8EC298BB02E6ACA2DCD21F81 /* CardReturnSettingsView.swift */; };
+		B2009A51A29BF639C5A51CF0 /* ReturnFilterView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 30F744958FC28735513FF7E2 /* ReturnFilterView.swift */; };
 		B55DAE03C0BA8D953B274E19 /* AttachmentPreview.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A9B22E299CFF5C1C490A742 /* AttachmentPreview.swift */; };
 		B5EAB05413D03EC0D4656705 /* AuthenticationModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2BCA768643C47B8840380E3F /* AuthenticationModel.swift */; };
 		B6F9B85F7B22DCE34FF4005F /* ArchiveFiltersView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7E478926F57605678FBD4C8C /* ArchiveFiltersView.swift */; };
@@ -33,6 +36,7 @@
 		CCC862FA3EFE9D720A5A15DB /* CardEditorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1D10516915064E4D7474CB1E /* CardEditorView.swift */; };
 		CCDCCD3366226DC289BE64E8 /* ReedTheme.swift in Sources */ = {isa = PBXBuildFile; fileRef = F2412C52FF430907A2183039 /* ReedTheme.swift */; };
 		CF7F4FFB14AECF78DCD3714F /* CardEditorModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 14A9A252493AF1944B124805 /* CardEditorModel.swift */; };
+		D2E76AE48A9F0D65346E0564 /* ReturnSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 728AC33816253A2109DC6836 /* ReturnSettingsView.swift */; };
 		DCD8C0AF23910245B1BBD433 /* ReedDomain in Frameworks */ = {isa = PBXBuildFile; productRef = 9961AE4853F3B89C2A66FE04 /* ReedDomain */; };
 		F78AC1AA0DED65AF645D0A27 /* HTTPAuthenticationClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = CB9F2A086B1281DF6883650F /* HTTPAuthenticationClient.swift */; };
 		F8A8D6F1199759E0625F4F70 /* CameraPicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D580E5E5367BA5BC364073F /* CameraPicker.swift */; };
@@ -45,6 +49,7 @@
 		1D10516915064E4D7474CB1E /* CardEditorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CardEditorView.swift; sourceTree = "<group>"; };
 		1E61FE6A3F9843744449B9FF /* ArchiveView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ArchiveView.swift; sourceTree = "<group>"; };
 		2BCA768643C47B8840380E3F /* AuthenticationModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthenticationModel.swift; sourceTree = "<group>"; };
+		30F744958FC28735513FF7E2 /* ReturnFilterView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReturnFilterView.swift; sourceTree = "<group>"; };
 		321E2E043B1F508D5C2A9FFB /* LibraryHostView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LibraryHostView.swift; sourceTree = "<group>"; };
 		3A9B22E299CFF5C1C490A742 /* AttachmentPreview.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AttachmentPreview.swift; sourceTree = "<group>"; };
 		3DC90A6EB51B024CC29CD355 /* AppleNotificationQueue.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppleNotificationQueue.swift; sourceTree = "<group>"; };
@@ -53,14 +58,17 @@
 		57BDD9551B3C13603DB45750 /* Reed.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = Reed.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		5EFA614C462C236FF3B63048 /* RootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootView.swift; sourceTree = "<group>"; };
 		65944AF392F5D88BDBAA8BFD /* ArchiveModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ArchiveModel.swift; sourceTree = "<group>"; };
+		728AC33816253A2109DC6836 /* ReturnSettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReturnSettingsView.swift; sourceTree = "<group>"; };
 		7A47A3779CC84B7670724BD1 /* PhotoInputView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhotoInputView.swift; sourceTree = "<group>"; };
 		7E478926F57605678FBD4C8C /* ArchiveFiltersView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ArchiveFiltersView.swift; sourceTree = "<group>"; };
+		8EC298BB02E6ACA2DCD21F81 /* CardReturnSettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CardReturnSettingsView.swift; sourceTree = "<group>"; };
 		96A8296BCC16155B37CB28FA /* KeychainSessionStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeychainSessionStore.swift; sourceTree = "<group>"; };
 		9D580E5E5367BA5BC364073F /* CameraPicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraPicker.swift; sourceTree = "<group>"; };
 		AEB8D381B79D9702B0E7748D /* CardPreview.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CardPreview.swift; sourceTree = "<group>"; };
 		B38E8F0B3C13C4EB1BD0D8C5 /* ReedApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReedApp.swift; sourceTree = "<group>"; };
 		C1EC736F24E97170F63BB42E /* LibraryContext.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LibraryContext.swift; sourceTree = "<group>"; };
 		CB9F2A086B1281DF6883650F /* HTTPAuthenticationClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HTTPAuthenticationClient.swift; sourceTree = "<group>"; };
+		D385F185275C618DB1080B38 /* ReturnCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReturnCoordinator.swift; sourceTree = "<group>"; };
 		DCD55F5F7EEFE0009B1F4126 /* CardDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CardDetailView.swift; sourceTree = "<group>"; };
 		DF7261B6A125F3C153F2233B /* FeedView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeedView.swift; sourceTree = "<group>"; };
 		F2412C52FF430907A2183039 /* ReedTheme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReedTheme.swift; sourceTree = "<group>"; };
@@ -83,6 +91,16 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		28E1EEE8D8D64A549A084BD6 /* Returns */ = {
+			isa = PBXGroup;
+			children = (
+				8EC298BB02E6ACA2DCD21F81 /* CardReturnSettingsView.swift */,
+				30F744958FC28735513FF7E2 /* ReturnFilterView.swift */,
+				728AC33816253A2109DC6836 /* ReturnSettingsView.swift */,
+			);
+			path = Returns;
+			sourceTree = "<group>";
+		};
 		33CB75AA19EA9DFE5B7640C4 /* Platform */ = {
 			isa = PBXGroup;
 			children = (
@@ -103,6 +121,7 @@
 				F1579959B3EE8CDD7FF3A894 /* CardDetail */,
 				A2E70DB97BA9CA6D5D520309 /* CardEditor */,
 				F147C58A166304ECABC07978 /* Feed */,
+				28E1EEE8D8D64A549A084BD6 /* Returns */,
 			);
 			path = Features;
 			sourceTree = "<group>";
@@ -205,6 +224,7 @@
 				C1EC736F24E97170F63BB42E /* LibraryContext.swift */,
 				321E2E043B1F508D5C2A9FFB /* LibraryHostView.swift */,
 				B38E8F0B3C13C4EB1BD0D8C5 /* ReedApp.swift */,
+				D385F185275C618DB1080B38 /* ReturnCoordinator.swift */,
 				5EFA614C462C236FF3B63048 /* RootView.swift */,
 			);
 			path = App;
@@ -348,6 +368,7 @@
 				CF7F4FFB14AECF78DCD3714F /* CardEditorModel.swift in Sources */,
 				CCC862FA3EFE9D720A5A15DB /* CardEditorView.swift in Sources */,
 				0FEF426EBECBBEBA52AE2268 /* CardPreview.swift in Sources */,
+				ADF485C313F10BD48B4557CF /* CardReturnSettingsView.swift in Sources */,
 				266394EF7F8D3055724816B8 /* FeedView.swift in Sources */,
 				F78AC1AA0DED65AF645D0A27 /* HTTPAuthenticationClient.swift in Sources */,
 				49D99AD76297B6273347D925 /* KeychainSessionStore.swift in Sources */,
@@ -358,6 +379,9 @@
 				B731BF2573ACA22DCFAA1B9B /* PhotoProcessor.swift in Sources */,
 				8D09063F5BE1AD6B1CB9D73C /* ReedApp.swift in Sources */,
 				CCDCCD3366226DC289BE64E8 /* ReedTheme.swift in Sources */,
+				8E453D8AB1BAD454FCCAF592 /* ReturnCoordinator.swift in Sources */,
+				B2009A51A29BF639C5A51CF0 /* ReturnFilterView.swift in Sources */,
+				D2E76AE48A9F0D65346E0564 /* ReturnSettingsView.swift in Sources */,
 				00D72F29034CE30757D62D74 /* RootView.swift in Sources */,
 				7EFA7F87E2E2816E1BB480D6 /* SignInView.swift in Sources */,
 			);

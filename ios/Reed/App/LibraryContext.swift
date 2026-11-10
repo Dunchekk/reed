@@ -9,6 +9,8 @@ import ReedPersistence
 final class LibraryContext {
     let account: Account
     let repository: any LibraryRepository
+    let returns: any ReturnRepository
+    let returnCoordinator: ReturnCoordinator
     let feed: any FeedRepository
     let activity: any ActivityRepository
     let attachments: any AttachmentStore
@@ -20,6 +22,9 @@ final class LibraryContext {
         repository = LocalLibraryRepository(database: database)
         activity = LocalActivityRepository(database: database)
         feed = LocalFeedRepository(database: database)
+        let returns = LocalReturnRepository(database: database)
+        self.returns = returns
+        returnCoordinator = ReturnCoordinator(repository: returns, queue: AppleNotificationQueue(), accountID: account.id)
         directory = database.directory
         attachments = FileAttachmentStore(directory: database.directory)
     }
@@ -31,5 +36,5 @@ final class LibraryContext {
         try await attachments.collectOrphans(retaining: repository.attachmentIDs())
     }
 
-    func markChanged() { revision += 1 }
+    func markChanged() { revision += 1; returnCoordinator.refresh() }
 }

@@ -28,6 +28,7 @@ struct CardDetailView: View {
                         if let attachmentID = card.attachmentID { AttachmentPreview(id: attachmentID, store: context.attachments) }
                         FlowLayout { ForEach(card.tags) { TagChip(title: $0.name) } }
                         if let folder = card.folder { Label(folder.name, systemImage: "folder").reedFont(.caption) }
+                        if card.deletedAt == nil { NavigationLink("Возвращения этой карточки") { CardReturnSettingsView(context: context, cardID: card.id) } }
                         if let errorMessage { Text(errorMessage).foregroundStyle(.red) }
                     }.padding(ReedTheme.inset)
                 }.background(ReedTheme.background)
