@@ -22,7 +22,17 @@ public final class LocalLibraryRepository: Sendable {
                 guard card.version == existing["version"] else { throw LibraryError.conflict }
             } else if card.version != 0 { throw LibraryError.notFound }
             let createdAt: Double = existing?["created_at"] ?? card.createdAt.timeIntervalSince1970
-            if let source = card.source { try Self.save(source, db: db) }
+            var sourceChanged = false
+            var changedAuthors: [UUID] = []
+            if let source = card.source {
+                let previous = try Row.fetchOne(db, sql: "SELECT * FROM sources WHERE id=?", arguments: [source.id.uuidString]).map { try Self.source($0, db: db) }
+                sourceChanged = previous != source
+                for author in source.authors {
+                    let name = try String.fetchOne(db, sql: "SELECT name FROM authors WHERE id=?", arguments: [author.id.uuidString])
+                    if let name, name != author.name { changedAuthors.append(author.id) }
+                }
+                if sourceChanged { try Self.save(source, db: db) }
+            }
             if let folder = card.folder {
                 try db.execute(sql: "INSERT INTO folders(id, name) VALUES (?, ?) ON CONFLICT(id) DO UPDATE SET name = excluded.name", arguments: [folder.id.uuidString, folder.name])
             }
@@ -47,10 +57,10 @@ public final class LocalLibraryRepository: Sendable {
             }
             // Shared source/author edits must update every affected search document.
             var affected = Set([card.id.uuidString])
-            if let source = card.source {
+            if sourceChanged, let source = card.source {
                 affected.formUnion(try String.fetchAll(db, sql: "SELECT id FROM cards WHERE source_id = ?", arguments: [source.id.uuidString]))
-                for author in source.authors {
-                    affected.formUnion(try String.fetchAll(db, sql: "SELECT c.id FROM cards c JOIN source_authors sa ON sa.source_id=c.source_id WHERE sa.author_id=?", arguments: [author.id.uuidString]))
+                for authorID in changedAuthors {
+                    affected.formUnion(try String.fetchAll(db, sql: "SELECT c.id FROM cards c JOIN source_authors sa ON sa.source_id=c.source_id WHERE sa.author_id=?", arguments: [authorID.uuidString]))
                 }
             }
             for id in affected { try Self.reindex(id, db: db) }

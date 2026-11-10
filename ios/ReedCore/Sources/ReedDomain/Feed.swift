@@ -1,9 +1,10 @@
 import Foundation
 
 public enum FeedKind: String, CaseIterable, Codable, Sendable {
-    case forgotten, tag, author, folder, anniversary, favorites
+    case forgotten, neverReturned, tag, author, folder, anniversary, favorites
     public var title: String {
         switch self {
+        case .neverReturned: "Ещё не возвращались"
         case .forgotten: "Давно не открывали"
         case .tag: "Общая тема"
         case .author: "По автору"

@@ -46,7 +46,14 @@ final class ReturnCoordinator {
                 errorMessage = result.failures == 0 ? nil : "Часть уведомлений не поставлена. Нажмите «Обновить план», чтобы повторить."
             } catch is CancellationError {} catch {
                 guard active, generation == token else { return }
-                errorMessage = returnErrorMessage(error)
+                var message = returnErrorMessage(error)
+                // A failed rebuild must not leave obsolete private card text scheduled.
+                do {
+                    report = try await reconciler.reconcile(ReturnPlan(entries: [], horizon: nil), now: Date())
+                    try await repository.cancelFuture(now: Date())
+                    plan = ReturnPlan(entries: [], horizon: nil)
+                } catch { message += " Не удалось подтвердить отмену старой очереди. Повторите обновление." }
+                if generation == token { errorMessage = message }
             }
         }
     }

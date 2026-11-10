@@ -7,6 +7,7 @@ struct PhotoDraft: Sendable {
     let original: Data
     let thumbnail: Data
     let recognizedText: String
+    let recognitionFailed: Bool
 }
 
 enum PhotoError: LocalizedError {
@@ -31,11 +32,15 @@ actor PhotoProcessor {
         let request = VNRecognizeTextRequest()
         request.recognitionLevel = .accurate
         request.usesLanguageCorrection = true
-        let supported = try request.supportedRecognitionLanguages()
-        request.recognitionLanguages = ["ru-RU", "en-US"].filter { supported.contains($0) }
-        try VNImageRequestHandler(cgImage: image).perform([request])
+        var recognitionFailed = false
+        var text = ""
+        do {
+            let supported = try request.supportedRecognitionLanguages()
+            request.recognitionLanguages = ["ru-RU", "en-US"].filter { supported.contains($0) }
+            try VNImageRequestHandler(cgImage: image).perform([request])
+            text = (request.results ?? []).compactMap { $0.topCandidates(1).first?.string }.joined(separator: "\n")
+        } catch { recognitionFailed = true }
         try Task.checkCancellation()
-        let text = (request.results ?? []).compactMap { $0.topCandidates(1).first?.string }.joined(separator: "\n")
         let thumbnailOptions: [CFString: Any] = [kCGImageSourceCreateThumbnailFromImageAlways: true,
             kCGImageSourceCreateThumbnailWithTransform: true, kCGImageSourceThumbnailMaxPixelSize: 1200]
         guard let thumbnail = CGImageSourceCreateThumbnailAtIndex(source, 0, thumbnailOptions as CFDictionary) else { throw PhotoError.invalid }
@@ -43,6 +48,6 @@ actor PhotoProcessor {
         guard let destination = CGImageDestinationCreateWithData(output, UTType.jpeg.identifier as CFString, 1, nil) else { throw PhotoError.invalid }
         CGImageDestinationAddImage(destination, thumbnail, [kCGImageDestinationLossyCompressionQuality: 0.85] as CFDictionary)
         guard CGImageDestinationFinalize(destination) else { throw PhotoError.invalid }
-        return PhotoDraft(original: data, thumbnail: output as Data, recognizedText: text)
+        return PhotoDraft(original: data, thumbnail: output as Data, recognizedText: text, recognitionFailed: recognitionFailed)
     }
 }

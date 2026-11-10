@@ -38,6 +38,9 @@ public final class LocalFeedRepository: FeedRepository {
                     arguments = [now.addingTimeInterval(-30*86400).timeIntervalSince1970, now.addingTimeInterval(-30*86400).timeIntervalSince1970]
                     order = "c.created_at ASC, c.id"
                     explanation = "Сохранены больше месяца назад; нет открытий за последние 30 дней"
+                case .neverReturned:
+                    condition = "NOT EXISTS(SELECT 1 FROM return_slots r WHERE r.card_id=c.id AND r.state!='cancelled')"
+                    order = "c.created_at ASC, c.id"; explanation = "Ещё не выбирались для возвращения"
                 case .favorites: condition = "c.is_favorite=1"; explanation = "Вы отметили эти карточки звездой"
                 case .anniversary:
                     // Convert the user's local month/day explicitly; SQLite must not use the host timezone.

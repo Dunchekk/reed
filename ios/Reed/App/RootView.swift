@@ -40,8 +40,8 @@ struct RootView: View {
             }
         }
         .sheet(item: $editor) { draft in CardEditorView(context: context, initialText: draft.text, initialInput: draft.input) }
-        .task { context.returnCoordinator.refresh() }
-        .onChange(of: scenePhase) { _, phase in if phase == .active { context.returnCoordinator.refresh() } }
+        .task { await context.refreshAfterActivation() }
+        .onChange(of: scenePhase) { _, phase in if phase == .active { Task { await context.refreshAfterActivation() } } }
         .onReceive(NotificationCenter.default.publisher(for: UIApplication.significantTimeChangeNotification)) { _ in context.returnCoordinator.refresh() }
         .onChange(of: router.route, initial: true) { _, route in
             guard let route else { return }

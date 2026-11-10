@@ -16,6 +16,7 @@ final class LibraryContext {
     let attachments: any AttachmentStore
     let directory: URL
     private(set) var revision = 0
+    private(set) var maintenanceError: String?
 
     init(account: Account, database: LibraryDatabase) {
         self.account = account
@@ -38,6 +39,17 @@ final class LibraryContext {
         _ = try await repository.purgeTrash(before: cutoff)
         _ = try await activity.activity(now: Date())
         try await attachments.collectOrphans(retaining: repository.attachmentIDs())
+    }
+
+    func refreshAfterActivation() async {
+        do {
+            let cutoff = Calendar.current.date(byAdding: .day, value: -7, to: Date()) ?? Date().addingTimeInterval(-604800)
+            let removed = try await repository.purgeTrash(before: cutoff)
+            _ = try await activity.activity(now: Date())
+            if !removed.isEmpty { revision += 1 }
+            maintenanceError = nil
+        } catch { maintenanceError = "Не удалось выполнить очистку просроченных данных. Повторим при следующем открытии." }
+        returnCoordinator.refresh()
     }
 
     func markChanged() { revision += 1; returnCoordinator.refresh() }

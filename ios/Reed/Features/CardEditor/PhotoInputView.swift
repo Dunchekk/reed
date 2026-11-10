@@ -57,7 +57,8 @@ struct PhotoInputView: View {
                 let draft = try await processor.process(data)
                 guard !Task.isCancelled, generation == token else { return }
                 apply(draft)
-                if draft.recognizedText.isEmpty { errorMessage = "Текст не найден. Фото сохранится как вложение; добавьте текст вручную." }
+                if draft.recognitionFailed { errorMessage = "Фото прикреплено, но распознавание не удалось. Добавьте текст вручную или повторите выбор фото." }
+                else if draft.recognizedText.isEmpty { errorMessage = "Текст не найден. Фото сохранится как вложение; добавьте текст вручную." }
             } catch is CancellationError {} catch {
                 if generation == token { errorMessage = (error as? PhotoError)?.errorDescription ?? "Не удалось загрузить или распознать фото. Повторите попытку." }
             }

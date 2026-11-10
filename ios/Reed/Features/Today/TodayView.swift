@@ -7,6 +7,7 @@ struct TodayView: View {
     let context: LibraryContext
     let open: (UUID) -> Void
     let add: (CardInput, String) -> Void
+    @State private var actionError: String?
     @State private var position: String?
     private var entries: [PlannedReturn] { context.returnCoordinator.plan.entries.filter { Calendar.current.isDateInToday($0.slot.date) && $0.card != nil } }
     var body: some View {
@@ -15,6 +16,7 @@ struct TodayView: View {
                 Text("Reed / Сегодня").reedFont(.display)
                 Text("Ваши сохранённые тексты.\nПлан на \(Date().formatted(date: .numeric, time: .omitted)).").reedFont(.body)
                 if context.returnCoordinator.isRefreshing { ProgressView("Обновляем план…") }
+                if let actionError { Text(actionError).foregroundStyle(.red) }
                 if let error = context.returnCoordinator.errorMessage {
                     Text(error).foregroundStyle(.red)
                     Button("Повторить") { context.returnCoordinator.refresh() }
@@ -71,7 +73,7 @@ struct TodayView: View {
             do {
                 guard var card = try await context.repository.card(id: id) else { throw LibraryError.notFound }
                 card.isFavorite.toggle(); try await context.repository.save(card); context.markChanged()
-            } catch { context.returnCoordinator.refresh() }
+            } catch { actionError = libraryErrorMessage(error) }
         }
     }
 }

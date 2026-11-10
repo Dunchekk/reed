@@ -15,6 +15,7 @@ struct SettingsView: View {
                 NavigationLink("Корзина · 7 дней") { ArchiveView(context: context, visibility: .trash, open: open).navigationTitle("Корзина") }
             }
             Section("Хранение") {
+                if let error = context.maintenanceError { Text(error).foregroundStyle(.red) }
                 Label("На этом iPhone", systemImage: "iphone")
                 Text("Тексты и фотографии хранятся локально. Облачный перенос пока недоступен. Выход сохраняет библиотеку для повторного входа в тот же аккаунт.").reedFont(.caption)
             }
