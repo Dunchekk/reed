@@ -26,6 +26,8 @@ targets:
         product: ReedApplication
     settings:
       base:
+        REED_API_BASE_URL: ""
+        INFOPLIST_KEY_ReedAPIBaseURL: "$(REED_API_BASE_URL)"
         PRODUCT_BUNDLE_IDENTIFIER: dev.dunchekk.reed
         GENERATE_INFOPLIST_FILE: YES
         INFOPLIST_KEY_CFBundleDisplayName: Reed

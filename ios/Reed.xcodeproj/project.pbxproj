@@ -10,12 +10,16 @@
 		00D72F29034CE30757D62D74 /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EFA614C462C236FF3B63048 /* RootView.swift */; };
 		49D99AD76297B6273347D925 /* KeychainSessionStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 96A8296BCC16155B37CB28FA /* KeychainSessionStore.swift */; };
 		6E52253F8D1160D00181CBFB /* ReedApplication in Frameworks */ = {isa = PBXBuildFile; productRef = 387F9F5DD3CABFE8AEB345F8 /* ReedApplication */; };
+		7EFA7F87E2E2816E1BB480D6 /* SignInView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47D08843EC6229125741AF0C /* SignInView.swift */; };
 		8D09063F5BE1AD6B1CB9D73C /* ReedApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = B38E8F0B3C13C4EB1BD0D8C5 /* ReedApp.swift */; };
+		B5EAB05413D03EC0D4656705 /* AuthenticationModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2BCA768643C47B8840380E3F /* AuthenticationModel.swift */; };
 		DCD8C0AF23910245B1BBD433 /* ReedDomain in Frameworks */ = {isa = PBXBuildFile; productRef = 9961AE4853F3B89C2A66FE04 /* ReedDomain */; };
 		F78AC1AA0DED65AF645D0A27 /* HTTPAuthenticationClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = CB9F2A086B1281DF6883650F /* HTTPAuthenticationClient.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		2BCA768643C47B8840380E3F /* AuthenticationModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthenticationModel.swift; sourceTree = "<group>"; };
+		47D08843EC6229125741AF0C /* SignInView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SignInView.swift; sourceTree = "<group>"; };
 		57BDD9551B3C13603DB45750 /* Reed.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = Reed.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		5EFA614C462C236FF3B63048 /* RootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootView.swift; sourceTree = "<group>"; };
 		96A8296BCC16155B37CB28FA /* KeychainSessionStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeychainSessionStore.swift; sourceTree = "<group>"; };
@@ -46,10 +50,19 @@
 			path = Platform;
 			sourceTree = "<group>";
 		};
+		3A26439587F2EA582917FB9A /* Features */ = {
+			isa = PBXGroup;
+			children = (
+				EA17D7477589429399C6A438 /* Auth */,
+			);
+			path = Features;
+			sourceTree = "<group>";
+		};
 		692D385A005C6892DC70F979 /* Reed */ = {
 			isa = PBXGroup;
 			children = (
 				C7DDB43930BE233667EE3672 /* App */,
+				3A26439587F2EA582917FB9A /* Features */,
 				33CB75AA19EA9DFE5B7640C4 /* Platform */,
 			);
 			path = Reed;
@@ -103,6 +116,15 @@
 				96A8296BCC16155B37CB28FA /* KeychainSessionStore.swift */,
 			);
 			path = Keychain;
+			sourceTree = "<group>";
+		};
+		EA17D7477589429399C6A438 /* Auth */ = {
+			isa = PBXGroup;
+			children = (
+				2BCA768643C47B8840380E3F /* AuthenticationModel.swift */,
+				47D08843EC6229125741AF0C /* SignInView.swift */,
+			);
+			path = Auth;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -166,10 +188,12 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				B5EAB05413D03EC0D4656705 /* AuthenticationModel.swift in Sources */,
 				F78AC1AA0DED65AF645D0A27 /* HTTPAuthenticationClient.swift in Sources */,
 				49D99AD76297B6273347D925 /* KeychainSessionStore.swift in Sources */,
 				8D09063F5BE1AD6B1CB9D73C /* ReedApp.swift in Sources */,
 				00D72F29034CE30757D62D74 /* RootView.swift in Sources */,
+				7EFA7F87E2E2816E1BB480D6 /* SignInView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -251,6 +275,7 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_CFBundleDisplayName = Reed;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.productivity";
+				INFOPLIST_KEY_ReedAPIBaseURL = "$(REED_API_BASE_URL)";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
@@ -259,6 +284,7 @@
 					"@executable_path/Frameworks",
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = dev.dunchekk.reed;
+				REED_API_BASE_URL = "";
 				SDKROOT = iphoneos;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
@@ -332,6 +358,7 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_CFBundleDisplayName = Reed;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.productivity";
+				INFOPLIST_KEY_ReedAPIBaseURL = "$(REED_API_BASE_URL)";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
@@ -340,6 +367,7 @@
 					"@executable_path/Frameworks",
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = dev.dunchekk.reed;
+				REED_API_BASE_URL = "";
 				SDKROOT = iphoneos;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};

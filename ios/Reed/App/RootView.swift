@@ -24,14 +24,26 @@ enum AppTab: String, CaseIterable {
 }
 
 struct RootView: View {
+    let authentication: AuthenticationModel
     @State private var selectedTab = AppTab.today
 
     var body: some View {
         TabView(selection: $selectedTab) {
             ForEach(AppTab.allCases, id: \.self) { tab in
                 NavigationStack {
-                    ContentUnavailableView(tab.title, systemImage: tab.symbol)
-                        .navigationTitle(tab.title)
+                    Group {
+                        if tab == .settings {
+                            Form {
+                                Section("Аккаунт") {
+                                    Text(authentication.account?.phone.value ?? "")
+                                    Button("Выйти", role: .destructive) { Task { await authentication.signOut() } }
+                                    if let error = authentication.errorMessage { Text(error).foregroundStyle(.red) }
+                                }
+                            }
+                        } else {
+                            ContentUnavailableView(tab.title, systemImage: tab.symbol)
+                        }
+                    }.navigationTitle(tab.title)
                 }
                 .tabItem { Label(tab.title, systemImage: tab.symbol) }
                 .tag(tab)

@@ -2,9 +2,37 @@ import SwiftUI
 
 @main
 struct ReedApp: App {
+    @State private var authentication: AuthenticationModel
+
+    init() {
+        let configured = Bundle.main.object(forInfoDictionaryKey: "ReedAPIBaseURL") as? String ?? ""
+        var baseURL: URL?
+        if let url = URL(string: configured), url.scheme == "https", url.host != nil {
+            baseURL = url
+        }
+        #if DEBUG
+        if baseURL == nil { baseURL = URL(string: "http://127.0.0.1:3000") }
+        #endif
+        _authentication = State(initialValue: AuthenticationModel(
+            client: baseURL.map { HTTPAuthenticationClient(baseURL: $0) }, store: KeychainSessionStore()
+        ))
+    }
+
     var body: some Scene {
         WindowGroup {
-            RootView()
+            Group {
+                if !authentication.isRestored {
+                    VStack(spacing: 16) {
+                        Text(authentication.errorMessage ?? "Открываем Reed…")
+                        if authentication.errorMessage != nil { Button("Повторить", action: authentication.restore) }
+                    }.task { authentication.restore() }
+                } else if authentication.account != nil {
+                    RootView(authentication: authentication)
+                        .task { await authentication.refreshIfNeeded() }
+                } else {
+                    SignInView(model: authentication)
+                }
+            }
                 .preferredColorScheme(.dark)
         }
     }
