@@ -18,7 +18,8 @@ extension LocalReturnRepository {
             let past = try Row.fetchAll(db, sql: "SELECT card_id,scheduled_at,automatic_ordinal FROM return_slots WHERE scheduled_at<=? AND state!='cancelled' AND card_id IS NOT NULL", arguments: [now.timeIntervalSince1970])
             let pastTimes = past.map { Date(timeIntervalSince1970: $0["scheduled_at"]) }
             var slots: [ReturnTimeSlot] = []
-            for offset in 0..<7 {
+            // The eighth day guards midnight appointments beyond the delivered horizon.
+            for offset in 0..<8 {
                 guard let day = calendar.date(byAdding: .day, value: offset, to: calendar.startOfDay(for: now)) else { continue }
                 let key = SlotPlanner.dayKey(day, calendar: calendar)
                 let seed: UInt64
@@ -37,7 +38,8 @@ extension LocalReturnRepository {
             // Leave space below the system queue ceiling and expose the actual shorter horizon.
             let appointmentDates = slots.filter { $0.explicitCardID != nil }.map(\.date)
             slots.removeAll { slot in slot.explicitCardID == nil && appointmentDates.contains { abs($0.timeIntervalSince(slot.date)) < Double(settings.minimumIntervalMinutes * 60) } }
-            slots = Array(slots.prefix(48))
+            let horizonEnd = calendar.date(byAdding: .day, value: 7, to: calendar.startOfDay(for: now)) ?? now.addingTimeInterval(7 * 86400)
+            slots = Array(slots.filter { $0.date < horizonEnd }.prefix(48))
             var reservations = try past.map { ReturnReservation(cardID: try LocalLibraryRepository.uuid($0["card_id"]), date: Date(timeIntervalSince1970: $0["scheduled_at"])) }
             reservations += slots.compactMap { slot in slot.explicitCardID.map { ReturnReservation(cardID: $0, date: slot.date) } }
             var ordinal = past.compactMap { $0["automatic_ordinal"] as Int? }.max() ?? 0

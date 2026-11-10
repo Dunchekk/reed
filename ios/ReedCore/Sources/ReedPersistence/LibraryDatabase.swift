@@ -19,7 +19,8 @@ public final class LibraryDatabase: Sendable {
         try Self.migrator.migrate(writer)
     }
 
-    private static var migrator: DatabaseMigrator {
+    // Internal visibility permits upgrade tests from an actual earlier schema.
+    static var migrator: DatabaseMigrator {
         var migrator = DatabaseMigrator()
         migrator.registerMigration("001_library") { db in
             try db.execute(sql: """

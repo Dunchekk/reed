@@ -120,3 +120,21 @@ func reactivatingConflictingCardRollsBackWithoutDisturbingExistingPlan(mode: Str
     let stored = try #require(await library.card(id: first.id))
     #expect(!stored.allowsReturns || stored.isHidden || stored.deletedAt != nil)
 }
+
+@Test func midnightAppointmentBeyondHorizonPreventsConflictingLastEveningSlot() async throws {
+    let fixture = try PlanningFixture(); defer { fixture.library.cleanup() }
+    let appointed = Card(text: "Sunday appointment")
+    try await fixture.library.repository.save(appointed)
+    for index in 0..<20 { try await fixture.library.repository.save(Card(text: "Evening \(index)")) }
+    var settings = ReturnSettings(); settings.enabled = true; settings.notificationsEnabled = true
+    settings.dailyLimit = 1; settings.firstMinute = 1410; settings.lastMinute = 1410; settings.jitterMinutes = 0
+    try await fixture.returns.saveSettings(settings, now: fixture.now, calendar: fixture.calendar)
+    var rule = CardReturnSettings(cardID: appointed.id); rule.minutes = [0]; rule.weekdays = [1]
+    try await fixture.returns.saveCardSettings(rule, now: fixture.now, calendar: fixture.calendar)
+    let first = try await fixture.returns.replan(now: fixture.now, calendar: fixture.calendar, authorized: true)
+    let lastEvening = fixture.calendar.date(from: DateComponents(year: 2026, month: 11, day: 7, hour: 23, minute: 30))!
+    let midnight = fixture.calendar.date(from: DateComponents(year: 2026, month: 11, day: 8))!
+    #expect(first.entries.allSatisfy { $0.slot.date != lastEvening && $0.slot.date < midnight })
+    let extended = try await fixture.returns.replan(now: lastEvening.addingTimeInterval(15*60), calendar: fixture.calendar, authorized: true)
+    #expect(extended.entries.contains { $0.slot.date == midnight && $0.decision.cardID == appointed.id && $0.decision.reason == .explicit })
+}
