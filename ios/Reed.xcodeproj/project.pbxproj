@@ -8,15 +8,19 @@
 
 /* Begin PBXBuildFile section */
 		00D72F29034CE30757D62D74 /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EFA614C462C236FF3B63048 /* RootView.swift */; };
+		49D99AD76297B6273347D925 /* KeychainSessionStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 96A8296BCC16155B37CB28FA /* KeychainSessionStore.swift */; };
 		6E52253F8D1160D00181CBFB /* ReedApplication in Frameworks */ = {isa = PBXBuildFile; productRef = 387F9F5DD3CABFE8AEB345F8 /* ReedApplication */; };
 		8D09063F5BE1AD6B1CB9D73C /* ReedApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = B38E8F0B3C13C4EB1BD0D8C5 /* ReedApp.swift */; };
 		DCD8C0AF23910245B1BBD433 /* ReedDomain in Frameworks */ = {isa = PBXBuildFile; productRef = 9961AE4853F3B89C2A66FE04 /* ReedDomain */; };
+		F78AC1AA0DED65AF645D0A27 /* HTTPAuthenticationClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = CB9F2A086B1281DF6883650F /* HTTPAuthenticationClient.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
 		57BDD9551B3C13603DB45750 /* Reed.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = Reed.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		5EFA614C462C236FF3B63048 /* RootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootView.swift; sourceTree = "<group>"; };
+		96A8296BCC16155B37CB28FA /* KeychainSessionStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeychainSessionStore.swift; sourceTree = "<group>"; };
 		B38E8F0B3C13C4EB1BD0D8C5 /* ReedApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReedApp.swift; sourceTree = "<group>"; };
+		CB9F2A086B1281DF6883650F /* HTTPAuthenticationClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HTTPAuthenticationClient.swift; sourceTree = "<group>"; };
 		FB2101A01407B9D46AE10AD8 /* ReedCore */ = {isa = PBXFileReference; lastKnownFileType = folder; name = ReedCore; path = ReedCore; sourceTree = SOURCE_ROOT; };
 /* End PBXFileReference section */
 
@@ -33,12 +37,30 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		33CB75AA19EA9DFE5B7640C4 /* Platform */ = {
+			isa = PBXGroup;
+			children = (
+				E0CC6399181FB8AA8F6E0783 /* Keychain */,
+				7E76030DB8D468589E1B4639 /* Networking */,
+			);
+			path = Platform;
+			sourceTree = "<group>";
+		};
 		692D385A005C6892DC70F979 /* Reed */ = {
 			isa = PBXGroup;
 			children = (
 				C7DDB43930BE233667EE3672 /* App */,
+				33CB75AA19EA9DFE5B7640C4 /* Platform */,
 			);
 			path = Reed;
+			sourceTree = "<group>";
+		};
+		7E76030DB8D468589E1B4639 /* Networking */ = {
+			isa = PBXGroup;
+			children = (
+				CB9F2A086B1281DF6883650F /* HTTPAuthenticationClient.swift */,
+			);
+			path = Networking;
 			sourceTree = "<group>";
 		};
 		8BEFEB3C19A1CFCDC1FE536F = {
@@ -73,6 +95,14 @@
 				FB2101A01407B9D46AE10AD8 /* ReedCore */,
 			);
 			name = Packages;
+			sourceTree = "<group>";
+		};
+		E0CC6399181FB8AA8F6E0783 /* Keychain */ = {
+			isa = PBXGroup;
+			children = (
+				96A8296BCC16155B37CB28FA /* KeychainSessionStore.swift */,
+			);
+			path = Keychain;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -136,6 +166,8 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				F78AC1AA0DED65AF645D0A27 /* HTTPAuthenticationClient.swift in Sources */,
+				49D99AD76297B6273347D925 /* KeychainSessionStore.swift in Sources */,
 				8D09063F5BE1AD6B1CB9D73C /* ReedApp.swift in Sources */,
 				00D72F29034CE30757D62D74 /* RootView.swift in Sources */,
 			);
