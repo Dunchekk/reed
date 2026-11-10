@@ -21,7 +21,8 @@ public struct ArchiveQuery: Codable, Equatable, Sendable {
 
     public func validate() throws {
         guard (1...100).contains(pageSize), (0..<2_147_483_647).contains(randomSeed),
-              tagIDs.count <= 100 else { throw LibraryError.invalidQuery }
+              tagIDs.count <= 100, search.utf8.count + keywords.utf8.count <= 8192,
+              TextNormalization.tokens(search + " " + keywords).count <= 64 else { throw LibraryError.invalidQuery }
         if let after = createdAfter, let before = createdBefore, after >= before { throw LibraryError.invalidQuery }
     }
 }
