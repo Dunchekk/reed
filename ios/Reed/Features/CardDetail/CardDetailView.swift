@@ -23,6 +23,7 @@ struct CardDetailView: View {
                         if let source = card.source { Text(source.displayName).reedFont(.caption).foregroundStyle(ReedTheme.secondary) }
                         if !card.page.isEmpty { Text("Страница / место: \(card.page)").reedFont(.caption) }
                         if !card.comment.isEmpty { Text(card.comment).reedFont(.body).textSelection(.enabled) }
+                        if let attachmentID = card.attachmentID { AttachmentPreview(id: attachmentID, store: context.attachments) }
                         FlowLayout { ForEach(card.tags) { TagChip(title: $0.name) } }
                         if let folder = card.folder { Label(folder.name, systemImage: "folder").reedFont(.caption) }
                         if let errorMessage { Text(errorMessage).foregroundStyle(.red) }

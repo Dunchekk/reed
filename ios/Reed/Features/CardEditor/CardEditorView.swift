@@ -9,12 +9,19 @@ struct CardEditorView: View {
 
     init(context: LibraryContext, card: Card? = nil, initialText: String = "") {
         self.context = context
-        _model = State(initialValue: CardEditorModel(repository: context.repository, card: card, initialText: initialText))
+        _model = State(initialValue: CardEditorModel(repository: context.repository, attachments: context.attachments, card: card, initialText: initialText))
     }
 
     var body: some View {
         NavigationStack {
             Form {
+                Section("Фото и распознавание") {
+                    PhotoInputView(apply: { draft in
+                        model.photo = draft
+                        if !draft.recognizedText.isEmpty { model.text += (model.text.isEmpty ? "" : "\n\n") + draft.recognizedText }
+                    }, isProcessing: $model.isProcessingPhoto)
+                    if model.photo != nil { Text("Фотография прикреплена. Проверьте распознанный текст перед сохранением.").foregroundStyle(ReedTheme.secondary) }
+                }
                 Section("Текст") {
                     TextEditor(text: $model.text).reedFont(.body).frame(minHeight: 240)
                         .accessibilityLabel("Текст карточки").accessibilityIdentifier("editor.text")
@@ -66,7 +73,7 @@ struct CardEditorView: View {
             .confirmationDialog("Отменить изменения?", isPresented: $confirmsDiscard, titleVisibility: .visible) {
                 Button("Отменить изменения", role: .destructive) { dismiss() }
             }
-            .interactiveDismissDisabled(model.isChanged || model.isSaving)
+            .interactiveDismissDisabled(model.isChanged || model.isSaving || model.isProcessingPhoto)
             .task { await model.loadCatalog() }
         }
     }

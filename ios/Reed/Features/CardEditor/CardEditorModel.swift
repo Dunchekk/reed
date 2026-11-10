@@ -15,6 +15,9 @@ final class CardEditorModel {
     var authorNames = ""
     var selectedFolderID: UUID?
     var newFolderName = ""
+    var photo: PhotoDraft?
+    var isProcessingPhoto = false
+    @ObservationIgnored private let attachments: any AttachmentStore
     private(set) var catalog = LibraryCatalog()
     private(set) var isSaving = false
     private(set) var isCatalogLoaded = false
@@ -22,19 +25,19 @@ final class CardEditorModel {
     let original: Card?
     @ObservationIgnored private let repository: any LibraryRepository
 
-    init(repository: any LibraryRepository, card: Card? = nil, initialText: String = "") {
-        self.repository = repository; original = card
+    init(repository: any LibraryRepository, attachments: any AttachmentStore, card: Card? = nil, initialText: String = "") {
+        self.repository = repository; self.attachments = attachments; original = card
         text = card?.text ?? initialText; title = card?.title ?? ""; comment = card?.comment ?? ""
         page = card?.page ?? ""; tagNames = card?.tags.map(\.name).joined(separator: ", ") ?? ""
         selectedSourceID = card?.source?.id; selectedFolderID = card?.folder?.id
     }
 
-    var canSave: Bool { !text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty && !isSaving && isCatalogLoaded }
+    var canSave: Bool { !text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty && !isSaving && isCatalogLoaded && !isProcessingPhoto }
     var isChanged: Bool {
         text != (original?.text ?? "") || title != (original?.title ?? "") || comment != (original?.comment ?? "")
             || page != (original?.page ?? "") || tagNames != (original?.tags.map(\.name).joined(separator: ", ") ?? "")
             || selectedSourceID != original?.source?.id || selectedFolderID != original?.folder?.id
-            || !sourceTitle.isEmpty || !authorNames.isEmpty || !newFolderName.isEmpty
+            || photo != nil || !sourceTitle.isEmpty || !authorNames.isEmpty || !newFolderName.isEmpty
     }
 
     func loadCatalog() async {
@@ -46,6 +49,7 @@ final class CardEditorModel {
         guard canSave else { return nil }
         isSaving = true; errorMessage = nil
         defer { isSaving = false }
+        var stagedAttachment: UUID?
         do {
             var card = original ?? Card(text: text)
             card.text = text; card.title = title.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -71,9 +75,16 @@ final class CardEditorModel {
                 let name = newFolderName.trimmingCharacters(in: .whitespacesAndNewlines)
                 card.folder = catalog.folders.first(where: { TextNormalization.normalize($0.name) == TextNormalization.normalize(name) }) ?? Folder(name: name)
             } else { card.folder = nil }
+            if let photo {
+                stagedAttachment = try await attachments.write(original: photo.original, thumbnail: photo.thumbnail)
+                card.attachmentID = stagedAttachment
+            }
             try await repository.save(card)
             return card.id
-        } catch { errorMessage = libraryErrorMessage(error); return nil }
+        } catch {
+            if let stagedAttachment { try? await attachments.remove(id: stagedAttachment) }
+            errorMessage = libraryErrorMessage(error); return nil
+        }
     }
 
     private static func names(_ input: String, separator: Character) -> [String] {

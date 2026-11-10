@@ -58,7 +58,7 @@ struct ArchiveFiltersView: View {
                     if limitsDates {
                         DatePicker("С", selection: $start, displayedComponents: .date)
                         DatePicker("По", selection: $end, displayedComponents: .date)
-                        if start > end { Text("Конец периода должен быть не раньше начала.").foregroundStyle(.red) }
+                        if Calendar.current.startOfDay(for: start) > Calendar.current.startOfDay(for: end) { Text("Конец периода должен быть не раньше начала.").foregroundStyle(.red) }
                     }
                 }
                 Button("Сбросить фильтры") {
@@ -74,7 +74,7 @@ struct ArchiveFiltersView: View {
                         query.createdAfter = limitsDates ? Calendar.current.startOfDay(for: start) : nil
                         query.createdBefore = limitsDates ? Calendar.current.date(byAdding: .day, value: 1, to: Calendar.current.startOfDay(for: end)) : nil
                         apply(query); dismiss()
-                    }.disabled(limitsDates && start > end)
+                    }.disabled(limitsDates && Calendar.current.startOfDay(for: start) > Calendar.current.startOfDay(for: end))
                 }
             }
         }

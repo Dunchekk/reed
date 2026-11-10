@@ -27,7 +27,10 @@ struct LibraryHostView: View {
                     try LibraryDatabase(root: root, accountID: accountID)
                 }.value
                 guard !Task.isCancelled else { return }
-                context = LibraryContext(account: account, database: database)
+                let library = LibraryContext(account: account, database: database)
+                try await library.prepare()
+                guard !Task.isCancelled else { return }
+                context = library
                 errorMessage = nil
             } catch {
                 guard !Task.isCancelled else { return }

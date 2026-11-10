@@ -9,6 +9,7 @@ import ReedPersistence
 final class LibraryContext {
     let account: Account
     let repository: any LibraryRepository
+    let attachments: any AttachmentStore
     let directory: URL
     private(set) var revision = 0
 
@@ -16,6 +17,13 @@ final class LibraryContext {
         self.account = account
         repository = LocalLibraryRepository(database: database)
         directory = database.directory
+        attachments = FileAttachmentStore(directory: database.directory)
+    }
+
+    func prepare() async throws {
+        let cutoff = Calendar.current.date(byAdding: .day, value: -7, to: Date()) ?? Date().addingTimeInterval(-604800)
+        _ = try await repository.purgeTrash(before: cutoff)
+        try await attachments.collectOrphans(retaining: repository.attachmentIDs())
     }
 
     func markChanged() { revision += 1 }
