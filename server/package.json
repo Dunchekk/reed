@@ -1,0 +1,15 @@
+{
+  "name": "@reed/server",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "node --env-file-if-exists=.env --watch src/index.ts",
+    "start": "node dist/src/index.js",
+    "build": "tsc",
+    "typecheck": "tsc --noEmit",
+    "test": "node --test test/*.test.ts"
+  },
+  "dependencies": { "fastify": "5.12.8" },
+  "devDependencies": { "typescript": "7.0.2", "@types/node": "^26.0.0" }
+}
