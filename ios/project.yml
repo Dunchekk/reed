@@ -18,7 +18,9 @@ targets:
   Reed:
     type: application
     platform: iOS
-    sources: [Reed]
+    sources:
+      - path: Reed
+        excludes: ["**/README.md"]
     dependencies:
       - package: ReedCore
         product: ReedDomain
@@ -44,7 +46,9 @@ targets:
   ReedUITests:
     type: bundle.ui-testing
     platform: iOS
-    sources: [ReedUITests]
+    sources:
+      - path: ReedUITests
+        excludes: ["README.md"]
     dependencies:
       - target: Reed
     settings:

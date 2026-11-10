@@ -11,11 +11,11 @@ let package = Package(
     ],
     dependencies: [.package(url: "https://github.com/groue/GRDB.swift.git", exact: "7.12.0")],
     targets: [
-        .target(name: "ReedDomain"),
-        .target(name: "ReedApplication", dependencies: ["ReedDomain"]),
-        .target(name: "ReedPersistence", dependencies: ["ReedDomain", "ReedApplication", .product(name: "GRDB", package: "GRDB.swift")]),
-        .testTarget(name: "ReedApplicationTests", dependencies: ["ReedDomain", "ReedApplication"]),
-        .testTarget(name: "ReedDomainTests", dependencies: ["ReedDomain", "ReedApplication"]),
-        .testTarget(name: "ReedPersistenceTests", dependencies: ["ReedDomain", "ReedApplication", "ReedPersistence"]),
+        .target(name: "ReedDomain", exclude: ["README.md"]),
+        .target(name: "ReedApplication", dependencies: ["ReedDomain"], exclude: ["README.md"]),
+        .target(name: "ReedPersistence", dependencies: ["ReedDomain", "ReedApplication", .product(name: "GRDB", package: "GRDB.swift")], exclude: ["README.md"]),
+        .testTarget(name: "ReedApplicationTests", dependencies: ["ReedDomain", "ReedApplication"], exclude: ["README.md"]),
+        .testTarget(name: "ReedDomainTests", dependencies: ["ReedDomain", "ReedApplication"], exclude: ["README.md"]),
+        .testTarget(name: "ReedPersistenceTests", dependencies: ["ReedDomain", "ReedApplication", "ReedPersistence"], exclude: ["README.md"]),
     ]
 )
