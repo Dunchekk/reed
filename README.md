@@ -11,6 +11,7 @@ Fastify и PostgreSQL.
 - [Запуск iOS](ios/README.md) · [Сервер](server/README.md) · [Тесты ядра](ios/ReedCore/Tests/README.md)
 - [План и архитектура](docs/implementation-plan.md)
 - [Принятые решения](docs/decisions.md)
+- [Проверки и три прохода review](docs/validation.md) · [Снимки экранов](docs/screenshots/README.md)
 - [Исходная рабочая спецификация](docs/working-spec.md)
 
 ## Окружение
