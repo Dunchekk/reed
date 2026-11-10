@@ -46,16 +46,18 @@ public struct Card: Codable, Equatable, Sendable, Identifiable {
     public var isHidden: Bool
     public var deletedAt: Date?
     public var allowsReturns: Bool
+    public let version: Int
 
     public init(id: UUID = UUID(), text: String, title: String = "", comment: String = "",
                 source: Source? = nil, page: String = "", tags: [Tag] = [], folder: Folder? = nil,
                 createdAt: Date = Date(), updatedAt: Date? = nil, isFavorite: Bool = false,
-                isHidden: Bool = false, deletedAt: Date? = nil, allowsReturns: Bool = true) {
+                isHidden: Bool = false, deletedAt: Date? = nil, allowsReturns: Bool = true, version: Int = 0) {
         self.id = id; self.text = text; self.title = title; self.comment = comment
         self.source = source; self.page = page; self.tags = tags; self.folder = folder
         self.createdAt = createdAt; self.updatedAt = updatedAt ?? createdAt
         self.isFavorite = isFavorite; self.isHidden = isHidden
         self.deletedAt = deletedAt; self.allowsReturns = allowsReturns
+        self.version = version
     }
 
     public var displayTitle: String {
@@ -77,7 +79,7 @@ public struct Card: Codable, Equatable, Sendable, Identifiable {
 }
 
 public enum LibraryError: Error, Equatable, Sendable {
-    case emptyText, emptyMetadata, duplicateRelationship, invalidQuery, invalidCursor, staleCursor, notFound
+    case emptyText, emptyMetadata, duplicateRelationship, invalidQuery, invalidCursor, staleCursor, notFound, conflict
 }
 
 public enum TextNormalization {

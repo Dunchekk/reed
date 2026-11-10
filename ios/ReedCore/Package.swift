@@ -7,10 +7,13 @@ let package = Package(
     products: [
         .library(name: "ReedDomain", targets: ["ReedDomain"]),
         .library(name: "ReedApplication", targets: ["ReedApplication"]),
+        .library(name: "ReedPersistence", targets: ["ReedPersistence"]),
     ],
+    dependencies: [.package(url: "https://github.com/groue/GRDB.swift.git", exact: "7.12.0")],
     targets: [
         .target(name: "ReedDomain"),
         .target(name: "ReedApplication", dependencies: ["ReedDomain"]),
+        .target(name: "ReedPersistence", dependencies: ["ReedDomain", "ReedApplication", .product(name: "GRDB", package: "GRDB.swift")]),
         .testTarget(name: "ReedDomainTests", dependencies: ["ReedDomain", "ReedApplication"]),
     ]
 )

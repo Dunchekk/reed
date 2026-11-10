@@ -1,0 +1,62 @@
+import Foundation
+import GRDB
+
+/// Owns one account's database. UI and domain code never receive the writer.
+public final class LibraryDatabase: Sendable {
+    let writer: any DatabaseWriter
+    public let directory: URL
+
+    public init(root: URL, accountID: UUID) throws {
+        directory = root.appendingPathComponent(accountID.uuidString.lowercased(), isDirectory: true)
+        try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+        #if os(iOS)
+        try FileManager.default.setAttributes([.protectionKey: FileProtectionType.completeUntilFirstUserAuthentication], ofItemAtPath: directory.path)
+        #endif
+        var configuration = Configuration()
+        configuration.foreignKeysEnabled = true
+        configuration.busyMode = .timeout(5)
+        writer = try DatabasePool(path: directory.appendingPathComponent("library.sqlite").path, configuration: configuration)
+        try Self.migrator.migrate(writer)
+    }
+
+    private static var migrator: DatabaseMigrator {
+        var migrator = DatabaseMigrator()
+        migrator.registerMigration("001_library") { db in
+            try db.execute(sql: """
+                CREATE TABLE library_state (id INTEGER PRIMARY KEY CHECK (id = 1), revision INTEGER NOT NULL);
+                INSERT INTO library_state VALUES (1, 0);
+                CREATE TABLE authors (id TEXT PRIMARY KEY NOT NULL, name TEXT NOT NULL);
+                CREATE TABLE sources (id TEXT PRIMARY KEY NOT NULL, title TEXT NOT NULL, url TEXT);
+                CREATE TABLE source_authors (
+                    source_id TEXT NOT NULL REFERENCES sources(id) ON DELETE CASCADE,
+                    author_id TEXT NOT NULL REFERENCES authors(id), position INTEGER NOT NULL,
+                    PRIMARY KEY (source_id, author_id)
+                );
+                CREATE INDEX source_authors_author ON source_authors(author_id, source_id);
+                CREATE TABLE tags (id TEXT PRIMARY KEY NOT NULL, name TEXT NOT NULL);
+                CREATE TABLE folders (id TEXT PRIMARY KEY NOT NULL, name TEXT NOT NULL);
+                CREATE TABLE cards (
+                    id TEXT PRIMARY KEY NOT NULL, text TEXT NOT NULL, title TEXT NOT NULL,
+                    comment TEXT NOT NULL, page TEXT NOT NULL,
+                    source_id TEXT REFERENCES sources(id), folder_id TEXT REFERENCES folders(id),
+                    created_at REAL NOT NULL, updated_at REAL NOT NULL,
+                    is_favorite INTEGER NOT NULL DEFAULT 0, is_hidden INTEGER NOT NULL DEFAULT 0,
+                    deleted_at REAL, allows_returns INTEGER NOT NULL DEFAULT 1, version INTEGER NOT NULL,
+                    preview TEXT NOT NULL, sort_title TEXT NOT NULL, shuffle_key INTEGER NOT NULL
+                );
+                CREATE TABLE card_tags (
+                    card_id TEXT NOT NULL REFERENCES cards(id) ON DELETE CASCADE,
+                    tag_id TEXT NOT NULL REFERENCES tags(id), PRIMARY KEY (card_id, tag_id)
+                );
+                CREATE INDEX cards_active_date ON cards(deleted_at, is_hidden, created_at, id);
+                CREATE INDEX cards_title ON cards(deleted_at, is_hidden, sort_title, id);
+                CREATE INDEX cards_shuffle ON cards(deleted_at, is_hidden, shuffle_key, id);
+                CREATE INDEX cards_source ON cards(source_id, created_at, id);
+                CREATE INDEX cards_folder ON cards(folder_id, created_at, id);
+                CREATE INDEX card_tags_tag ON card_tags(tag_id, card_id);
+                CREATE VIRTUAL TABLE card_search USING fts5(card_id UNINDEXED, document, tokenize = 'unicode61 remove_diacritics 0', prefix = '2 3 4');
+                """)
+        }
+        return migrator
+    }
+}
