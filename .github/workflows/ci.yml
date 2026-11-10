@@ -44,3 +44,12 @@ jobs:
       - run: make ios-build
       - name: Check generated project is committed
         run: git diff --exit-code -- ios/Reed.xcodeproj
+      - name: Run iOS user journey
+        run: scripts/ios-ui-test.sh
+      - name: Upload UI results and screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ios-ui-results
+          path: .local/UITests.xcresult
+          retention-days: 7

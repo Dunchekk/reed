@@ -40,3 +40,14 @@ targets:
         INFOPLIST_KEY_UISupportedInterfaceOrientations: UIInterfaceOrientationPortrait
     scheme:
       gatherCoverageData: true
+      testTargets: [ReedUITests]
+  ReedUITests:
+    type: bundle.ui-testing
+    platform: iOS
+    sources: [ReedUITests]
+    dependencies:
+      - target: Reed
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: dev.dunchekk.reed.uitests
+        GENERATE_INFOPLIST_FILE: YES

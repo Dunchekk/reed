@@ -1,4 +1,5 @@
 import SwiftUI
+import ReedApplication
 
 @main
 struct ReedApp: App {
@@ -14,8 +15,12 @@ struct ReedApp: App {
         #if DEBUG
         if baseURL == nil { baseURL = URL(string: "http://127.0.0.1:3000") }
         #endif
+        var store: any SessionStore = KeychainSessionStore()
+        #if DEBUG
+        if UITestBootstrap.enabled { store = UITestSessionStore(); baseURL = nil }
+        #endif
         _authentication = State(initialValue: AuthenticationModel(
-            client: baseURL.map { HTTPAuthenticationClient(baseURL: $0) }, store: KeychainSessionStore()
+            client: baseURL.map { HTTPAuthenticationClient(baseURL: $0) }, store: store
         ))
     }
 

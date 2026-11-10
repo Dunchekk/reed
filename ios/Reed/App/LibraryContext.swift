@@ -24,7 +24,11 @@ final class LibraryContext {
         feed = LocalFeedRepository(database: database)
         let returns = LocalReturnRepository(database: database)
         self.returns = returns
-        returnCoordinator = ReturnCoordinator(repository: returns, queue: AppleNotificationQueue(), accountID: account.id)
+        var queue: any CardNotificationQueue = AppleNotificationQueue()
+        #if DEBUG
+        if UITestBootstrap.enabled { queue = UITestNotificationQueue() }
+        #endif
+        returnCoordinator = ReturnCoordinator(repository: returns, queue: queue, accountID: account.id)
         directory = database.directory
         attachments = FileAttachmentStore(directory: database.directory)
     }

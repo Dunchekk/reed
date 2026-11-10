@@ -11,6 +11,7 @@
 		0EB967BEEAA92A933A7F7D1F /* PhotoInputView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7A47A3779CC84B7670724BD1 /* PhotoInputView.swift */; };
 		0FEF426EBECBBEBA52AE2268 /* CardPreview.swift in Sources */ = {isa = PBXBuildFile; fileRef = AEB8D381B79D9702B0E7748D /* CardPreview.swift */; };
 		1160414BF6553DA634FF88D6 /* TodayView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E6D7BE49DCF6F7EFBBB39ECF /* TodayView.swift */; };
+		19A38778492295382B8ED466 /* LibraryJourneyTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84D2C286BAEB4463AE530844 /* LibraryJourneyTests.swift */; };
 		204EFA47B58B7FF6B7F22BD7 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 436AE5FA74AABD818FE7FE8C /* Assets.xcassets */; };
 		24536C6DD53B128559A57D36 /* LibraryContext.swift in Sources */ = {isa = PBXBuildFile; fileRef = C1EC736F24E97170F63BB42E /* LibraryContext.swift */; };
 		266394EF7F8D3055724816B8 /* FeedView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DF7261B6A125F3C153F2233B /* FeedView.swift */; };
@@ -29,6 +30,7 @@
 		9DBB3486B76BAAAAA0434CA3 /* ArchiveView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1E61FE6A3F9843744449B9FF /* ArchiveView.swift */; };
 		9E97E58B9E09CAD6EF7BF7FE /* NotificationRouter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0579E3266F9E669906F3C361 /* NotificationRouter.swift */; };
 		A252CA723E27FC496EC5AD9B /* ReedPersistence in Frameworks */ = {isa = PBXBuildFile; productRef = 4D74049788164097993B44CD /* ReedPersistence */; };
+		A8EEF9A34014AC6D15ACE34B /* UITestBootstrap.swift in Sources */ = {isa = PBXBuildFile; fileRef = 734A254D2DFD0F13B7C59C82 /* UITestBootstrap.swift */; };
 		ADF485C313F10BD48B4557CF /* CardReturnSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8EC298BB02E6ACA2DCD21F81 /* CardReturnSettingsView.swift */; };
 		B2009A51A29BF639C5A51CF0 /* ReturnFilterView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 30F744958FC28735513FF7E2 /* ReturnFilterView.swift */; };
 		B55DAE03C0BA8D953B274E19 /* AttachmentPreview.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A9B22E299CFF5C1C490A742 /* AttachmentPreview.swift */; };
@@ -44,8 +46,19 @@
 		F8A8D6F1199759E0625F4F70 /* CameraPicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D580E5E5367BA5BC364073F /* CameraPicker.swift */; };
 /* End PBXBuildFile section */
 
+/* Begin PBXContainerItemProxy section */
+		7E5C7423C1854E3212F08C42 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 313363E6D43D3801C3BCB3A7 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 884347EFE4A103E2366F8FAB;
+			remoteInfo = Reed;
+		};
+/* End PBXContainerItemProxy section */
+
 /* Begin PBXFileReference section */
 		0579E3266F9E669906F3C361 /* NotificationRouter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationRouter.swift; sourceTree = "<group>"; };
+		08EC1F2F38AC35602A4E1D10 /* ReedUITests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = ReedUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		14A9A252493AF1944B124805 /* CardEditorModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CardEditorModel.swift; sourceTree = "<group>"; };
 		1B758DB0DF8F58964AD565B4 /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
 		1D10516915064E4D7474CB1E /* CardEditorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CardEditorView.swift; sourceTree = "<group>"; };
@@ -62,8 +75,10 @@
 		5EFA614C462C236FF3B63048 /* RootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootView.swift; sourceTree = "<group>"; };
 		65944AF392F5D88BDBAA8BFD /* ArchiveModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ArchiveModel.swift; sourceTree = "<group>"; };
 		728AC33816253A2109DC6836 /* ReturnSettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReturnSettingsView.swift; sourceTree = "<group>"; };
+		734A254D2DFD0F13B7C59C82 /* UITestBootstrap.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UITestBootstrap.swift; sourceTree = "<group>"; };
 		7A47A3779CC84B7670724BD1 /* PhotoInputView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhotoInputView.swift; sourceTree = "<group>"; };
 		7E478926F57605678FBD4C8C /* ArchiveFiltersView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ArchiveFiltersView.swift; sourceTree = "<group>"; };
+		84D2C286BAEB4463AE530844 /* LibraryJourneyTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LibraryJourneyTests.swift; sourceTree = "<group>"; };
 		8EC298BB02E6ACA2DCD21F81 /* CardReturnSettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CardReturnSettingsView.swift; sourceTree = "<group>"; };
 		96A8296BCC16155B37CB28FA /* KeychainSessionStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeychainSessionStore.swift; sourceTree = "<group>"; };
 		9D580E5E5367BA5BC364073F /* CameraPicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraPicker.swift; sourceTree = "<group>"; };
@@ -148,6 +163,14 @@
 			path = Features;
 			sourceTree = "<group>";
 		};
+		5965E278656836BEA036669A /* ReedUITests */ = {
+			isa = PBXGroup;
+			children = (
+				84D2C286BAEB4463AE530844 /* LibraryJourneyTests.swift */,
+			);
+			path = ReedUITests;
+			sourceTree = "<group>";
+		};
 		604224FF37982421414A7229 /* DesignSystem */ = {
 			isa = PBXGroup;
 			children = (
@@ -166,8 +189,17 @@
 				3A26439587F2EA582917FB9A /* Features */,
 				33CB75AA19EA9DFE5B7640C4 /* Platform */,
 				BDBACB170438EF0CBCF98958 /* Resources */,
+				6B97F277837B51ABFACF0C30 /* Testing */,
 			);
 			path = Reed;
+			sourceTree = "<group>";
+		};
+		6B97F277837B51ABFACF0C30 /* Testing */ = {
+			isa = PBXGroup;
+			children = (
+				734A254D2DFD0F13B7C59C82 /* UITestBootstrap.swift */,
+			);
+			path = Testing;
 			sourceTree = "<group>";
 		};
 		7E76030DB8D468589E1B4639 /* Networking */ = {
@@ -191,6 +223,7 @@
 			children = (
 				CDD45693B497366DDB1A79C3 /* Packages */,
 				692D385A005C6892DC70F979 /* Reed */,
+				5965E278656836BEA036669A /* ReedUITests */,
 				B9A90BE21D0F5B7D244A090D /* Products */,
 			);
 			sourceTree = "<group>";
@@ -228,6 +261,7 @@
 			isa = PBXGroup;
 			children = (
 				57BDD9551B3C13603DB45750 /* Reed.app */,
+				08EC1F2F38AC35602A4E1D10 /* ReedUITests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -306,6 +340,24 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
+		42BD3A6CD806D2E92BF8ED6E /* ReedUITests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 9A69D317466BB27FBCCE98B3 /* Build configuration list for PBXNativeTarget "ReedUITests" */;
+			buildPhases = (
+				EBA848009D26618619163A8D /* Sources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				470D355EAE72490BECD30282 /* PBXTargetDependency */,
+			);
+			name = ReedUITests;
+			packageProductDependencies = (
+			);
+			productName = ReedUITests;
+			productReference = 08EC1F2F38AC35602A4E1D10 /* ReedUITests.xctest */;
+			productType = "com.apple.product-type.bundle.ui-testing";
+		};
 		884347EFE4A103E2366F8FAB /* Reed */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = C1886778FEE947675DA4C897 /* Build configuration list for PBXNativeTarget "Reed" */;
@@ -337,6 +389,9 @@
 				BuildIndependentTargetsInParallel = YES;
 				LastUpgradeCheck = 2600;
 				TargetAttributes = {
+					42BD3A6CD806D2E92BF8ED6E = {
+						TestTargetID = 884347EFE4A103E2366F8FAB;
+					};
 				};
 			};
 			buildConfigurationList = 783373846ABEBC9EE593399B /* Build configuration list for PBXProject "Reed" */;
@@ -357,6 +412,7 @@
 			projectRoot = "";
 			targets = (
 				884347EFE4A103E2366F8FAB /* Reed */,
+				42BD3A6CD806D2E92BF8ED6E /* ReedUITests */,
 			);
 		};
 /* End PBXProject section */
@@ -408,10 +464,27 @@
 				346D0DD76BCC1B1B7D8C96E9 /* SettingsView.swift in Sources */,
 				7EFA7F87E2E2816E1BB480D6 /* SignInView.swift in Sources */,
 				1160414BF6553DA634FF88D6 /* TodayView.swift in Sources */,
+				A8EEF9A34014AC6D15ACE34B /* UITestBootstrap.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		EBA848009D26618619163A8D /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				19A38778492295382B8ED466 /* LibraryJourneyTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		470D355EAE72490BECD30282 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 884347EFE4A103E2366F8FAB /* Reed */;
+			targetProxy = 7E5C7423C1854E3212F08C42 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
 		1B26FF741A0DE47D0A9852FC /* Debug */ = {
@@ -502,6 +575,40 @@
 				REED_API_BASE_URL = "";
 				SDKROOT = iphoneos;
 				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		28B6380474F18E38AAD4F010 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = dev.dunchekk.reed.uitests;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = Reed;
+			};
+			name = Release;
+		};
+		8FB04DD17F34F3DE8646268F /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = dev.dunchekk.reed.uitests;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = Reed;
 			};
 			name = Debug;
 		};
@@ -597,6 +704,15 @@
 			buildConfigurations = (
 				1B26FF741A0DE47D0A9852FC /* Debug */,
 				C37EB5602FA0605A1CA1D249 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		9A69D317466BB27FBCCE98B3 /* Build configuration list for PBXNativeTarget "ReedUITests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				8FB04DD17F34F3DE8646268F /* Debug */,
+				28B6380474F18E38AAD4F010 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Debug;
