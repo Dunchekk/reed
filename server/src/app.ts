@@ -1,6 +1,9 @@
 import Fastify, { LogController } from "fastify";
+import { AuthError } from "./auth/provider.ts";
+import { registerAuthRoutes } from "./auth/routes.ts";
+import type { AuthDependencies } from "./auth/routes.ts";
 
-export function buildApp() {
+export function buildApp(dependencies?: AuthDependencies) {
   const app = Fastify({
     bodyLimit: 64 * 1024,
     logger: {
@@ -13,8 +16,15 @@ export function buildApp() {
   });
 
   app.get("/health", async () => ({ status: "ok" }));
+  if (dependencies) app.register((scope) => registerAuthRoutes(scope, dependencies));
 
   app.setErrorHandler((error, request, reply) => {
+    if (error instanceof AuthError) {
+      return reply.code(error.statusCode).send({ error: {
+        code: error.code, message: error.message,
+        ...(error.retryAt ? { retryAt: error.retryAt } : {}),
+      } });
+    }
     if (typeof error === "object" && error !== null && "validation" in error) {
       return reply.code(400).send({ error: { code: "invalid_request", message: "Некорректный запрос" } });
     }
