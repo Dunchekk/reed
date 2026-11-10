@@ -53,6 +53,10 @@ private struct LibraryTabView: View {
                             ArchiveView(context: context, open: { path.append($0) })
                         } else if tab == .settings {
                             Form {
+                                Section("Библиотека") {
+                                    NavigationLink("Скрытые карточки") { ArchiveView(context: context, visibility: .hidden, open: { path.append($0) }).navigationTitle("Скрытые") }
+                                    NavigationLink("Корзина · 7 дней") { ArchiveView(context: context, visibility: .trash, open: { path.append($0) }).navigationTitle("Корзина") }
+                                }
                                 Section("Аккаунт") {
                                     Text(authentication.account?.phone.value ?? "")
                                     Button("Выйти", role: .destructive) { Task { await authentication.signOut() } }
