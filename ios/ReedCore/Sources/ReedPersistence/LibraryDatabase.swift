@@ -72,6 +72,15 @@ public final class LibraryDatabase: Sendable {
         migrator.registerMigration("004_preferences") { db in
             try db.execute(sql: "CREATE TABLE preferences (key TEXT PRIMARY KEY NOT NULL, value BLOB NOT NULL)")
         }
+        migrator.registerMigration("005_returns") { db in
+            try db.execute(sql: """
+                CREATE TABLE card_returns (card_id TEXT PRIMARY KEY NOT NULL REFERENCES cards(id) ON DELETE CASCADE, value BLOB NOT NULL);
+                CREATE TABLE return_days (day_key TEXT PRIMARY KEY NOT NULL, seed TEXT NOT NULL);
+                CREATE TABLE return_slots (id TEXT PRIMARY KEY NOT NULL, scheduled_at REAL NOT NULL, card_id TEXT, automatic_ordinal INTEGER, slot BLOB NOT NULL, decision BLOB NOT NULL, state TEXT NOT NULL, revision TEXT NOT NULL, library_revision INTEGER NOT NULL);
+                CREATE INDEX return_slots_time ON return_slots(scheduled_at, state);
+                CREATE INDEX return_slots_card_time ON return_slots(card_id, scheduled_at);
+                """)
+        }
         return migrator
     }
 }
