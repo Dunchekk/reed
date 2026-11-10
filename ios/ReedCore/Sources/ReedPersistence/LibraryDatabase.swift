@@ -69,6 +69,9 @@ public final class LibraryDatabase: Sendable {
                 CREATE INDEX openings_time ON openings(opened_at);
                 """)
         }
+        migrator.registerMigration("004_preferences") { db in
+            try db.execute(sql: "CREATE TABLE preferences (key TEXT PRIMARY KEY NOT NULL, value BLOB NOT NULL)")
+        }
         return migrator
     }
 }

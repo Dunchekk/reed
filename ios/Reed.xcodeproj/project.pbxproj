@@ -12,6 +12,7 @@
 		0FEF426EBECBBEBA52AE2268 /* CardPreview.swift in Sources */ = {isa = PBXBuildFile; fileRef = AEB8D381B79D9702B0E7748D /* CardPreview.swift */; };
 		204EFA47B58B7FF6B7F22BD7 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 436AE5FA74AABD818FE7FE8C /* Assets.xcassets */; };
 		24536C6DD53B128559A57D36 /* LibraryContext.swift in Sources */ = {isa = PBXBuildFile; fileRef = C1EC736F24E97170F63BB42E /* LibraryContext.swift */; };
+		266394EF7F8D3055724816B8 /* FeedView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DF7261B6A125F3C153F2233B /* FeedView.swift */; };
 		371CA04BC4A71A8AB7767D9E /* CardDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DCD55F5F7EEFE0009B1F4126 /* CardDetailView.swift */; };
 		3BC6B683DA69A9486E469B39 /* ActivityView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F2B48F6D694F4C3B92EA4FCF /* ActivityView.swift */; };
 		49D99AD76297B6273347D925 /* KeychainSessionStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 96A8296BCC16155B37CB28FA /* KeychainSessionStore.swift */; };
@@ -57,6 +58,7 @@
 		C1EC736F24E97170F63BB42E /* LibraryContext.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LibraryContext.swift; sourceTree = "<group>"; };
 		CB9F2A086B1281DF6883650F /* HTTPAuthenticationClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HTTPAuthenticationClient.swift; sourceTree = "<group>"; };
 		DCD55F5F7EEFE0009B1F4126 /* CardDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CardDetailView.swift; sourceTree = "<group>"; };
+		DF7261B6A125F3C153F2233B /* FeedView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeedView.swift; sourceTree = "<group>"; };
 		F2412C52FF430907A2183039 /* ReedTheme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReedTheme.swift; sourceTree = "<group>"; };
 		F2B48F6D694F4C3B92EA4FCF /* ActivityView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActivityView.swift; sourceTree = "<group>"; };
 		FB2101A01407B9D46AE10AD8 /* ReedCore */ = {isa = PBXFileReference; lastKnownFileType = folder; name = ReedCore; path = ReedCore; sourceTree = SOURCE_ROOT; };
@@ -95,6 +97,7 @@
 				EA17D7477589429399C6A438 /* Auth */,
 				F1579959B3EE8CDD7FF3A894 /* CardDetail */,
 				A2E70DB97BA9CA6D5D520309 /* CardEditor */,
+				F147C58A166304ECABC07978 /* Feed */,
 			);
 			path = Features;
 			sourceTree = "<group>";
@@ -227,6 +230,14 @@
 			path = Auth;
 			sourceTree = "<group>";
 		};
+		F147C58A166304ECABC07978 /* Feed */ = {
+			isa = PBXGroup;
+			children = (
+				DF7261B6A125F3C153F2233B /* FeedView.swift */,
+			);
+			path = Feed;
+			sourceTree = "<group>";
+		};
 		F1579959B3EE8CDD7FF3A894 /* CardDetail */ = {
 			isa = PBXGroup;
 			children = (
@@ -322,6 +333,7 @@
 				CF7F4FFB14AECF78DCD3714F /* CardEditorModel.swift in Sources */,
 				CCC862FA3EFE9D720A5A15DB /* CardEditorView.swift in Sources */,
 				0FEF426EBECBBEBA52AE2268 /* CardPreview.swift in Sources */,
+				266394EF7F8D3055724816B8 /* FeedView.swift in Sources */,
 				F78AC1AA0DED65AF645D0A27 /* HTTPAuthenticationClient.swift in Sources */,
 				49D99AD76297B6273347D925 /* KeychainSessionStore.swift in Sources */,
 				24536C6DD53B128559A57D36 /* LibraryContext.swift in Sources */,

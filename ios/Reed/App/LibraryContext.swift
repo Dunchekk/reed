@@ -9,6 +9,7 @@ import ReedPersistence
 final class LibraryContext {
     let account: Account
     let repository: any LibraryRepository
+    let feed: any FeedRepository
     let activity: any ActivityRepository
     let attachments: any AttachmentStore
     let directory: URL
@@ -18,6 +19,7 @@ final class LibraryContext {
         self.account = account
         repository = LocalLibraryRepository(database: database)
         activity = LocalActivityRepository(database: database)
+        feed = LocalFeedRepository(database: database)
         directory = database.directory
         attachments = FileAttachmentStore(directory: database.directory)
     }

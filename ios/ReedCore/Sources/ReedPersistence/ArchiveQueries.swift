@@ -79,7 +79,21 @@ extension LocalLibraryRepository: LibraryRepository {
                 ORDER BY cursor_key \(direction), c.id \(direction) LIMIT ?
                 """, arguments: arguments)
             let page = Array(rows.prefix(query.pageSize))
-            let cards = try page.map { row -> CardSummary in
+            let cards = try page.map { try Self.summary($0, db: db) }
+            var nextCursor: String?
+            if rows.count > query.pageSize, let last = page.last {
+                let next = ArchiveCursor(query: query, revision: revision, id: last["id"],
+                    number: query.sort == .alphabetical ? nil : last["cursor_key"],
+                    text: query.sort == .alphabetical ? last["cursor_key"] : nil)
+                nextCursor = try JSONEncoder().encode(next).base64EncodedString()
+            }
+            return ArchivePage(cards: cards, nextCursor: nextCursor)
+        }
+    }
+}
+
+extension LocalLibraryRepository {
+    static func summary(_ row: Row, db: Database) throws -> CardSummary {
                 let id: String = row["id"]
                 let title: String = row["title"]
                 let preview: String = row["preview"]
@@ -90,15 +104,5 @@ extension LocalLibraryRepository: LibraryRepository {
                 return CardSummary(id: try Self.uuid(id), title: title.isEmpty ? String(preview.prefix(64)) : title,
                     preview: preview, source: sourceName, createdAt: Date(timeIntervalSince1970: row["created_at"]),
                     isFavorite: row["is_favorite"], tags: try Self.tags(id, db: db))
-            }
-            var nextCursor: String?
-            if rows.count > query.pageSize, let last = page.last {
-                let next = ArchiveCursor(query: query, revision: revision, id: last["id"],
-                    number: query.sort == .alphabetical ? nil : last["cursor_key"],
-                    text: query.sort == .alphabetical ? last["cursor_key"] : nil)
-                nextCursor = try JSONEncoder().encode(next).base64EncodedString()
-            }
-            return ArchivePage(cards: cards, nextCursor: nextCursor)
-        }
     }
 }

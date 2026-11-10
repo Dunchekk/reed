@@ -51,6 +51,8 @@ private struct LibraryTabView: View {
                     Group {
                         if tab == .archive {
                             ArchiveView(context: context, open: { path.append($0) })
+                        } else if tab == .feed {
+                            FeedView(context: context, open: { path.append($0) })
                         } else if tab == .settings {
                             Form {
                                 Section("Библиотека") {
