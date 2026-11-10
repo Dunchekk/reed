@@ -21,8 +21,10 @@
 		7A712B3E31711DAAA6E8C7B3 /* ArchiveModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65944AF392F5D88BDBAA8BFD /* ArchiveModel.swift */; };
 		7EFA7F87E2E2816E1BB480D6 /* SignInView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47D08843EC6229125741AF0C /* SignInView.swift */; };
 		8D09063F5BE1AD6B1CB9D73C /* ReedApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = B38E8F0B3C13C4EB1BD0D8C5 /* ReedApp.swift */; };
+		8FA53032B169C67FAA03E27F /* AppleNotificationQueue.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3DC90A6EB51B024CC29CD355 /* AppleNotificationQueue.swift */; };
 		9D77A02AC470B52213CED707 /* LibraryHostView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 321E2E043B1F508D5C2A9FFB /* LibraryHostView.swift */; };
 		9DBB3486B76BAAAAA0434CA3 /* ArchiveView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1E61FE6A3F9843744449B9FF /* ArchiveView.swift */; };
+		9E97E58B9E09CAD6EF7BF7FE /* NotificationRouter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0579E3266F9E669906F3C361 /* NotificationRouter.swift */; };
 		A252CA723E27FC496EC5AD9B /* ReedPersistence in Frameworks */ = {isa = PBXBuildFile; productRef = 4D74049788164097993B44CD /* ReedPersistence */; };
 		B55DAE03C0BA8D953B274E19 /* AttachmentPreview.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A9B22E299CFF5C1C490A742 /* AttachmentPreview.swift */; };
 		B5EAB05413D03EC0D4656705 /* AuthenticationModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2BCA768643C47B8840380E3F /* AuthenticationModel.swift */; };
@@ -37,6 +39,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		0579E3266F9E669906F3C361 /* NotificationRouter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationRouter.swift; sourceTree = "<group>"; };
 		14A9A252493AF1944B124805 /* CardEditorModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CardEditorModel.swift; sourceTree = "<group>"; };
 		1B758DB0DF8F58964AD565B4 /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
 		1D10516915064E4D7474CB1E /* CardEditorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CardEditorView.swift; sourceTree = "<group>"; };
@@ -44,6 +47,7 @@
 		2BCA768643C47B8840380E3F /* AuthenticationModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthenticationModel.swift; sourceTree = "<group>"; };
 		321E2E043B1F508D5C2A9FFB /* LibraryHostView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LibraryHostView.swift; sourceTree = "<group>"; };
 		3A9B22E299CFF5C1C490A742 /* AttachmentPreview.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AttachmentPreview.swift; sourceTree = "<group>"; };
+		3DC90A6EB51B024CC29CD355 /* AppleNotificationQueue.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppleNotificationQueue.swift; sourceTree = "<group>"; };
 		436AE5FA74AABD818FE7FE8C /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		47D08843EC6229125741AF0C /* SignInView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SignInView.swift; sourceTree = "<group>"; };
 		57BDD9551B3C13603DB45750 /* Reed.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = Reed.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -84,6 +88,7 @@
 			children = (
 				E0CC6399181FB8AA8F6E0783 /* Keychain */,
 				7E76030DB8D468589E1B4639 /* Networking */,
+				E97E29DBC912F8A15DCCE2BA /* Notifications */,
 				980CCDECBA9B9FE97A8025A8 /* Photos */,
 			);
 			path = Platform;
@@ -221,6 +226,15 @@
 			path = Keychain;
 			sourceTree = "<group>";
 		};
+		E97E29DBC912F8A15DCCE2BA /* Notifications */ = {
+			isa = PBXGroup;
+			children = (
+				3DC90A6EB51B024CC29CD355 /* AppleNotificationQueue.swift */,
+				0579E3266F9E669906F3C361 /* NotificationRouter.swift */,
+			);
+			path = Notifications;
+			sourceTree = "<group>";
+		};
 		EA17D7477589429399C6A438 /* Auth */ = {
 			isa = PBXGroup;
 			children = (
@@ -323,6 +337,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				3BC6B683DA69A9486E469B39 /* ActivityView.swift in Sources */,
+				8FA53032B169C67FAA03E27F /* AppleNotificationQueue.swift in Sources */,
 				B6F9B85F7B22DCE34FF4005F /* ArchiveFiltersView.swift in Sources */,
 				7A712B3E31711DAAA6E8C7B3 /* ArchiveModel.swift in Sources */,
 				9DBB3486B76BAAAAA0434CA3 /* ArchiveView.swift in Sources */,
@@ -338,6 +353,7 @@
 				49D99AD76297B6273347D925 /* KeychainSessionStore.swift in Sources */,
 				24536C6DD53B128559A57D36 /* LibraryContext.swift in Sources */,
 				9D77A02AC470B52213CED707 /* LibraryHostView.swift in Sources */,
+				9E97E58B9E09CAD6EF7BF7FE /* NotificationRouter.swift in Sources */,
 				0EB967BEEAA92A933A7F7D1F /* PhotoInputView.swift in Sources */,
 				B731BF2573ACA22DCFAA1B9B /* PhotoProcessor.swift in Sources */,
 				8D09063F5BE1AD6B1CB9D73C /* ReedApp.swift in Sources */,
