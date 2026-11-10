@@ -26,7 +26,7 @@ struct ActivityView: View {
                             Button { open(event.cardID) } label: {
                                 VStack(alignment: .leading) {
                                     Text(event.title).lineLimit(2)
-                                    Text("\(event.date.formatted(date: .abbreviated, time: .shortened)) · \(event.origin == .manual ? "Вручную" : "Из уведомления")")
+                                    Text("\(ReedDatePresentation.dateTime(event.date)) · \(event.origin == .manual ? "Вручную" : "Из уведомления")")
                                         .reedFont(.metadata).foregroundStyle(ReedTheme.secondary)
                                 }
                             }

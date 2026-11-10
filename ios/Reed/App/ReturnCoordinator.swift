@@ -60,9 +60,15 @@ final class ReturnCoordinator {
     func stop() async throws {
         active = false; work?.cancel()
         await work?.value
-        try await reconciler.stop()
-        try await repository.cancelFuture(now: Date())
-        report = NotificationQueueReport(count: 0, until: nil, failures: 0)
+        do {
+            try await reconciler.stop()
+            try await repository.cancelFuture(now: Date())
+            report = NotificationQueueReport(count: 0, until: nil, failures: 0)
+        } catch {
+            // The account remains open after a failed logout, so its coordinator must recover too.
+            resume()
+            throw error
+        }
     }
     func resume() {
         guard !active else { return }

@@ -15,10 +15,7 @@ final class LibraryJourneyTests: XCTestCase {
         app.buttons["library.add"].tap()
         let text = app.textViews["editor.text"]
         XCTAssertTrue(text.waitForExistence(timeout: 10))
-        text.tap(); text.typeText("Journey fragment about architecture and reading.")
-        let title = app.textFields["editor.title"]
-        for _ in 0..<4 where !title.isHittable { app.swipeUp() }
-        title.tap(); title.typeText("Journey card")
+        text.tap(); text.typeText("Journey card")
         let save = app.buttons["editor.save"]
         XCTAssertTrue(save.isEnabled)
         save.tap()
@@ -44,6 +41,27 @@ final class LibraryJourneyTests: XCTestCase {
         app.buttons["Возвращения"].tap()
         XCTAssertTrue(app.switches["Возвращать карточки"].waitForExistence(timeout: 10))
         screenshot("Returns", app)
+        let include = app.buttons["Что включать"]
+        reveal(include, in: app); include.tap()
+        let words = app.descendants(matching: .any).matching(identifier: "return.filter.words").firstMatch
+        reveal(words, in: app); words.tap(); words.typeText("journey")
+        app.navigationBars.buttons.element(boundBy: 0).tap()
+        let saveSettings = app.buttons["Сохранить настройки"]
+        reveal(saveSettings, in: app); saveSettings.tap()
+        app.navigationBars.buttons.element(boundBy: 0).tap()
+        app.buttons["Возвращения"].tap()
+        reveal(include, in: app); include.tap()
+        reveal(words, in: app)
+        XCTAssertEqual(words.value as? String, "journey")
+    }
+    private func reveal(_ element: XCUIElement, in app: XCUIApplication) {
+        for _ in 0..<16 {
+            if element.exists && element.isHittable { return }
+            let start = app.coordinate(withNormalizedOffset: CGVector(dx: 0.85, dy: 0.65))
+            let end = app.coordinate(withNormalizedOffset: CGVector(dx: 0.85, dy: 0.45))
+            start.press(forDuration: 0.05, thenDragTo: end)
+        }
+        XCTAssertTrue(element.exists && element.isHittable)
     }
     private func screenshot(_ name: String, _ app: XCUIApplication) {
         let attachment = XCTAttachment(screenshot: app.screenshot())

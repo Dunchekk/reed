@@ -95,3 +95,28 @@ private struct PlanningFixture {
     #expect(fixture.calendar.component(.hour, from: appointment.slot.date) == 0)
     #expect(plan.entries.filter { $0.card != nil && $0.id != appointment.id }.allSatisfy { abs($0.slot.date.timeIntervalSince(appointment.slot.date)) >= 3600 })
 }
+
+@Test(arguments: ["disabled", "hidden", "trashed"])
+func reactivatingConflictingCardRollsBackWithoutDisturbingExistingPlan(mode: String) async throws {
+    let fixture = try PlanningFixture(); defer { fixture.library.cleanup() }
+    let now = fixture.now, calendar = fixture.calendar
+    let library = LocalLibraryRepository(database: try LibraryDatabase(root: fixture.library.root, accountID: fixture.library.accountID), now: { now }, calendar: { calendar })
+    let first = Card(text: "First"), second = Card(text: "Second")
+    try await library.save(first); try await library.save(second); try await fixture.enable()
+    var firstRule = CardReturnSettings(cardID: first.id); firstRule.minutes = [720]
+    try await fixture.returns.saveCardSettings(firstRule, now: now, calendar: calendar)
+    var card = try #require(await library.card(id: first.id))
+    if mode == "disabled" { card.allowsReturns = false }
+    if mode == "hidden" { card.isHidden = true }
+    if mode == "trashed" { card.deletedAt = now }
+    try await library.save(card)
+    var secondRule = CardReturnSettings(cardID: second.id); secondRule.minutes = [720]
+    try await fixture.returns.saveCardSettings(secondRule, now: now, calendar: calendar)
+    let original = try await fixture.returns.replan(now: now, calendar: calendar, authorized: true)
+    card = try #require(await library.card(id: first.id)); card.allowsReturns = true; card.isHidden = false; card.deletedAt = nil
+    await #expect(throws: ReturnError.conflictingExplicitTimes) { try await library.save(card) }
+    let unchanged = try await fixture.returns.currentPlan(now: now, calendar: calendar)
+    #expect(unchanged.entries.map(\.decision) == original.entries.map(\.decision))
+    let stored = try #require(await library.card(id: first.id))
+    #expect(!stored.allowsReturns || stored.isHidden || stored.deletedAt != nil)
+}

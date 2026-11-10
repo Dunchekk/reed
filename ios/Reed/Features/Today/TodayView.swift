@@ -14,7 +14,7 @@ struct TodayView: View {
         ScrollView {
             VStack(alignment: .leading, spacing: 24) {
                 Text("Reed / Сегодня").reedFont(.display)
-                Text("Ваши сохранённые тексты.\nПлан на \(Date().formatted(date: .numeric, time: .omitted)).").reedFont(.body)
+                Text("Ваши сохранённые тексты.\nПлан на \(ReedDatePresentation.date(Date())).").reedFont(.body)
                 if context.returnCoordinator.isRefreshing { ProgressView("Обновляем план…") }
                 if let actionError { Text(actionError).foregroundStyle(.red) }
                 if let error = context.returnCoordinator.errorMessage {
@@ -52,11 +52,11 @@ struct TodayView: View {
                 HStack(spacing: 8) {
                     PasteButton(payloadType: String.self) { values in if let value = values.first { add(.text, value) } }
                         .labelStyle(.iconOnly).frame(minWidth: 44, minHeight: 56).accessibilityLabel("Добавить из буфера")
-                    Button { add(.camera, "") } label: { Image(systemName: "camera").frame(width: 44, height: 56).reedField() }.accessibilityLabel("Снять страницу")
-                    Button("Добавить карточку") { add(.text, "") }.buttonStyle(ReedPrimaryButtonStyle())
+                    Button { add(.camera, "") } label: { Image(systemName: "camera").frame(width: 44, height: 64).overlay(RoundedRectangle(cornerRadius: ReedTheme.radius).stroke(ReedTheme.foreground, lineWidth: ReedTheme.border)) }.accessibilityLabel("Снять страницу")
+                    Button { add(.text, "") } label: { Text("Добавить карточку").frame(height: 64) }.buttonStyle(ReedPrimaryButtonStyle())
                 }
                 if let until = context.returnCoordinator.report.until {
-                    Text("Уведомления в очереди до \(until.formatted(date: .abbreviated, time: .shortened)). Открывайте Reed, чтобы продлевать план.")
+                    Text("Уведомления в очереди до \(ReedDatePresentation.dateTime(until)). Открывайте Reed, чтобы продлевать план.")
                         .reedFont(.metadata).foregroundStyle(ReedTheme.secondary)
                 }
             }.padding(ReedTheme.inset)

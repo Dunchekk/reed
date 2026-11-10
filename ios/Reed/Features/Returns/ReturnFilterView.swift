@@ -22,7 +22,7 @@ struct ReturnFilterView: View {
                 ForEach(catalog.authors) { author in Toggle(author.name, isOn: membership(author.id, in: $filter.authors)) }
             }
             Section("Слова: начало слова, е = ё") {
-                TextField("Слова через пробел", text: $filter.words, axis: .vertical)
+                TextField("Слова через пробел", text: $filter.words, axis: .vertical).accessibilityIdentifier("return.filter.words")
                 modePicker("Совпадение слов", mode: $filter.wordMode)
             }
             Section("Когда добавлена карточка") {

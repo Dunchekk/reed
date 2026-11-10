@@ -31,9 +31,11 @@ public actor NotificationReconciler {
                               repository: any ReturnDeliveryRepository) async throws -> NotificationQueueReport {
         let desired = plan.entries.filter { $0.card != nil && $0.slot.date > now && $0.state != .cancelled }.prefix(48)
             .map { CardNotification(accountID: accountID, entry: $0) }
-        let pending = await queue.pending(), ids = Set(desired.map(\.id))
+        let pending = await queue.pending()
+        let revisions = Dictionary(uniqueKeysWithValues: desired.map { ($0.id, $0.entry.revision) })
         try Task.checkCancellation()
-        try await queue.remove(ids: pending.filter { !ids.contains($0.id) }.map(\.id))
+        // A failed replacement must never leave a now-ineligible card's old text scheduled.
+        try await queue.remove(ids: pending.filter { revisions[$0.id] == nil || revisions[$0.id] != $0.revision }.map(\.id))
         let existing = Dictionary(pending.map { ($0.id, $0.revision) }, uniquingKeysWith: { first, _ in first })
         var confirmed: [Date] = [], failures = 0
         for request in desired {

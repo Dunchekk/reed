@@ -42,7 +42,7 @@ targets:
         INFOPLIST_KEY_UISupportedInterfaceOrientations: UIInterfaceOrientationPortrait
     scheme:
       gatherCoverageData: true
-      testTargets: [ReedUITests]
+      testTargets: [ReedTests, ReedUITests]
   ReedUITests:
     type: bundle.ui-testing
     platform: iOS
@@ -55,3 +55,21 @@ targets:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: dev.dunchekk.reed.uitests
         GENERATE_INFOPLIST_FILE: YES
+  ReedTests:
+    type: bundle.unit-test
+    platform: iOS
+    sources:
+      - path: ReedTests
+        excludes: ["README.md"]
+    dependencies:
+      - target: Reed
+      - package: ReedCore
+        product: ReedDomain
+      - package: ReedCore
+        product: ReedApplication
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: dev.dunchekk.reed.tests
+        GENERATE_INFOPLIST_FILE: YES
+        TEST_HOST: "$(BUILT_PRODUCTS_DIR)/Reed.app/Reed"
+        BUNDLE_LOADER: "$(TEST_HOST)"

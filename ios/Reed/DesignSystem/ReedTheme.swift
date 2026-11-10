@@ -62,7 +62,8 @@ struct ReedPrimaryButtonStyle: ButtonStyle {
 }
 
 func libraryErrorMessage(_ error: any Error) -> String {
-    switch error as? LibraryError {
+    if error is ReturnError { return returnErrorMessage(error) }
+    return switch error as? LibraryError {
     case .emptyText: "Добавьте текст карточки."
     case .emptyMetadata: "Название источника, папки или тега не может быть пустым."
     case .conflict: "Карточка уже изменилась. Откройте её заново, чтобы сохранить правки."

@@ -43,7 +43,7 @@ struct ReturnSettingsView: View {
             }
             Section("Локальный план") {
                 Text("До 7 дней вперёд и не более 48 уведомлений. Открывайте приложение для продления. iOS сама определяет фактический момент показа.").reedFont(.caption)
-                if let until = context.returnCoordinator.report.until { Text("В очереди до \(until.formatted(date: .abbreviated, time: .shortened))") }
+                if let until = context.returnCoordinator.report.until { Text("В очереди до \(ReedDatePresentation.dateTime(until))") }
                 if context.returnCoordinator.permission == .denied { Link("Разрешить уведомления в iOS", destination: URL(string: UIApplication.openSettingsURLString)!) }
                 Button("Обновить план") { context.returnCoordinator.refresh() }
                 if let error = context.returnCoordinator.errorMessage { Text(error).foregroundStyle(.red) }
@@ -54,7 +54,7 @@ struct ReturnSettingsView: View {
             Button("Вернуть значения по умолчанию") { settings = ReturnSettings() }
         }.disabled(saving)
         .navigationTitle("Возвращения").navigationBarTitleDisplayMode(.inline)
-        .task { await load() }
+        .task { if !loaded { await load() } }
     }
     private func load() async {
         do { settings = try await context.returns.settings(); catalog = try await context.repository.catalog(); loaded = true; errorMessage = nil }

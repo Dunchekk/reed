@@ -45,6 +45,17 @@
             parallelizable = "NO">
             <BuildableReference
                BuildableIdentifier = "primary"
+               BlueprintIdentifier = "88FDD09A982689D7D051154B"
+               BuildableName = "ReedTests.xctest"
+               BlueprintName = "ReedTests"
+               ReferencedContainer = "container:Reed.xcodeproj">
+            </BuildableReference>
+         </TestableReference>
+         <TestableReference
+            skipped = "NO"
+            parallelizable = "NO">
+            <BuildableReference
+               BuildableIdentifier = "primary"
                BlueprintIdentifier = "42BD3A6CD806D2E92BF8ED6E"
                BuildableName = "ReedUITests.xctest"
                BlueprintName = "ReedUITests"

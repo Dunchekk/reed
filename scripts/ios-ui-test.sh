@@ -5,6 +5,5 @@ if [[ -z "$simulator_id" ]]; then
   echo 'Нет установленного iPhone Simulator runtime. UI-тест требует доступного симулятора.' >&2
   exit 1
 fi
-xcrun simctl boot "$simulator_id" || true
 xcrun simctl bootstatus "$simulator_id" -b
-xcodebuild -project ios/Reed.xcodeproj -scheme Reed -destination "platform=iOS Simulator,id=$simulator_id" -derivedDataPath .local/DerivedData -resultBundlePath .local/UITests.xcresult CODE_SIGNING_ALLOWED=NO test
+xcodebuild -project ios/Reed.xcodeproj -scheme Reed -destination "platform=iOS Simulator,id=$simulator_id" -derivedDataPath .local/DerivedData -resultBundlePath .local/UITests.xcresult -parallel-testing-enabled NO CODE_SIGNING_ALLOWED=NO test

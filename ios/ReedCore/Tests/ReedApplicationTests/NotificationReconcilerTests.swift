@@ -57,3 +57,17 @@ private func entry(_ index: Int, now: Date) -> PlannedReturn {
     #expect(await queue.pending().isEmpty)
     await #expect(throws: CancellationError.self) { try await reconciler.reconcile(plan, now: now) }
 }
+
+@Test func failedRevisionReplacementCannotLeaveTheOldCardScheduled() async throws {
+    let now = Date(), queue = FakeQueue(), delivery = FakeDelivery()
+    let reconciler = NotificationReconciler(queue: queue, repository: delivery, accountID: UUID())
+    let old = entry(0, now: now)
+    _ = try await reconciler.reconcile(ReturnPlan(entries: [old], horizon: nil), now: now)
+    let replacement = PlannedReturn(slot: old.slot, decision: old.decision, card: old.card, state: .planned, revision: UUID())
+    await queue.configure(failures: 1)
+    let result = try await reconciler.reconcile(ReturnPlan(entries: [replacement], horizon: nil), now: now)
+    #expect(result.failures == 1)
+    #expect(await queue.pending().isEmpty)
+    _ = try await reconciler.reconcile(ReturnPlan(entries: [replacement], horizon: nil), now: now)
+    #expect(await queue.pending().first?.revision == replacement.revision)
+}

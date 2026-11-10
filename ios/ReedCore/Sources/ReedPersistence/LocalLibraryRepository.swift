@@ -5,7 +5,12 @@ import ReedApplication
 
 public final class LocalLibraryRepository: Sendable {
     let database: LibraryDatabase
-    public init(database: LibraryDatabase) { self.database = database }
+    private let now: @Sendable () -> Date
+    private let calendar: @Sendable () -> Calendar
+    public init(database: LibraryDatabase, now: @escaping @Sendable () -> Date = { Date() },
+                calendar: @escaping @Sendable () -> Calendar = { .current }) {
+        self.database = database; self.now = now; self.calendar = calendar
+    }
 
     public func card(id: UUID) async throws -> Card? {
         try await database.writer.read { db in
@@ -16,8 +21,9 @@ public final class LocalLibraryRepository: Sendable {
 
     public func save(_ card: Card) async throws {
         try card.validate()
+        let operationDate = now(), operationCalendar = calendar()
         try await database.writer.write { db in
-            let existing = try Row.fetchOne(db, sql: "SELECT version, created_at FROM cards WHERE id = ?", arguments: [card.id.uuidString])
+            let existing = try Row.fetchOne(db, sql: "SELECT version, created_at, is_hidden, deleted_at, allows_returns FROM cards WHERE id = ?", arguments: [card.id.uuidString])
             if let existing {
                 guard card.version == existing["version"] else { throw LibraryError.conflict }
             } else if card.version != 0 { throw LibraryError.notFound }
@@ -64,6 +70,12 @@ public final class LocalLibraryRepository: Sendable {
                 }
             }
             for id in affected { try Self.reindex(id, db: db) }
+            if let existing {
+                let wasEligible = !(existing["is_hidden"] as Bool) && (existing["deleted_at"] as Double?) == nil && (existing["allows_returns"] as Bool)
+                if !wasEligible && !card.isHidden && card.deletedAt == nil && card.allowsReturns {
+                    try LocalReturnRepository.validateCurrentSchedules(db, now: operationDate, calendar: operationCalendar)
+                }
+            }
             try Self.bumpRevision(db)
         }
     }

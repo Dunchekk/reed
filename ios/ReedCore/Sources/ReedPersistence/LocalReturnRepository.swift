@@ -36,6 +36,9 @@ public final class LocalReturnRepository: ReturnRepository {
         try Data.fetchAll(db, sql: "SELECT cr.value FROM card_returns cr JOIN cards c ON c.id=cr.card_id WHERE c.deleted_at IS NULL AND c.is_hidden=0 AND c.allows_returns=1")
             .map { try JSONDecoder().decode(CardReturnSettings.self, from: $0) }
     }
+    static func validateCurrentSchedules(_ db: Database, now: Date, calendar: Calendar) throws {
+        try validate(settings(db), db: db, explicit: individualSettings(db), now: now, calendar: calendar)
+    }
     private static func validate(_ settings: ReturnSettings, db: Database, explicit: [CardReturnSettings], now: Date, calendar: Calendar) throws {
         var settings = settings; settings.enabled = true; settings.notificationsEnabled = true
         let past = try Double.fetchAll(db, sql: "SELECT scheduled_at FROM return_slots WHERE scheduled_at<=? AND state!='cancelled' AND card_id IS NOT NULL", arguments: [now.timeIntervalSince1970]).map(Date.init(timeIntervalSince1970:))

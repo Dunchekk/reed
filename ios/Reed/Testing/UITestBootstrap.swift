@@ -21,6 +21,7 @@ enum UITestBootstrap {
         }
         var settings = ReturnSettings(); settings.enabled = true; settings.notificationsEnabled = true
         try await context.returns.saveSettings(settings, now: Date(), calendar: .current)
+        _ = try await context.returns.replan(now: Calendar.current.startOfDay(for: Date()), calendar: .current, authorized: true)
     }
 }
 struct UITestSessionStore: SessionStore {
