@@ -14,7 +14,7 @@ public final class LocalReturnRepository: ReturnRepository {
     public func saveSettings(_ settings: ReturnSettings, now: Date, calendar: Calendar) async throws {
         try settings.validate()
         try await database.writer.write { db in
-            try Self.validate(settings, explicit: Self.individualSettings(db), now: now, calendar: calendar)
+            try Self.validate(settings, db: db, explicit: Self.individualSettings(db), now: now, calendar: calendar)
             try db.execute(sql: "INSERT INTO preferences VALUES ('returns', ?) ON CONFLICT(key) DO UPDATE SET value=excluded.value", arguments: [try JSONEncoder().encode(settings)])
         }
     }
@@ -28,7 +28,7 @@ public final class LocalReturnRepository: ReturnRepository {
         try settings.validate()
         try await database.writer.write { db in
             let rules = try Self.individualSettings(db).filter { $0.cardID != settings.cardID } + [settings]
-            try Self.validate(Self.settings(db), explicit: rules, now: now, calendar: calendar)
+            try Self.validate(Self.settings(db), db: db, explicit: rules, now: now, calendar: calendar)
             try db.execute(sql: "INSERT INTO card_returns VALUES (?, ?) ON CONFLICT(card_id) DO UPDATE SET value=excluded.value", arguments: [settings.cardID.uuidString, try JSONEncoder().encode(settings)])
         }
     }
@@ -36,13 +36,20 @@ public final class LocalReturnRepository: ReturnRepository {
         try Data.fetchAll(db, sql: "SELECT cr.value FROM card_returns cr JOIN cards c ON c.id=cr.card_id WHERE c.deleted_at IS NULL AND c.is_hidden=0 AND c.allows_returns=1")
             .map { try JSONDecoder().decode(CardReturnSettings.self, from: $0) }
     }
-    private static func validate(_ settings: ReturnSettings, explicit: [CardReturnSettings], now: Date, calendar: Calendar) throws {
+    private static func validate(_ settings: ReturnSettings, db: Database, explicit: [CardReturnSettings], now: Date, calendar: Calendar) throws {
         var settings = settings; settings.enabled = true; settings.notificationsEnabled = true
+        let past = try Double.fetchAll(db, sql: "SELECT scheduled_at FROM return_slots WHERE scheduled_at<=? AND state!='cancelled' AND card_id IS NOT NULL", arguments: [now.timeIntervalSince1970]).map(Date.init(timeIntervalSince1970:))
         var previous: Date?
         // Eight days also validates the boundary between this week and the next.
         for offset in 0..<8 {
             guard let day = calendar.date(byAdding: .day, value: offset, to: calendar.startOfDay(for: now)) else { continue }
             let slots = try SlotPlanner.slots(day: day, seed: 0, settings: settings, explicit: explicit, calendar: calendar)
+            let futureAppointments = slots.filter { $0.explicitCardID != nil && $0.date > now }
+            let remaining = max(0, settings.dailyLimit - past.filter { calendar.isDate($0, inSameDayAs: day) }.count)
+            guard futureAppointments.count <= remaining else { throw ReturnError.tooManyExplicitTimes }
+            for slot in futureAppointments {
+                if past.contains(where: { abs($0.timeIntervalSince(slot.date)) < Double(settings.minimumIntervalMinutes * 60) }) { throw ReturnError.conflictingExplicitTimes }
+            }
             for slot in slots where slot.explicitCardID != nil {
                 if let previous, slot.date.timeIntervalSince(previous) < Double(settings.minimumIntervalMinutes * 60) { throw ReturnError.conflictingExplicitTimes }
                 previous = slot.date

@@ -59,7 +59,7 @@ public enum SlotPlanner {
                 return left == right ? $0 < $1 : left < right
             }
             if let time = minutes.lazy.compactMap({ date($0) }).first(where: { time in chosen.allSatisfy { abs($0.date.timeIntervalSince(time)) >= interval } }) {
-                chosen.append(ReturnTimeSlot(id: "\(key).a.\(index)", date: time))
+                chosen.append(ReturnTimeSlot(id: "\(key).a.\(index).\(Int(time.timeIntervalSince1970))", date: time))
             }
         }
         return chosen.sorted { $0.date == $1.date ? $0.id < $1.id : $0.date < $1.date }

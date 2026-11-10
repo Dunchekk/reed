@@ -66,3 +66,32 @@ private struct PlanningFixture {
     let plan = try await fixture.returns.replan(now: fixture.now, calendar: fixture.calendar, authorized: true)
     #expect(plan.entries.filter { $0.decision.reason == .explicit }.count == 7)
 }
+
+@Test func changingWindowsMiddayDoesNotResetTheDailyQuota() async throws {
+    let fixture = try PlanningFixture(); defer { fixture.library.cleanup() }
+    for index in 0..<20 { try await fixture.library.repository.save(Card(text: "Quota \(index)", createdAt: fixture.now.addingTimeInterval(-86400))) }
+    try await fixture.enable()
+    let initial = try await fixture.returns.replan(now: fixture.now, calendar: fixture.calendar, authorized: true)
+    let today = initial.entries.filter { fixture.calendar.isDate($0.slot.date, inSameDayAs: fixture.now) }
+    let afterSecond = today[1].slot.date.addingTimeInterval(1)
+    var settings = try await fixture.returns.settings(); settings.firstMinute = 1080; settings.lastMinute = 1380
+    try await fixture.returns.saveSettings(settings, now: afterSecond, calendar: fixture.calendar)
+    let changed = try await fixture.returns.replan(now: afterSecond, calendar: fixture.calendar, authorized: true)
+    #expect(changed.entries.filter { fixture.calendar.isDate($0.slot.date, inSameDayAs: fixture.now) && $0.card != nil }.count == 3)
+}
+
+@Test func nextDayExplicitAppointmentWinsOverLateAutomaticSlot() async throws {
+    let fixture = try PlanningFixture(); defer { fixture.library.cleanup() }
+    let explicitCard = Card(text: "Early appointment")
+    try await fixture.library.repository.save(explicitCard)
+    for index in 0..<20 { try await fixture.library.repository.save(Card(text: "Automatic \(index)")) }
+    var settings = ReturnSettings(); settings.enabled = true; settings.notificationsEnabled = true
+    settings.firstMinute = 1410; settings.lastMinute = 1410; settings.dailyLimit = 1; settings.jitterMinutes = 0
+    try await fixture.returns.saveSettings(settings, now: fixture.now, calendar: fixture.calendar)
+    var rule = CardReturnSettings(cardID: explicitCard.id); rule.minutes = [0]; rule.weekdays = [2]
+    try await fixture.returns.saveCardSettings(rule, now: fixture.now, calendar: fixture.calendar)
+    let plan = try await fixture.returns.replan(now: fixture.now, calendar: fixture.calendar, authorized: true)
+    let appointment = try #require(plan.entries.first { $0.decision.reason == .explicit })
+    #expect(fixture.calendar.component(.hour, from: appointment.slot.date) == 0)
+    #expect(plan.entries.filter { $0.card != nil && $0.id != appointment.id }.allSatisfy { abs($0.slot.date.timeIntervalSince(appointment.slot.date)) >= 3600 })
+}

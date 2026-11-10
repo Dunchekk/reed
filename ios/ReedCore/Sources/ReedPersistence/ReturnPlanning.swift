@@ -15,6 +15,8 @@ extension LocalReturnRepository {
             let eligibleIDs = Set(candidates.filter { ReturnPolicy.admits($0, settings: settings, explicit: true) }.map(\.id))
             let individual = try Self.individualSettings(db).filter { eligibleIDs.contains($0.cardID) }
             let libraryRevision = try Int64.fetchOne(db, sql: "SELECT revision FROM library_state WHERE id=1") ?? 0
+            let past = try Row.fetchAll(db, sql: "SELECT card_id,scheduled_at,automatic_ordinal FROM return_slots WHERE scheduled_at<=? AND state!='cancelled' AND card_id IS NOT NULL", arguments: [now.timeIntervalSince1970])
+            let pastTimes = past.map { Date(timeIntervalSince1970: $0["scheduled_at"]) }
             var slots: [ReturnTimeSlot] = []
             for offset in 0..<7 {
                 guard let day = calendar.date(byAdding: .day, value: offset, to: calendar.startOfDay(for: now)) else { continue }
@@ -25,11 +27,17 @@ extension LocalReturnRepository {
                     seed = UInt64.random(in: 0...UInt64.max)
                     try db.execute(sql: "INSERT INTO return_days VALUES (?, ?)", arguments: [key, String(seed)])
                 }
-                slots += try SlotPlanner.slots(day: day, seed: seed, settings: settings, explicit: individual, calendar: calendar).filter { $0.date > now }
+                let generated = try SlotPlanner.slots(day: day, seed: seed, settings: settings, explicit: individual, calendar: calendar).filter { $0.date > now }
+                let remaining = max(0, settings.dailyLimit - pastTimes.filter { calendar.isDate($0, inSameDayAs: day) }.count)
+                let appointments = generated.filter { $0.explicitCardID != nil }
+                guard appointments.count <= remaining else { throw ReturnError.tooManyExplicitTimes }
+                let automatic = generated.filter { $0.explicitCardID == nil }.prefix(remaining - appointments.count)
+                slots += (appointments + automatic).sorted { $0.date < $1.date }
             }
             // Leave space below the system queue ceiling and expose the actual shorter horizon.
+            let appointmentDates = slots.filter { $0.explicitCardID != nil }.map(\.date)
+            slots.removeAll { slot in slot.explicitCardID == nil && appointmentDates.contains { abs($0.timeIntervalSince(slot.date)) < Double(settings.minimumIntervalMinutes * 60) } }
             slots = Array(slots.prefix(48))
-            let past = try Row.fetchAll(db, sql: "SELECT card_id,scheduled_at,automatic_ordinal FROM return_slots WHERE scheduled_at<=? AND state!='cancelled' AND card_id IS NOT NULL", arguments: [now.timeIntervalSince1970])
             var reservations = try past.map { ReturnReservation(cardID: try LocalLibraryRepository.uuid($0["card_id"]), date: Date(timeIntervalSince1970: $0["scheduled_at"])) }
             reservations += slots.compactMap { slot in slot.explicitCardID.map { ReturnReservation(cardID: $0, date: slot.date) } }
             var ordinal = past.compactMap { $0["automatic_ordinal"] as Int? }.max() ?? 0
