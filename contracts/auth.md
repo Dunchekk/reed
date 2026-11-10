@@ -36,7 +36,8 @@ Errors have `{ "error": { "code": "...", "message": "...", "retryAt": "..." } }`
 
 OTP request success does not prove delivery. Verification proves the provider
 identity and maps it to a stable Reed account. Refresh rotates credentials when
-the provider does. Logout invalidates the session remotely when reachable; local
+the provider does. Logout revokes the provider refresh session when reachable;
+already issued provider access tokens may remain valid until their expiry. Local
 logout clears Keychain access and notifications even if the network is unavailable.
 An expired credential does not erase an already confirmed local library.
 
