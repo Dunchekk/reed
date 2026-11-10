@@ -1,0 +1,46 @@
+name: Checks
+on:
+  push:
+    branches: [main, reed/implementation]
+  pull_request:
+permissions:
+  contents: read
+concurrency:
+  group: checks-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  server:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_DB: reed_test
+          POSTGRES_USER: reed_test
+          POSTGRES_PASSWORD: test_only
+        ports: [5432:5432]
+        options: >-
+          --health-cmd "pg_isready -U reed_test -d reed_test"
+          --health-interval 5s --health-timeout 5s --health-retries 10
+    env:
+      TEST_DATABASE_URL: postgres://reed_test:test_only@localhost:5432/reed_test
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version-file: .node-version
+          cache: npm
+      - run: npm ci --ignore-scripts
+      - run: make server-check
+  ios:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v6
+      - run: brew install xcodegen
+        env:
+          HOMEBREW_NO_AUTO_UPDATE: "1"
+          HOMEBREW_NO_INSTALL_CLEANUP: "1"
+      - run: make swift-test
+      - run: make ios-build
+      - name: Check generated project is committed
+        run: git diff --exit-code -- ios/Reed.xcodeproj
