@@ -23,7 +23,29 @@ Docker Desktop не требуется. Версии npm и Swift dependencies �
 colima start reed --cpu 2 --memory 2 --disk 12 --mount none --ssh-config=false --activate=false
 ```
 
-Команды запуска и проверок добавляются вместе с соответствующим рабочим срезом.
+```sh
+npm ci
+docker --context colima-reed compose up -d --wait
+cp server/.env.example server/.env
+npm run db:migrate --workspace server
+npm run dev --workspace server
+```
+
+Проверки:
+
+```sh
+make swift-test
+make ios-build
+TEST_DATABASE_URL=postgres://reed_dev:reed_local_only@127.0.0.1:55432/reed_dev make server-check
+```
+
+PostgreSQL-тест пропускается, если `TEST_DATABASE_URL` не задан. Для полной
+проверки переменная обязательна; CI всегда запускает этот тест с настоящей БД.
+Данные тестовых аккаунтов откатываются транзакцией.
+
+Проект открывается через `ios/Reed.xcodeproj`; `ios/project.yml` — источник
+конфигурации проекта. После изменения списка файлов выполнить `make ios-project`.
+
 Файлы `.env`, локальные базы, сертификаты и снимки пользователей в Git не попадают.
 Тесты используют только синтетические данные.
 

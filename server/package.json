@@ -4,12 +4,20 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "db:migrate": "node --env-file-if-exists=.env src/database/migrate-command.ts",
     "dev": "node --env-file-if-exists=.env --watch src/index.ts",
     "start": "node dist/src/index.js",
     "build": "tsc",
     "typecheck": "tsc --noEmit",
     "test": "node --test test/*.test.ts"
   },
-  "dependencies": { "fastify": "5.12.8" },
-  "devDependencies": { "typescript": "7.0.2", "@types/node": "^26.0.0" }
+  "dependencies": {
+    "fastify": "5.12.8",
+    "pg": "8.23.1"
+  },
+  "devDependencies": {
+    "@types/node": "^26.0.0",
+    "@types/pg": "8.23.1",
+    "typescript": "7.0.2"
+  }
 }

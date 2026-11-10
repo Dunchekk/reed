@@ -1,4 +1,4 @@
-import Fastify from "fastify";
+import Fastify, { LogController } from "fastify";
 
 export function buildApp() {
   const app = Fastify({
@@ -9,7 +9,7 @@ export function buildApp() {
       // Request URLs and bodies can contain personal data; log safe lifecycle events only.
       serializers: { req: (request) => ({ method: request.method, id: request.id }) },
     },
-    disableRequestLogging: true,
+    logController: new LogController({ disableRequestLogging: true }),
   });
 
   app.get("/health", async () => ({ status: "ok" }));
