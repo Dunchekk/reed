@@ -1,0 +1,37 @@
+name: Reed
+options:
+  bundleIdPrefix: dev.dunchekk
+  deploymentTarget:
+    iOS: "17.0"
+  xcodeVersion: "26.0"
+packages:
+  ReedCore:
+    path: ReedCore
+settings:
+  base:
+    SWIFT_VERSION: "6.0"
+    SWIFT_STRICT_CONCURRENCY: complete
+    TARGETED_DEVICE_FAMILY: "1"
+    MARKETING_VERSION: "0.1.0"
+    CURRENT_PROJECT_VERSION: "1"
+targets:
+  Reed:
+    type: application
+    platform: iOS
+    sources: [Reed]
+    dependencies:
+      - package: ReedCore
+        product: ReedDomain
+      - package: ReedCore
+        product: ReedApplication
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: dev.dunchekk.reed
+        GENERATE_INFOPLIST_FILE: YES
+        INFOPLIST_KEY_CFBundleDisplayName: Reed
+        INFOPLIST_KEY_LSApplicationCategoryType: public.app-category.productivity
+        INFOPLIST_KEY_UILaunchScreen_Generation: YES
+        INFOPLIST_KEY_UIApplicationSceneManifest_Generation: YES
+        INFOPLIST_KEY_UISupportedInterfaceOrientations: UIInterfaceOrientationPortrait
+    scheme:
+      gatherCoverageData: true
