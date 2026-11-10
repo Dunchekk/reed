@@ -57,6 +57,9 @@ public final class LibraryDatabase: Sendable {
                 CREATE VIRTUAL TABLE card_search USING fts5(card_id UNINDEXED, document, tokenize = 'unicode61 remove_diacritics 0', prefix = '2 3 4');
                 """)
         }
+        migrator.registerMigration("002_attachments") { db in
+            try db.execute(sql: "ALTER TABLE cards ADD COLUMN attachment_id TEXT")
+        }
         return migrator
     }
 }
