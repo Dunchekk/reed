@@ -116,3 +116,21 @@ func cursorsPageEveryCardExactlyOnce(sort: ArchiveSort) async throws {
     #expect(try await library.repository.archive(query).cards.map(\.id) == [deleted.id])
     await #expect(throws: LibraryError.invalidCursor) { try await library.repository.archive(query, after: "invalid") }
 }
+
+@Test func searchKeysSurviveEditsAndDoNotLeakDeletedTextToNewCards() async throws {
+    let library = try TestLibrary(); defer { library.cleanup() }
+    let original = Card(text: "Устаревший текст")
+    try await library.repository.save(original)
+    var edited = try #require(await library.repository.card(id: original.id)); edited.text = "Обновлённый текст"
+    try await library.repository.save(edited)
+    var query = ArchiveQuery(); query.search = "устарев"
+    #expect(try await library.repository.archive(query).cards.isEmpty)
+    edited = try #require(await library.repository.card(id: original.id)); edited.deletedAt = Date(timeIntervalSince1970: 0)
+    try await library.repository.save(edited); _ = try await library.repository.purgeTrash(before: Date())
+    let fresh = Card(text: "Новая карточка")
+    try await library.repository.save(fresh)
+    query.search = "обновлен"
+    #expect(try await library.repository.archive(query).cards.isEmpty)
+    query.search = "новая"
+    #expect(try await library.repository.archive(query).cards.map(\.id) == [fresh.id])
+}

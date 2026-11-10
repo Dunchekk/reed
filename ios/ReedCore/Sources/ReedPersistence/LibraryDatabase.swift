@@ -81,6 +81,12 @@ public final class LibraryDatabase: Sendable {
                 CREATE INDEX return_slots_card_time ON return_slots(card_id, scheduled_at);
                 """)
         }
+        migrator.registerMigration("006_search_keys") { db in
+            try db.execute(sql: """
+                CREATE TABLE card_search_keys (search_id INTEGER PRIMARY KEY AUTOINCREMENT, card_id TEXT NOT NULL UNIQUE REFERENCES cards(id) ON DELETE CASCADE);
+                INSERT INTO card_search_keys(search_id,card_id) SELECT rowid,card_id FROM card_search;
+                """)
+        }
         return migrator
     }
 }

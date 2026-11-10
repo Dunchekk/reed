@@ -88,7 +88,7 @@ public final class LocalLibraryRepository: Sendable {
         try await database.writer.write { db in
             let ids = try String.fetchAll(db, sql: "SELECT id FROM cards WHERE deleted_at IS NOT NULL AND deleted_at <= ?", arguments: [date.timeIntervalSince1970])
             for id in ids {
-                try db.execute(sql: "DELETE FROM card_search WHERE card_id = ?", arguments: [id])
+                try db.execute(sql: "DELETE FROM card_search WHERE rowid=(SELECT search_id FROM card_search_keys WHERE card_id=?)", arguments: [id])
                 try db.execute(sql: "DELETE FROM cards WHERE id = ?", arguments: [id])
             }
             if !ids.isEmpty { try Self.bumpRevision(db) }
@@ -146,8 +146,14 @@ public final class LocalLibraryRepository: Sendable {
         guard let row = try Row.fetchOne(db, sql: "SELECT * FROM cards WHERE id=?", arguments: [id]) else { return }
         let card = try card(row, db: db)
         let document = TextNormalization.normalize([card.text, card.title, card.comment, card.source?.displayName ?? ""].joined(separator: " "))
-        try db.execute(sql: "DELETE FROM card_search WHERE card_id=?", arguments: [id])
-        try db.execute(sql: "INSERT INTO card_search(card_id, document) VALUES (?, ?)", arguments: [id, document])
+        let searchID: Int64
+        if let existing = try Int64.fetchOne(db, sql: "SELECT search_id FROM card_search_keys WHERE card_id=?", arguments: [id]) { searchID = existing }
+        else {
+            try db.execute(sql: "INSERT INTO card_search_keys(card_id) VALUES (?)", arguments: [id])
+            searchID = db.lastInsertedRowID
+        }
+        try db.execute(sql: "DELETE FROM card_search WHERE rowid=?", arguments: [searchID])
+        try db.execute(sql: "INSERT INTO card_search(rowid, card_id, document) VALUES (?, ?, ?)", arguments: [searchID, id, document])
     }
 
     private static func shuffleKey(_ id: UUID) -> Int64 {
