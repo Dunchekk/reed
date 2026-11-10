@@ -44,6 +44,7 @@ private struct LibraryTabView: View {
     let authentication: AuthenticationModel
     let context: LibraryContext
     @State private var path: [UUID] = []
+    @State private var showsEditor = false
 
     var body: some View {
         NavigationStack(path: $path) {
@@ -63,6 +64,15 @@ private struct LibraryTabView: View {
                         }
                     }.navigationTitle(tab.title)
                     .navigationDestination(for: UUID.self) { CardDetailView(context: context, cardID: $0) }
+                    .toolbar {
+                        if tab == .archive || tab == .today {
+                            ToolbarItem(placement: .topBarTrailing) {
+                                Button("Добавить", systemImage: "plus") { showsEditor = true }
+                                    .accessibilityIdentifier("library.add")
+                            }
+                        }
+                    }
         }
+        .sheet(isPresented: $showsEditor) { CardEditorView(context: context) }
     }
 }

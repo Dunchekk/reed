@@ -23,13 +23,17 @@
 		A252CA723E27FC496EC5AD9B /* ReedPersistence in Frameworks */ = {isa = PBXBuildFile; productRef = 4D74049788164097993B44CD /* ReedPersistence */; };
 		B5EAB05413D03EC0D4656705 /* AuthenticationModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2BCA768643C47B8840380E3F /* AuthenticationModel.swift */; };
 		B6F9B85F7B22DCE34FF4005F /* ArchiveFiltersView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7E478926F57605678FBD4C8C /* ArchiveFiltersView.swift */; };
+		CCC862FA3EFE9D720A5A15DB /* CardEditorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1D10516915064E4D7474CB1E /* CardEditorView.swift */; };
 		CCDCCD3366226DC289BE64E8 /* ReedTheme.swift in Sources */ = {isa = PBXBuildFile; fileRef = F2412C52FF430907A2183039 /* ReedTheme.swift */; };
+		CF7F4FFB14AECF78DCD3714F /* CardEditorModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 14A9A252493AF1944B124805 /* CardEditorModel.swift */; };
 		DCD8C0AF23910245B1BBD433 /* ReedDomain in Frameworks */ = {isa = PBXBuildFile; productRef = 9961AE4853F3B89C2A66FE04 /* ReedDomain */; };
 		F78AC1AA0DED65AF645D0A27 /* HTTPAuthenticationClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = CB9F2A086B1281DF6883650F /* HTTPAuthenticationClient.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		14A9A252493AF1944B124805 /* CardEditorModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CardEditorModel.swift; sourceTree = "<group>"; };
 		1B758DB0DF8F58964AD565B4 /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
+		1D10516915064E4D7474CB1E /* CardEditorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CardEditorView.swift; sourceTree = "<group>"; };
 		1E61FE6A3F9843744449B9FF /* ArchiveView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ArchiveView.swift; sourceTree = "<group>"; };
 		2BCA768643C47B8840380E3F /* AuthenticationModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthenticationModel.swift; sourceTree = "<group>"; };
 		321E2E043B1F508D5C2A9FFB /* LibraryHostView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LibraryHostView.swift; sourceTree = "<group>"; };
@@ -78,6 +82,7 @@
 				8E4B8F8E65DE7C0543092BB7 /* Archive */,
 				EA17D7477589429399C6A438 /* Auth */,
 				F1579959B3EE8CDD7FF3A894 /* CardDetail */,
+				A2E70DB97BA9CA6D5D520309 /* CardEditor */,
 			);
 			path = Features;
 			sourceTree = "<group>";
@@ -129,6 +134,15 @@
 				1E61FE6A3F9843744449B9FF /* ArchiveView.swift */,
 			);
 			path = Archive;
+			sourceTree = "<group>";
+		};
+		A2E70DB97BA9CA6D5D520309 /* CardEditor */ = {
+			isa = PBXGroup;
+			children = (
+				14A9A252493AF1944B124805 /* CardEditorModel.swift */,
+				1D10516915064E4D7474CB1E /* CardEditorView.swift */,
+			);
+			path = CardEditor;
 			sourceTree = "<group>";
 		};
 		B9A90BE21D0F5B7D244A090D /* Products */ = {
@@ -271,6 +285,8 @@
 				9DBB3486B76BAAAAA0434CA3 /* ArchiveView.swift in Sources */,
 				B5EAB05413D03EC0D4656705 /* AuthenticationModel.swift in Sources */,
 				371CA04BC4A71A8AB7767D9E /* CardDetailView.swift in Sources */,
+				CF7F4FFB14AECF78DCD3714F /* CardEditorModel.swift in Sources */,
+				CCC862FA3EFE9D720A5A15DB /* CardEditorView.swift in Sources */,
 				0FEF426EBECBBEBA52AE2268 /* CardPreview.swift in Sources */,
 				F78AC1AA0DED65AF645D0A27 /* HTTPAuthenticationClient.swift in Sources */,
 				49D99AD76297B6273347D925 /* KeychainSessionStore.swift in Sources */,
