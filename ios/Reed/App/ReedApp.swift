@@ -2,6 +2,7 @@ import SwiftUI
 
 @main
 struct ReedApp: App {
+    @UIApplicationDelegateAdaptor(ReedAppDelegate.self) private var appDelegate
     @State private var authentication: AuthenticationModel
 
     init() {

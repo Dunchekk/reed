@@ -59,15 +59,19 @@ struct CardDetailView: View {
         }
         .sheet(isPresented: $showsEditor) { if let card { CardEditorView(context: context, card: card) } }
         .task(id: context.revision) { await load() }
-        .task {
-            guard !recordedOpening else { return }
-            do { try await context.activity.recordOpening(cardID: cardID, origin: origin, now: Date()); recordedOpening = true }
-            catch { errorMessage = "Не удалось сохранить открытие в истории." }
-        }
+
     }
 
     private func load() async {
-        do { card = try await context.repository.card(id: cardID); errorMessage = nil }
+        do {
+            let loaded = try await context.repository.card(id: cardID)
+            card = origin == .notification && (loaded?.deletedAt != nil || loaded?.isHidden == true) ? nil : loaded
+            errorMessage = nil
+            if card != nil && !recordedOpening {
+                try await context.activity.recordOpening(cardID: cardID, origin: origin, now: Date())
+                recordedOpening = true
+            }
+        }
         catch { errorMessage = libraryErrorMessage(error) }
         isLoading = false
     }

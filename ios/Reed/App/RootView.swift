@@ -1,86 +1,66 @@
 import SwiftUI
 import ReedApplication
 
-enum AppTab: String, CaseIterable {
+private enum AppTab: String, CaseIterable {
     case archive, today, feed, settings
-
-    var title: String {
-        switch self {
-        case .archive: "Архив"
-        case .today: "Главная"
-        case .feed: "Лента"
-        case .settings: "Настройки"
-        }
-    }
-
-    var symbol: String {
-        switch self {
-        case .archive: "folder"
-        case .today: "house"
-        case .feed: "star"
-        case .settings: "gearshape"
-        }
-    }
+    var title: String { switch self { case .archive: "Архив"; case .today: "Главная"; case .feed: "Лента"; case .settings: "Настройки" } }
+    var symbol: String { switch self { case .archive: "folder"; case .today: "house"; case .feed: "star"; case .settings: "gearshape" } }
 }
+private struct CardDestination: Hashable { let id: UUID; var fromNotification = false }
+private struct EditorDraft: Identifiable { let id = UUID(); let input: CardInput; let text: String }
 
 struct RootView: View {
+    @Environment(\.scenePhase) private var scenePhase
     let authentication: AuthenticationModel
     let context: LibraryContext
     @State private var selectedTab = AppTab.today
+    @State private var paths: [AppTab: [CardDestination]] = [:]
+    @State private var editor: EditorDraft?
+    @State private var router = NotificationRouter.shared
+    @State private var routeError = false
 
     var body: some View {
         TabView(selection: $selectedTab) {
             ForEach(AppTab.allCases, id: \.self) { tab in
-                LibraryTabView(tab: tab, authentication: authentication, context: context)
-                .tabItem { Label(tab.title, systemImage: tab.symbol) }
-                .tag(tab)
+                NavigationStack(path: Binding(get: { paths[tab] ?? [] }, set: { paths[tab] = $0 })) {
+                    content(tab)
+                        .navigationTitle(tab == .today ? "" : tab.title)
+                        .navigationDestination(for: CardDestination.self) { destination in
+                            CardDetailView(context: context, cardID: destination.id, origin: destination.fromNotification ? .notification : .manual)
+                        }
+                        .toolbar {
+                            if tab == .archive || tab == .today {
+                                ToolbarItem(placement: .topBarTrailing) {
+                                    Button("Добавить", systemImage: "plus") { editor = EditorDraft(input: .text, text: "") }
+                                        .accessibilityIdentifier("library.add")
+                                }
+                            }
+                        }
+                }.tabItem { Label(tab.title, systemImage: tab.symbol) }.tag(tab)
             }
         }
-    }
-}
-
-private struct LibraryTabView: View {
-    let tab: AppTab
-    let authentication: AuthenticationModel
-    let context: LibraryContext
-    @State private var path: [UUID] = []
-    @State private var showsEditor = false
-
-    var body: some View {
-        NavigationStack(path: $path) {
-                    Group {
-                        if tab == .archive {
-                            ArchiveView(context: context, open: { path.append($0) })
-                        } else if tab == .feed {
-                            FeedView(context: context, open: { path.append($0) })
-                        } else if tab == .settings {
-                            Form {
-                                Section("Библиотека") {
-                                    NavigationLink("Возвращения") { ReturnSettingsView(context: context) }
-                                    NavigationLink("Активность") { ActivityView(context: context, open: { path.append($0) }) }
-                                    NavigationLink("Скрытые карточки") { ArchiveView(context: context, visibility: .hidden, open: { path.append($0) }).navigationTitle("Скрытые") }
-                                    NavigationLink("Корзина · 7 дней") { ArchiveView(context: context, visibility: .trash, open: { path.append($0) }).navigationTitle("Корзина") }
-                                }
-                                Section("Аккаунт") {
-                                    Text(authentication.account?.phone.value ?? "")
-                                    Button("Выйти", role: .destructive) { Task { await authentication.signOut() } }
-                                    if let error = authentication.errorMessage { Text(error).foregroundStyle(.red) }
-                                }
-                            }
-                        } else {
-                            ContentUnavailableView(tab.title, systemImage: tab.symbol)
-                        }
-                    }.navigationTitle(tab.title)
-                    .navigationDestination(for: UUID.self) { CardDetailView(context: context, cardID: $0) }
-                    .toolbar {
-                        if tab == .archive || tab == .today {
-                            ToolbarItem(placement: .topBarTrailing) {
-                                Button("Добавить", systemImage: "plus") { showsEditor = true }
-                                    .accessibilityIdentifier("library.add")
-                            }
-                        }
-                    }
+        .sheet(item: $editor) { draft in CardEditorView(context: context, initialText: draft.text, initialInput: draft.input) }
+        .task { context.returnCoordinator.refresh() }
+        .onChange(of: scenePhase) { _, phase in if phase == .active { context.returnCoordinator.refresh() } }
+        .onReceive(NotificationCenter.default.publisher(for: UIApplication.significantTimeChangeNotification)) { _ in context.returnCoordinator.refresh() }
+        .onChange(of: router.route, initial: true) { _, route in
+            guard let route else { return }
+            guard route.accountID == context.account.id else { routeError = true; return }
+            selectedTab = .today
+            paths[.today] = [CardDestination(id: route.cardID, fromNotification: true)]
+            router.route = nil
         }
-        .sheet(isPresented: $showsEditor) { CardEditorView(context: context) }
+        .alert("Другой аккаунт", isPresented: $routeError) {
+            Button("Понятно", role: .cancel) {}
+        } message: { Text("Это уведомление связано с другой библиотекой. Войдите в соответствующий аккаунт.") }
+    }
+    @ViewBuilder private func content(_ tab: AppTab) -> some View {
+        let open: (UUID) -> Void = { paths[tab, default: []].append(CardDestination(id: $0)) }
+        switch tab {
+        case .archive: ArchiveView(context: context, open: open)
+        case .today: TodayView(context: context, open: open, add: { editor = EditorDraft(input: $0, text: $1) })
+        case .feed: FeedView(context: context, open: open)
+        case .settings: SettingsView(context: context, authentication: authentication, open: open)
+        }
     }
 }

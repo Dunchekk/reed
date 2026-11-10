@@ -3,9 +3,12 @@ import PhotosUI
 import AVFoundation
 
 struct PhotoInputView: View {
+    let initialInput: CardInput
     let apply: (PhotoDraft) -> Void
     @Binding var isProcessing: Bool
     @State private var selection: PhotosPickerItem?
+    @State private var showsLibrary = false
+    @State private var started = false
     @State private var showsCamera = false
     @State private var errorMessage: String?
     @State private var work: Task<Void, Never>?
@@ -14,19 +17,16 @@ struct PhotoInputView: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
-            PhotosPicker(selection: $selection, matching: .images, preferredItemEncoding: .current) {
-                Label("Выбрать фотографию", systemImage: "photo")
-            }.disabled(isProcessing)
-            Button("Снять страницу", systemImage: "camera") {
-                Task {
-                    guard UIImagePickerController.isSourceTypeAvailable(.camera) else { errorMessage = "Камера недоступна на этом устройстве."; return }
-                    let allowed = await AVCaptureDevice.requestAccess(for: .video)
-                    if allowed { showsCamera = true }
-                    else { errorMessage = "Разрешите доступ к камере в настройках iOS или выберите фотографию." }
-                }
-            }.disabled(isProcessing)
+            Button("Выбрать фотографию", systemImage: "photo") { showsLibrary = true }.disabled(isProcessing)
+            Button("Снять страницу", systemImage: "camera") { Task { await openCamera() } }.disabled(isProcessing)
             if isProcessing { ProgressView("Распознаём на устройстве…") }
             if let errorMessage { Text(errorMessage).foregroundStyle(.red) }
+        }
+        .photosPicker(isPresented: $showsLibrary, selection: $selection, matching: .images, preferredItemEncoding: .current)
+        .task {
+            guard !started else { return }; started = true
+            if initialInput == .photo { showsLibrary = true }
+            else if initialInput == .camera { await openCamera() }
         }
         .onChange(of: selection) { _, item in
             guard let item else { return }
@@ -39,6 +39,13 @@ struct PhotoInputView: View {
             }.ignoresSafeArea()
         }
         .onDisappear { generation = UUID(); work?.cancel(); isProcessing = false }
+    }
+
+    private func openCamera() async {
+        guard UIImagePickerController.isSourceTypeAvailable(.camera) else { errorMessage = "Камера недоступна на этом устройстве."; return }
+        let allowed = await AVCaptureDevice.requestAccess(for: .video)
+        if allowed { showsCamera = true }
+        else { errorMessage = "Разрешите доступ к камере в настройках iOS или выберите фотографию." }
     }
 
     private func begin(load: @escaping @Sendable () async throws -> Data?) {

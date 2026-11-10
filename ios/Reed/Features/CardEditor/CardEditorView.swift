@@ -4,11 +4,12 @@ import ReedDomain
 struct CardEditorView: View {
     @Environment(\.dismiss) private var dismiss
     let context: LibraryContext
+    let initialInput: CardInput
     @State private var model: CardEditorModel
     @State private var confirmsDiscard = false
 
-    init(context: LibraryContext, card: Card? = nil, initialText: String = "") {
-        self.context = context
+    init(context: LibraryContext, card: Card? = nil, initialText: String = "", initialInput: CardInput = .text) {
+        self.context = context; self.initialInput = initialInput
         _model = State(initialValue: CardEditorModel(repository: context.repository, attachments: context.attachments, card: card, initialText: initialText))
     }
 
@@ -16,7 +17,7 @@ struct CardEditorView: View {
         NavigationStack {
             Form {
                 Section("Фото и распознавание") {
-                    PhotoInputView(apply: { draft in
+                    PhotoInputView(initialInput: initialInput, apply: { draft in
                         model.photo = draft
                         if !draft.recognizedText.isEmpty { model.text += (model.text.isEmpty ? "" : "\n\n") + draft.recognizedText }
                     }, isProcessing: $model.isProcessingPhoto)

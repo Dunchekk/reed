@@ -1,0 +1,43 @@
+import SwiftUI
+
+struct SettingsView: View {
+    let context: LibraryContext
+    let authentication: AuthenticationModel
+    let open: (UUID) -> Void
+    @State private var signingOut = false
+    @State private var errorMessage: String?
+    var body: some View {
+        Form {
+            Section("Библиотека") {
+                NavigationLink("Возвращения") { ReturnSettingsView(context: context) }
+                NavigationLink("Активность") { ActivityView(context: context, open: open) }
+                NavigationLink("Скрытые карточки") { ArchiveView(context: context, visibility: .hidden, open: open).navigationTitle("Скрытые") }
+                NavigationLink("Корзина · 7 дней") { ArchiveView(context: context, visibility: .trash, open: open).navigationTitle("Корзина") }
+            }
+            Section("Хранение") {
+                Label("На этом iPhone", systemImage: "iphone")
+                Text("Тексты и фотографии хранятся локально. Облачный перенос пока недоступен. Выход сохраняет библиотеку для повторного входа в тот же аккаунт.").reedFont(.caption)
+            }
+            Section("Аккаунт") {
+                Text(authentication.account?.phone.value ?? "")
+                if authentication.serverNeedsSignIn { Text("Серверная сессия требует обновления. Локальная библиотека доступна.").reedFont(.caption) }
+                Button("Выйти", role: .destructive) {
+                    signingOut = true
+                    Task {
+                        defer { signingOut = false }
+                        do {
+                            try await context.returnCoordinator.stop()
+                            await authentication.signOut()
+                            if authentication.account != nil { context.returnCoordinator.resume() }
+                        } catch { errorMessage = "Не удалось отменить уведомления. Повторите выход." }
+                    }
+                }.disabled(signingOut)
+                if let error = authentication.errorMessage ?? errorMessage { Text(error).foregroundStyle(.red) }
+            }
+            Section("О Reed") {
+                Text("Сохраняйте фрагменты, возвращайтесь к ним в своё время.")
+                Text("Версия 0.1 · Локальный прототип").reedFont(.caption).foregroundStyle(ReedTheme.secondary)
+            }
+        }
+    }
+}
