@@ -25,14 +25,32 @@ enum AppTab: String, CaseIterable {
 
 struct RootView: View {
     let authentication: AuthenticationModel
+    let context: LibraryContext
     @State private var selectedTab = AppTab.today
 
     var body: some View {
         TabView(selection: $selectedTab) {
             ForEach(AppTab.allCases, id: \.self) { tab in
-                NavigationStack {
+                LibraryTabView(tab: tab, authentication: authentication, context: context)
+                .tabItem { Label(tab.title, systemImage: tab.symbol) }
+                .tag(tab)
+            }
+        }
+    }
+}
+
+private struct LibraryTabView: View {
+    let tab: AppTab
+    let authentication: AuthenticationModel
+    let context: LibraryContext
+    @State private var path: [UUID] = []
+
+    var body: some View {
+        NavigationStack(path: $path) {
                     Group {
-                        if tab == .settings {
+                        if tab == .archive {
+                            ArchiveView(context: context, open: { path.append($0) })
+                        } else if tab == .settings {
                             Form {
                                 Section("Аккаунт") {
                                     Text(authentication.account?.phone.value ?? "")
@@ -44,10 +62,7 @@ struct RootView: View {
                             ContentUnavailableView(tab.title, systemImage: tab.symbol)
                         }
                     }.navigationTitle(tab.title)
-                }
-                .tabItem { Label(tab.title, systemImage: tab.symbol) }
-                .tag(tab)
-            }
+                    .navigationDestination(for: UUID.self) { CardDetailView(context: context, cardID: $0) }
         }
     }
 }

@@ -26,14 +26,16 @@ struct ReedApp: App {
                         Text(authentication.errorMessage ?? "Открываем Reed…")
                         if authentication.errorMessage != nil { Button("Повторить", action: authentication.restore) }
                     }.task { authentication.restore() }
-                } else if authentication.account != nil {
-                    RootView(authentication: authentication)
+                } else if let account = authentication.account {
+                    LibraryHostView(account: account, authentication: authentication).id(account.id)
                         .task { await authentication.refreshIfNeeded() }
                 } else {
                     SignInView(model: authentication)
                 }
             }
                 .preferredColorScheme(.dark)
+                .tint(ReedTheme.foreground)
+                .environment(\.locale, Locale(identifier: "ru_RU"))
         }
     }
 }

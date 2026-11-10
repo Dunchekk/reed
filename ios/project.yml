@@ -24,6 +24,8 @@ targets:
         product: ReedDomain
       - package: ReedCore
         product: ReedApplication
+      - package: ReedCore
+        product: ReedPersistence
     settings:
       base:
         REED_API_BASE_URL: ""

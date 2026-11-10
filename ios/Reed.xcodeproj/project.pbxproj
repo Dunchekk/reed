@@ -8,23 +8,44 @@
 
 /* Begin PBXBuildFile section */
 		00D72F29034CE30757D62D74 /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EFA614C462C236FF3B63048 /* RootView.swift */; };
+		0FEF426EBECBBEBA52AE2268 /* CardPreview.swift in Sources */ = {isa = PBXBuildFile; fileRef = AEB8D381B79D9702B0E7748D /* CardPreview.swift */; };
+		204EFA47B58B7FF6B7F22BD7 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 436AE5FA74AABD818FE7FE8C /* Assets.xcassets */; };
+		24536C6DD53B128559A57D36 /* LibraryContext.swift in Sources */ = {isa = PBXBuildFile; fileRef = C1EC736F24E97170F63BB42E /* LibraryContext.swift */; };
+		371CA04BC4A71A8AB7767D9E /* CardDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DCD55F5F7EEFE0009B1F4126 /* CardDetailView.swift */; };
 		49D99AD76297B6273347D925 /* KeychainSessionStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 96A8296BCC16155B37CB28FA /* KeychainSessionStore.swift */; };
+		6B3E4BB7A2B60B75F24B5396 /* README.md in Resources */ = {isa = PBXBuildFile; fileRef = 1B758DB0DF8F58964AD565B4 /* README.md */; };
 		6E52253F8D1160D00181CBFB /* ReedApplication in Frameworks */ = {isa = PBXBuildFile; productRef = 387F9F5DD3CABFE8AEB345F8 /* ReedApplication */; };
+		7A712B3E31711DAAA6E8C7B3 /* ArchiveModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65944AF392F5D88BDBAA8BFD /* ArchiveModel.swift */; };
 		7EFA7F87E2E2816E1BB480D6 /* SignInView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47D08843EC6229125741AF0C /* SignInView.swift */; };
 		8D09063F5BE1AD6B1CB9D73C /* ReedApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = B38E8F0B3C13C4EB1BD0D8C5 /* ReedApp.swift */; };
+		9D77A02AC470B52213CED707 /* LibraryHostView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 321E2E043B1F508D5C2A9FFB /* LibraryHostView.swift */; };
+		9DBB3486B76BAAAAA0434CA3 /* ArchiveView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1E61FE6A3F9843744449B9FF /* ArchiveView.swift */; };
+		A252CA723E27FC496EC5AD9B /* ReedPersistence in Frameworks */ = {isa = PBXBuildFile; productRef = 4D74049788164097993B44CD /* ReedPersistence */; };
 		B5EAB05413D03EC0D4656705 /* AuthenticationModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2BCA768643C47B8840380E3F /* AuthenticationModel.swift */; };
+		B6F9B85F7B22DCE34FF4005F /* ArchiveFiltersView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7E478926F57605678FBD4C8C /* ArchiveFiltersView.swift */; };
+		CCDCCD3366226DC289BE64E8 /* ReedTheme.swift in Sources */ = {isa = PBXBuildFile; fileRef = F2412C52FF430907A2183039 /* ReedTheme.swift */; };
 		DCD8C0AF23910245B1BBD433 /* ReedDomain in Frameworks */ = {isa = PBXBuildFile; productRef = 9961AE4853F3B89C2A66FE04 /* ReedDomain */; };
 		F78AC1AA0DED65AF645D0A27 /* HTTPAuthenticationClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = CB9F2A086B1281DF6883650F /* HTTPAuthenticationClient.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		1B758DB0DF8F58964AD565B4 /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
+		1E61FE6A3F9843744449B9FF /* ArchiveView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ArchiveView.swift; sourceTree = "<group>"; };
 		2BCA768643C47B8840380E3F /* AuthenticationModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthenticationModel.swift; sourceTree = "<group>"; };
+		321E2E043B1F508D5C2A9FFB /* LibraryHostView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LibraryHostView.swift; sourceTree = "<group>"; };
+		436AE5FA74AABD818FE7FE8C /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		47D08843EC6229125741AF0C /* SignInView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SignInView.swift; sourceTree = "<group>"; };
 		57BDD9551B3C13603DB45750 /* Reed.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = Reed.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		5EFA614C462C236FF3B63048 /* RootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootView.swift; sourceTree = "<group>"; };
+		65944AF392F5D88BDBAA8BFD /* ArchiveModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ArchiveModel.swift; sourceTree = "<group>"; };
+		7E478926F57605678FBD4C8C /* ArchiveFiltersView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ArchiveFiltersView.swift; sourceTree = "<group>"; };
 		96A8296BCC16155B37CB28FA /* KeychainSessionStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeychainSessionStore.swift; sourceTree = "<group>"; };
+		AEB8D381B79D9702B0E7748D /* CardPreview.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CardPreview.swift; sourceTree = "<group>"; };
 		B38E8F0B3C13C4EB1BD0D8C5 /* ReedApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReedApp.swift; sourceTree = "<group>"; };
+		C1EC736F24E97170F63BB42E /* LibraryContext.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LibraryContext.swift; sourceTree = "<group>"; };
 		CB9F2A086B1281DF6883650F /* HTTPAuthenticationClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HTTPAuthenticationClient.swift; sourceTree = "<group>"; };
+		DCD55F5F7EEFE0009B1F4126 /* CardDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CardDetailView.swift; sourceTree = "<group>"; };
+		F2412C52FF430907A2183039 /* ReedTheme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReedTheme.swift; sourceTree = "<group>"; };
 		FB2101A01407B9D46AE10AD8 /* ReedCore */ = {isa = PBXFileReference; lastKnownFileType = folder; name = ReedCore; path = ReedCore; sourceTree = SOURCE_ROOT; };
 /* End PBXFileReference section */
 
@@ -35,6 +56,7 @@
 			files = (
 				DCD8C0AF23910245B1BBD433 /* ReedDomain in Frameworks */,
 				6E52253F8D1160D00181CBFB /* ReedApplication in Frameworks */,
+				A252CA723E27FC496EC5AD9B /* ReedPersistence in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -53,17 +75,31 @@
 		3A26439587F2EA582917FB9A /* Features */ = {
 			isa = PBXGroup;
 			children = (
+				8E4B8F8E65DE7C0543092BB7 /* Archive */,
 				EA17D7477589429399C6A438 /* Auth */,
+				F1579959B3EE8CDD7FF3A894 /* CardDetail */,
 			);
 			path = Features;
+			sourceTree = "<group>";
+		};
+		604224FF37982421414A7229 /* DesignSystem */ = {
+			isa = PBXGroup;
+			children = (
+				AEB8D381B79D9702B0E7748D /* CardPreview.swift */,
+				1B758DB0DF8F58964AD565B4 /* README.md */,
+				F2412C52FF430907A2183039 /* ReedTheme.swift */,
+			);
+			path = DesignSystem;
 			sourceTree = "<group>";
 		};
 		692D385A005C6892DC70F979 /* Reed */ = {
 			isa = PBXGroup;
 			children = (
 				C7DDB43930BE233667EE3672 /* App */,
+				604224FF37982421414A7229 /* DesignSystem */,
 				3A26439587F2EA582917FB9A /* Features */,
 				33CB75AA19EA9DFE5B7640C4 /* Platform */,
+				BDBACB170438EF0CBCF98958 /* Resources */,
 			);
 			path = Reed;
 			sourceTree = "<group>";
@@ -85,6 +121,16 @@
 			);
 			sourceTree = "<group>";
 		};
+		8E4B8F8E65DE7C0543092BB7 /* Archive */ = {
+			isa = PBXGroup;
+			children = (
+				7E478926F57605678FBD4C8C /* ArchiveFiltersView.swift */,
+				65944AF392F5D88BDBAA8BFD /* ArchiveModel.swift */,
+				1E61FE6A3F9843744449B9FF /* ArchiveView.swift */,
+			);
+			path = Archive;
+			sourceTree = "<group>";
+		};
 		B9A90BE21D0F5B7D244A090D /* Products */ = {
 			isa = PBXGroup;
 			children = (
@@ -93,9 +139,19 @@
 			name = Products;
 			sourceTree = "<group>";
 		};
+		BDBACB170438EF0CBCF98958 /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				436AE5FA74AABD818FE7FE8C /* Assets.xcassets */,
+			);
+			path = Resources;
+			sourceTree = "<group>";
+		};
 		C7DDB43930BE233667EE3672 /* App */ = {
 			isa = PBXGroup;
 			children = (
+				C1EC736F24E97170F63BB42E /* LibraryContext.swift */,
+				321E2E043B1F508D5C2A9FFB /* LibraryHostView.swift */,
 				B38E8F0B3C13C4EB1BD0D8C5 /* ReedApp.swift */,
 				5EFA614C462C236FF3B63048 /* RootView.swift */,
 			);
@@ -127,6 +183,14 @@
 			path = Auth;
 			sourceTree = "<group>";
 		};
+		F1579959B3EE8CDD7FF3A894 /* CardDetail */ = {
+			isa = PBXGroup;
+			children = (
+				DCD55F5F7EEFE0009B1F4126 /* CardDetailView.swift */,
+			);
+			path = CardDetail;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -135,6 +199,7 @@
 			buildConfigurationList = C1886778FEE947675DA4C897 /* Build configuration list for PBXNativeTarget "Reed" */;
 			buildPhases = (
 				92216F7C3123D5FEF470D4AF /* Sources */,
+				219FBE95F9D716BD6624C045 /* Resources */,
 				7A2859E54FA255FF849F9031 /* Frameworks */,
 			);
 			buildRules = (
@@ -145,6 +210,7 @@
 			packageProductDependencies = (
 				9961AE4853F3B89C2A66FE04 /* ReedDomain */,
 				387F9F5DD3CABFE8AEB345F8 /* ReedApplication */,
+				4D74049788164097993B44CD /* ReedPersistence */,
 			);
 			productName = Reed;
 			productReference = 57BDD9551B3C13603DB45750 /* Reed.app */;
@@ -183,15 +249,35 @@
 		};
 /* End PBXProject section */
 
+/* Begin PBXResourcesBuildPhase section */
+		219FBE95F9D716BD6624C045 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				204EFA47B58B7FF6B7F22BD7 /* Assets.xcassets in Resources */,
+				6B3E4BB7A2B60B75F24B5396 /* README.md in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
 /* Begin PBXSourcesBuildPhase section */
 		92216F7C3123D5FEF470D4AF /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				B6F9B85F7B22DCE34FF4005F /* ArchiveFiltersView.swift in Sources */,
+				7A712B3E31711DAAA6E8C7B3 /* ArchiveModel.swift in Sources */,
+				9DBB3486B76BAAAAA0434CA3 /* ArchiveView.swift in Sources */,
 				B5EAB05413D03EC0D4656705 /* AuthenticationModel.swift in Sources */,
+				371CA04BC4A71A8AB7767D9E /* CardDetailView.swift in Sources */,
+				0FEF426EBECBBEBA52AE2268 /* CardPreview.swift in Sources */,
 				F78AC1AA0DED65AF645D0A27 /* HTTPAuthenticationClient.swift in Sources */,
 				49D99AD76297B6273347D925 /* KeychainSessionStore.swift in Sources */,
+				24536C6DD53B128559A57D36 /* LibraryContext.swift in Sources */,
+				9D77A02AC470B52213CED707 /* LibraryHostView.swift in Sources */,
 				8D09063F5BE1AD6B1CB9D73C /* ReedApp.swift in Sources */,
+				CCDCCD3366226DC289BE64E8 /* ReedTheme.swift in Sources */,
 				00D72F29034CE30757D62D74 /* RootView.swift in Sources */,
 				7EFA7F87E2E2816E1BB480D6 /* SignInView.swift in Sources */,
 			);
@@ -407,6 +493,10 @@
 		387F9F5DD3CABFE8AEB345F8 /* ReedApplication */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = ReedApplication;
+		};
+		4D74049788164097993B44CD /* ReedPersistence */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = ReedPersistence;
 		};
 		9961AE4853F3B89C2A66FE04 /* ReedDomain */ = {
 			isa = XCSwiftPackageProductDependency;
