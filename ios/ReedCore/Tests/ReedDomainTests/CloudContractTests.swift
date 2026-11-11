@@ -1,6 +1,7 @@
 import Foundation
 import Testing
 import ReedDomain
+import ReedApplication
 
 @Test func cloudCardReferencesSharedMetadataInsteadOfCopyingIt() throws {
     let card = Card(text:"Отрывок",source:Source(title:"Книга",authors:[Author(name:"Автор")]),tags:[Tag(name:"Тег")],attachmentIDs:[UUID(),UUID()])
@@ -21,4 +22,11 @@ import ReedDomain
     let data = try CloudCoding.encoder().encode(record)
     #expect(String(decoding:data,as:UTF8.self).contains("\"payload\":null"))
     #expect(try CloudCoding.decoder().decode(CloudRecord.self,from:data) == record)
+}
+
+@Test func cloudMutationDecodesTheSharedWireFixture() throws {
+    let root = URL(fileURLWithPath:#filePath).deletingLastPathComponent().deletingLastPathComponent().deletingLastPathComponent().deletingLastPathComponent().deletingLastPathComponent()
+    let mutation = try CloudCoding.decoder().decode(CloudMutation.self,from:Data(contentsOf:root.appendingPathComponent("contracts/fixtures/cloud-mutation.json")))
+    #expect(mutation.baseVersion == 3); #expect(mutation.kind == .tag)
+    #expect(try mutation.payload.decode(Tag.self).name == "Тема")
 }
