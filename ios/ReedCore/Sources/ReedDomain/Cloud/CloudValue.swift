@@ -24,7 +24,31 @@ public enum CloudValue: Codable, Equatable, Sendable {
         }
     }
     public static func encode<T: Encodable>(_ value: T) throws -> CloudValue {
-        try CloudCoding.decoder().decode(CloudValue.self, from: CloudCoding.encoder().encode(value))
+        try CloudCoding.decoder().decode(CloudValue.self, from: CloudCoding.encoder().encode(value)).normalized()
+    }
+    /// Normalize identifiers and set-valued arrays only; user text is never case-folded.
+    public func normalized(field: String? = nil) -> CloudValue {
+        let identifiers: Set<String> = ["id", "sourceID", "folderID", "cardID", "explicitCardID", "boostFolderID"]
+        let arrays: Set<String> = ["tagIDs", "attachmentIDs", "authorIDs", "tags", "authors", "folders"]
+        let unordered: Set<String> = ["tagIDs", "tags", "authors", "folders", "weekdays", "minutes"]
+        switch self {
+        case .string(let value) where field.map(identifiers.contains) == true || field.map(arrays.contains) == true:
+            return UUID(uuidString: value).map { .string($0.uuidString.lowercased()) } ?? self
+        case .array(let values):
+            let normalized = values.map { $0.normalized(field: field) }
+            if field.map(unordered.contains) == true {
+                return .array(normalized.sorted { left, right in
+                    switch (left, right) {
+                    case let (.string(a), .string(b)): a < b
+                    case let (.number(a), .number(b)): a < b
+                    default: false
+                    }
+                })
+            }
+            return .array(normalized)
+        case .object(let values): return .object(Dictionary(uniqueKeysWithValues: values.map { key, value in (key, value.normalized(field: key)) }))
+        default: return self
+        }
     }
     public func decode<T: Decodable>(_ type: T.Type) throws -> T {
         try CloudCoding.decoder().decode(type, from: CloudCoding.encoder().encode(self))
