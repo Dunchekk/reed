@@ -3,6 +3,34 @@ import Testing
 import ReedDomain
 import ReedPersistence
 
+@Test func capturePreferenceSurvivesReopeningAndIsAccountScoped() async throws {
+    let library = try TestLibrary()
+    defer { library.cleanup() }
+    let first = LocalCapturePreferencesRepository(database: try LibraryDatabase(root: library.root, accountID: library.accountID))
+    #expect(try await first.capturePreferences().savesPhotos)
+    try await first.setCapturePreferences(CapturePreferences(savesPhotos: false))
+    let reopened = LocalCapturePreferencesRepository(database: try LibraryDatabase(root: library.root, accountID: library.accountID))
+    #expect(try await !reopened.capturePreferences().savesPhotos)
+    let other = LocalCapturePreferencesRepository(database: try LibraryDatabase(root: library.root, accountID: UUID()))
+    #expect(try await other.capturePreferences().savesPhotos)
+}
+
+@Test func multiplePhotosKeepOrderAndRemovingOnePreservesText() async throws {
+    let library = try TestLibrary()
+    defer { library.cleanup() }
+    let first = UUID(), second = UUID()
+    let card = Card(text: "Сохраняем текст", attachmentIDs: [first, second])
+    try await library.repository.save(card)
+    var loaded = try #require(await library.repository.card(id: card.id))
+    #expect(loaded.attachmentIDs == [first, second])
+    loaded.attachmentIDs.removeFirst()
+    try await library.repository.save(loaded)
+    let saved = try #require(await library.repository.card(id: card.id))
+    #expect(saved.text == "Сохраняем текст")
+    #expect(saved.attachmentIDs == [second])
+    #expect(try await library.repository.attachmentIDs() == [second])
+}
+
 @Test func attachmentsRemainUntilTheirCardLeavesTrash() async throws {
     let library = try TestLibrary()
     defer { library.cleanup() }

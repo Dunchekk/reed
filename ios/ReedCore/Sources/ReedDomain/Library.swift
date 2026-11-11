@@ -46,19 +46,26 @@ public struct Card: Codable, Equatable, Sendable, Identifiable {
     public var isHidden: Bool
     public var deletedAt: Date?
     public var allowsReturns: Bool
-    public var attachmentID: UUID?
+    public var attachmentIDs: [UUID]
+    /// Compatibility for callers creating a card with one photo.
+    public var attachmentID: UUID? {
+        get { attachmentIDs.first }
+        set { attachmentIDs = newValue.map { [$0] } ?? [] }
+    }
     public let version: Int
 
     public init(id: UUID = UUID(), text: String, title: String = "", comment: String = "",
                 source: Source? = nil, page: String = "", tags: [Tag] = [], folder: Folder? = nil,
                 createdAt: Date = Date(), updatedAt: Date? = nil, isFavorite: Bool = false,
-                isHidden: Bool = false, deletedAt: Date? = nil, allowsReturns: Bool = true, version: Int = 0, attachmentID: UUID? = nil) {
+                isHidden: Bool = false, deletedAt: Date? = nil, allowsReturns: Bool = true, version: Int = 0,
+                attachmentID: UUID? = nil, attachmentIDs: [UUID] = []) {
         self.id = id; self.text = text; self.title = title; self.comment = comment
         self.source = source; self.page = page; self.tags = tags; self.folder = folder
         self.createdAt = createdAt; self.updatedAt = updatedAt ?? createdAt
         self.isFavorite = isFavorite; self.isHidden = isHidden
         self.deletedAt = deletedAt; self.allowsReturns = allowsReturns
-        self.version = version; self.attachmentID = attachmentID
+        self.version = version
+        self.attachmentIDs = attachmentIDs.isEmpty ? attachmentID.map { [$0] } ?? [] : attachmentIDs
     }
 
     public var displayTitle: String {
@@ -72,7 +79,8 @@ public struct Card: Codable, Equatable, Sendable, Identifiable {
         guard names.allSatisfy({ !$0.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty }) else {
             throw LibraryError.emptyMetadata
         }
-        guard Set(tags.map(\.id)).count == tags.count,
+        guard Set(attachmentIDs).count == attachmentIDs.count,
+              Set(tags.map(\.id)).count == tags.count,
               Set(source?.authors.map(\.id) ?? []).count == source?.authors.count ?? 0 else {
             throw LibraryError.duplicateRelationship
         }

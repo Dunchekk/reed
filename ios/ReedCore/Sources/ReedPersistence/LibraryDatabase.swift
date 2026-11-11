@@ -88,6 +88,17 @@ public final class LibraryDatabase: Sendable {
                 INSERT INTO card_search_keys(search_id,card_id) SELECT rowid,card_id FROM card_search;
                 """)
         }
+        migrator.registerMigration("007_multiple_attachments") { db in
+            try db.execute(sql: """
+                CREATE TABLE card_attachments (
+                    card_id TEXT NOT NULL REFERENCES cards(id) ON DELETE CASCADE,
+                    attachment_id TEXT NOT NULL, position INTEGER NOT NULL,
+                    PRIMARY KEY(card_id, attachment_id), UNIQUE(card_id, position)
+                );
+                INSERT INTO card_attachments SELECT id, attachment_id, 0 FROM cards WHERE attachment_id IS NOT NULL;
+                ALTER TABLE cards DROP COLUMN attachment_id;
+                """)
+        }
         return migrator
     }
 }

@@ -45,17 +45,21 @@ public final class LocalLibraryRepository: Sendable {
             let text = card.text.trimmingCharacters(in: .whitespacesAndNewlines)
             try db.execute(sql: """
                 INSERT INTO cards(id, text, title, comment, page, source_id, folder_id, created_at, updated_at,
-                    is_favorite, is_hidden, deleted_at, allows_returns, version, preview, sort_title, shuffle_key, attachment_id)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    is_favorite, is_hidden, deleted_at, allows_returns, version, preview, sort_title, shuffle_key)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 ON CONFLICT(id) DO UPDATE SET text=excluded.text, title=excluded.title, comment=excluded.comment,
                     page=excluded.page, source_id=excluded.source_id, folder_id=excluded.folder_id,
                     updated_at=excluded.updated_at, is_favorite=excluded.is_favorite, is_hidden=excluded.is_hidden,
                     deleted_at=excluded.deleted_at, allows_returns=excluded.allows_returns, version=excluded.version,
-                    preview=excluded.preview, sort_title=excluded.sort_title, attachment_id=excluded.attachment_id
+                    preview=excluded.preview, sort_title=excluded.sort_title
                 """, arguments: [card.id.uuidString, text, card.title, card.comment, card.page,
                     card.source?.id.uuidString, card.folder?.id.uuidString, createdAt, card.updatedAt.timeIntervalSince1970,
                     card.isFavorite, card.isHidden, card.deletedAt?.timeIntervalSince1970, card.allowsReturns,
-                    card.version + 1, String(text.prefix(360)), TextNormalization.normalize(card.displayTitle), Self.shuffleKey(card.id), card.attachmentID?.uuidString])
+                    card.version + 1, String(text.prefix(360)), TextNormalization.normalize(card.displayTitle), Self.shuffleKey(card.id)])
+            try db.execute(sql: "DELETE FROM card_attachments WHERE card_id=?", arguments: [card.id.uuidString])
+            for (position, id) in card.attachmentIDs.enumerated() {
+                try db.execute(sql: "INSERT INTO card_attachments VALUES (?,?,?)", arguments: [card.id.uuidString, id.uuidString, position])
+            }
             try db.execute(sql: "DELETE FROM card_tags WHERE card_id = ?", arguments: [card.id.uuidString])
             for tag in card.tags {
                 try db.execute(sql: "INSERT INTO tags(id, name) VALUES (?, ?) ON CONFLICT(id) DO UPDATE SET name=excluded.name", arguments: [tag.id.uuidString, tag.name])
@@ -82,7 +86,7 @@ public final class LocalLibraryRepository: Sendable {
 
     public func attachmentIDs() async throws -> Set<UUID> {
         try await database.writer.read { db in
-            Set(try String.fetchAll(db, sql: "SELECT attachment_id FROM cards WHERE attachment_id IS NOT NULL").map(Self.uuid))
+            Set(try String.fetchAll(db, sql: "SELECT attachment_id FROM card_attachments").map(Self.uuid))
         }
     }
 
@@ -140,7 +144,8 @@ public final class LocalLibraryRepository: Sendable {
             page: row["page"], tags: try tags(id, db: db), folder: folder,
             createdAt: Date(timeIntervalSince1970: row["created_at"]), updatedAt: Date(timeIntervalSince1970: row["updated_at"]),
             isFavorite: row["is_favorite"], isHidden: row["is_hidden"], deletedAt: deletedAt.map(Date.init(timeIntervalSince1970:)),
-            allowsReturns: row["allows_returns"], version: row["version"], attachmentID: try (row["attachment_id"] as String?).map(Self.uuid))
+            allowsReturns: row["allows_returns"], version: row["version"],
+            attachmentIDs: try String.fetchAll(db, sql: "SELECT attachment_id FROM card_attachments WHERE card_id=? ORDER BY position", arguments: [id]).map(Self.uuid))
     }
 
     private static func save(_ source: Source, db: Database) throws {

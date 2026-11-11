@@ -7,7 +7,7 @@ import ReedDomain
 @Test func populatedVersionFiveDatabaseUpgradesSearchKeysWithoutLosingDocuments() async throws {
     let root = FileManager.default.temporaryDirectory.appendingPathComponent("reed-migration-\(UUID())")
     defer { try? FileManager.default.removeItem(at: root) }
-    let account = UUID(), cardID = UUID(), now = Date()
+    let account = UUID(), cardID = UUID(), photo = UUID(), now = Date()
     let directory = root.appendingPathComponent(account.uuidString.lowercased())
     try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
     let old = try DatabaseQueue(path: directory.appendingPathComponent("library.sqlite").path)
@@ -19,9 +19,11 @@ import ReedDomain
             """, arguments: [cardID.uuidString,"Старый фрагмент",now.timeIntervalSince1970,now.timeIntervalSince1970,"Старый фрагмент","старый фрагмент"])
         // Old edits could give FTS a rowid unrelated to the cards table's rowid.
         try db.execute(sql: "INSERT INTO card_search(rowid,card_id,document) VALUES (91,?,?)", arguments: [cardID.uuidString,"старый фрагмент"])
+        try db.execute(sql: "UPDATE cards SET attachment_id=? WHERE id=?", arguments: [photo.uuidString, cardID.uuidString])
     }
     try old.close()
     let repository = LocalLibraryRepository(database: try LibraryDatabase(root: root, accountID: account))
+    #expect(try await repository.card(id: cardID)?.attachmentIDs == [photo])
     var query = ArchiveQuery(); query.search = "старый"
     #expect(try await repository.archive(query).cards.map(\.id) == [cardID])
     var edited = try #require(await repository.card(id: cardID)); edited.text = "Новая редакция"
