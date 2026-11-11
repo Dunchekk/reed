@@ -36,6 +36,18 @@ public final class LocalLibraryRepository: Sendable {
         let createdAt: Double = existing?["created_at"] ?? card.createdAt.timeIntervalSince1970
         if let source = card.source { try Self.save(source, db: db) }
         if let folder = card.folder { try Self.ensureName(kind: .folders, id: folder.id, name: folder.name, db: db) }
+        try Self.writeCardRows(card, db: db, createdAt: createdAt)
+        if let existing {
+            let wasEligible = !(existing["is_hidden"] as Bool) && (existing["deleted_at"] as Double?) == nil && (existing["allows_returns"] as Bool)
+            if !wasEligible && !card.isHidden && card.deletedAt == nil && card.allowsReturns {
+                try LocalReturnRepository.validateCurrentSchedules(db, now: operationDate, calendar: operationCalendar)
+            }
+        }
+        try Self.bumpRevision(db)
+    }
+
+    /// Shared row projection; callers own conflict checks and return-schedule validation.
+    static func writeCardRows(_ card: Card, db: Database, createdAt: Double) throws {
         let text = card.text.trimmingCharacters(in: .whitespacesAndNewlines)
         try db.execute(sql: """
             INSERT INTO cards(id, text, title, comment, page, source_id, folder_id, created_at, updated_at,
@@ -60,13 +72,6 @@ public final class LocalLibraryRepository: Sendable {
             try db.execute(sql: "INSERT INTO card_tags(card_id, tag_id) VALUES (?, ?)", arguments: [card.id.uuidString, tag.id.uuidString])
         }
         try Self.reindex(card.id.uuidString, db: db)
-        if let existing {
-            let wasEligible = !(existing["is_hidden"] as Bool) && (existing["deleted_at"] as Double?) == nil && (existing["allows_returns"] as Bool)
-            if !wasEligible && !card.isHidden && card.deletedAt == nil && card.allowsReturns {
-                try LocalReturnRepository.validateCurrentSchedules(db, now: operationDate, calendar: operationCalendar)
-            }
-        }
-        try Self.bumpRevision(db)
     }
 
     public func attachmentIDs() async throws -> Set<UUID> {

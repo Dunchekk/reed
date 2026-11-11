@@ -57,7 +57,7 @@ public struct LocalCatalogManagementRepository: CatalogManagementRepository {
             try LocalLibraryRepository.bumpRevision(db)
         }
     }
-    private static func affectedCards(kind: CatalogKind, id: String, db: Database) throws -> [String] {
+    static func affectedCards(kind: CatalogKind, id: String, db: Database) throws -> [String] {
         let sql: String
         switch kind {
         case .sources: sql = "SELECT id FROM cards WHERE source_id=?"
@@ -67,7 +67,7 @@ public struct LocalCatalogManagementRepository: CatalogManagementRepository {
         }
         return try String.fetchAll(db, sql: sql, arguments: [id])
     }
-    private static func removeOrMerge(kind: CatalogKind, id: String, target: String?, db: Database) throws {
+    static func removeOrMerge(kind: CatalogKind, id: String, target: String?, db: Database) throws {
         switch kind {
         case .sources:
             try db.execute(sql: "UPDATE cards SET source_id=? WHERE source_id=?", arguments: [target,id])
@@ -83,7 +83,7 @@ public struct LocalCatalogManagementRepository: CatalogManagementRepository {
         try db.execute(sql: "DELETE FROM \(kind.rawValue) WHERE id=?", arguments: [id])
         try db.execute(sql: "INSERT INTO catalog_tombstones VALUES (?,?)", arguments: [kind.rawValue,id])
     }
-    private static func updateRules(kind: CatalogKind, id: UUID, target: UUID?, db: Database) throws {
+    static func updateRules(kind: CatalogKind, id: UUID, target: UUID?, db: Database) throws {
         var settings = try LocalReturnRepository.settings(db)
         let before = settings
         var removedReference = false
@@ -110,7 +110,7 @@ public struct LocalCatalogManagementRepository: CatalogManagementRepository {
             try db.execute(sql: "INSERT INTO preferences VALUES ('returns',?) ON CONFLICT(key) DO UPDATE SET value=excluded.value", arguments: [try JSONEncoder().encode(settings)])
         }
     }
-    private static func updateDrafts(kind: CatalogKind, id: UUID, oldName: String, target: UUID?, newName: String?, versions: [String:Int], db: Database) throws {
+    static func updateDrafts(kind: CatalogKind, id: UUID, oldName: String, target: UUID?, newName: String?, versions: [String:Int], db: Database) throws {
         for data in try Data.fetchAll(db, sql: "SELECT value FROM drafts WHERE state='active'") {
             var draft = try JSONDecoder().decode(CardDraft.self, from: data)
             if kind == .sources && draft.sourceID == id { draft.sourceID = target }
