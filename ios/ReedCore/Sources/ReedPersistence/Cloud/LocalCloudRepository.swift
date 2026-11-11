@@ -3,7 +3,7 @@ import GRDB
 import ReedDomain
 import ReedApplication
 
-public final class LocalCloudRepository: Sendable {
+public final class LocalCloudRepository: CloudRepository {
     let database: LibraryDatabase
     public init(database: LibraryDatabase) { self.database = database }
 

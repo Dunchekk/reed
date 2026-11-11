@@ -83,7 +83,13 @@ enum CloudProjection {
         } catch PendingDependency.missing { return false }
     }
 
-    private static func card(_ record: CloudRecord, db: Database) throws {
+    static func insertCopy(_ value: CloudCard, db: Database) throws {
+        var value = value; value.id = UUID()
+        let record = try CloudRecord(key: CloudKey(.card,value.id), version: 0, sequence: 0, payload: .encode(value))
+        try card(record, db: db, downloadMedia: false)
+    }
+
+    private static func card(_ record: CloudRecord, db: Database, downloadMedia: Bool = true) throws {
         let id = try LocalLibraryRepository.uuid(record.id)
         if record.isDeleted {
             try db.execute(sql: "DELETE FROM card_search WHERE rowid=(SELECT search_id FROM card_search_keys WHERE card_id=?)", arguments: [id.uuidString])
@@ -108,7 +114,7 @@ enum CloudProjection {
         try LocalLibraryRepository.writeCardRows(card, db: db, createdAt: value.createdAt.timeIntervalSince1970)
         // Existing-card UPSERT keeps creation date for local commands; replication applies the accepted document fully.
         try db.execute(sql: "UPDATE cards SET created_at=? WHERE id=?", arguments: [value.createdAt.timeIntervalSince1970,id.uuidString])
-        for id in value.attachmentIDs {
+        for id in value.attachmentIDs where downloadMedia {
             try db.execute(sql: "INSERT OR IGNORE INTO cloud_media_needed VALUES (?)", arguments: [id.uuidString.lowercased()])
         }
     }

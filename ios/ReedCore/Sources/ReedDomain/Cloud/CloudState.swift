@@ -22,6 +22,7 @@ public struct CloudConflict: Codable, Equatable, Sendable, Identifiable {
     public let remote: CloudRecord
     public let local: CloudValue
     public let generation: Int64
+    public var canKeepLocal: Bool { !remote.isDeleted || local == .null }
     public var canKeepBoth: Bool { remote.kind == .card && local != .null }
     public init(id: UUID = UUID(), remote: CloudRecord, local: CloudValue, generation: Int64) {
         self.id = id; self.remote = remote; self.local = local; self.generation = generation
