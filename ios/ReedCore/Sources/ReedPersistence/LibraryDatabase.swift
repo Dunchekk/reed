@@ -112,6 +112,7 @@ public final class LibraryDatabase: Sendable {
         migrator.registerMigration("010_backup_imports") { db in
             try db.execute(sql: "CREATE TABLE backup_imports (id TEXT PRIMARY KEY NOT NULL)")
         }
+        migrator.registerMigration("011_cloud_replication", migrate: CloudSchema.migrate)
         return migrator
     }
 }
