@@ -99,6 +99,13 @@ public final class LibraryDatabase: Sendable {
                 ALTER TABLE cards DROP COLUMN attachment_id;
                 """)
         }
+        migrator.registerMigration("008_drafts") { db in
+            try db.execute(sql: """
+                CREATE TABLE drafts (id TEXT PRIMARY KEY NOT NULL, updated_at REAL NOT NULL, state TEXT NOT NULL, value BLOB);
+                CREATE INDEX drafts_updated ON drafts(state,updated_at);
+                CREATE TABLE draft_attachments (draft_id TEXT NOT NULL REFERENCES drafts(id) ON DELETE CASCADE, attachment_id TEXT NOT NULL, PRIMARY KEY(draft_id,attachment_id));
+                """)
+        }
         return migrator
     }
 }

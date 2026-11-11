@@ -23,70 +23,75 @@ public final class LocalLibraryRepository: Sendable {
         try card.validate()
         let operationDate = now(), operationCalendar = calendar()
         try await database.writer.write { db in
-            let existing = try Row.fetchOne(db, sql: "SELECT version, created_at, is_hidden, deleted_at, allows_returns FROM cards WHERE id = ?", arguments: [card.id.uuidString])
-            if let existing {
-                guard card.version == existing["version"] else { throw LibraryError.conflict }
-            } else if card.version != 0 { throw LibraryError.notFound }
-            let createdAt: Double = existing?["created_at"] ?? card.createdAt.timeIntervalSince1970
-            var sourceChanged = false
-            var changedAuthors: [UUID] = []
-            if let source = card.source {
-                let previous = try Row.fetchOne(db, sql: "SELECT * FROM sources WHERE id=?", arguments: [source.id.uuidString]).map { try Self.source($0, db: db) }
-                sourceChanged = previous != source
-                for author in source.authors {
-                    let name = try String.fetchOne(db, sql: "SELECT name FROM authors WHERE id=?", arguments: [author.id.uuidString])
-                    if let name, name != author.name { changedAuthors.append(author.id) }
-                }
-                if sourceChanged { try Self.save(source, db: db) }
-            }
-            if let folder = card.folder {
-                try db.execute(sql: "INSERT INTO folders(id, name) VALUES (?, ?) ON CONFLICT(id) DO UPDATE SET name = excluded.name", arguments: [folder.id.uuidString, folder.name])
-            }
-            let text = card.text.trimmingCharacters(in: .whitespacesAndNewlines)
-            try db.execute(sql: """
-                INSERT INTO cards(id, text, title, comment, page, source_id, folder_id, created_at, updated_at,
-                    is_favorite, is_hidden, deleted_at, allows_returns, version, preview, sort_title, shuffle_key)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-                ON CONFLICT(id) DO UPDATE SET text=excluded.text, title=excluded.title, comment=excluded.comment,
-                    page=excluded.page, source_id=excluded.source_id, folder_id=excluded.folder_id,
-                    updated_at=excluded.updated_at, is_favorite=excluded.is_favorite, is_hidden=excluded.is_hidden,
-                    deleted_at=excluded.deleted_at, allows_returns=excluded.allows_returns, version=excluded.version,
-                    preview=excluded.preview, sort_title=excluded.sort_title
-                """, arguments: [card.id.uuidString, text, card.title, card.comment, card.page,
-                    card.source?.id.uuidString, card.folder?.id.uuidString, createdAt, card.updatedAt.timeIntervalSince1970,
-                    card.isFavorite, card.isHidden, card.deletedAt?.timeIntervalSince1970, card.allowsReturns,
-                    card.version + 1, String(text.prefix(360)), TextNormalization.normalize(card.displayTitle), Self.shuffleKey(card.id)])
-            try db.execute(sql: "DELETE FROM card_attachments WHERE card_id=?", arguments: [card.id.uuidString])
-            for (position, id) in card.attachmentIDs.enumerated() {
-                try db.execute(sql: "INSERT INTO card_attachments VALUES (?,?,?)", arguments: [card.id.uuidString, id.uuidString, position])
-            }
-            try db.execute(sql: "DELETE FROM card_tags WHERE card_id = ?", arguments: [card.id.uuidString])
-            for tag in card.tags {
-                try db.execute(sql: "INSERT INTO tags(id, name) VALUES (?, ?) ON CONFLICT(id) DO UPDATE SET name=excluded.name", arguments: [tag.id.uuidString, tag.name])
-                try db.execute(sql: "INSERT INTO card_tags(card_id, tag_id) VALUES (?, ?)", arguments: [card.id.uuidString, tag.id.uuidString])
-            }
-            // Shared source/author edits must update every affected search document.
-            var affected = Set([card.id.uuidString])
-            if sourceChanged, let source = card.source {
-                affected.formUnion(try String.fetchAll(db, sql: "SELECT id FROM cards WHERE source_id = ?", arguments: [source.id.uuidString]))
-                for authorID in changedAuthors {
-                    affected.formUnion(try String.fetchAll(db, sql: "SELECT c.id FROM cards c JOIN source_authors sa ON sa.source_id=c.source_id WHERE sa.author_id=?", arguments: [authorID.uuidString]))
-                }
-            }
-            for id in affected { try Self.reindex(id, db: db) }
-            if let existing {
-                let wasEligible = !(existing["is_hidden"] as Bool) && (existing["deleted_at"] as Double?) == nil && (existing["allows_returns"] as Bool)
-                if !wasEligible && !card.isHidden && card.deletedAt == nil && card.allowsReturns {
-                    try LocalReturnRepository.validateCurrentSchedules(db, now: operationDate, calendar: operationCalendar)
-                }
-            }
-            try Self.bumpRevision(db)
+            try Self.save(card, db: db, now: operationDate, calendar: operationCalendar)
         }
+    }
+
+    static func save(_ card: Card, db: Database, now operationDate: Date, calendar operationCalendar: Calendar) throws {
+        try card.validate()
+        let existing = try Row.fetchOne(db, sql: "SELECT version, created_at, is_hidden, deleted_at, allows_returns FROM cards WHERE id = ?", arguments: [card.id.uuidString])
+        if let existing {
+            guard card.version == existing["version"] else { throw LibraryError.conflict }
+        } else if card.version != 0 { throw LibraryError.notFound }
+        let createdAt: Double = existing?["created_at"] ?? card.createdAt.timeIntervalSince1970
+        var sourceChanged = false
+        var changedAuthors: [UUID] = []
+        if let source = card.source {
+            let previous = try Row.fetchOne(db, sql: "SELECT * FROM sources WHERE id=?", arguments: [source.id.uuidString]).map { try Self.source($0, db: db) }
+            sourceChanged = previous != source
+            for author in source.authors {
+                let name = try String.fetchOne(db, sql: "SELECT name FROM authors WHERE id=?", arguments: [author.id.uuidString])
+                if let name, name != author.name { changedAuthors.append(author.id) }
+            }
+            if sourceChanged { try Self.save(source, db: db) }
+        }
+        if let folder = card.folder {
+            try db.execute(sql: "INSERT INTO folders(id, name) VALUES (?, ?) ON CONFLICT(id) DO UPDATE SET name = excluded.name", arguments: [folder.id.uuidString, folder.name])
+        }
+        let text = card.text.trimmingCharacters(in: .whitespacesAndNewlines)
+        try db.execute(sql: """
+            INSERT INTO cards(id, text, title, comment, page, source_id, folder_id, created_at, updated_at,
+                is_favorite, is_hidden, deleted_at, allows_returns, version, preview, sort_title, shuffle_key)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            ON CONFLICT(id) DO UPDATE SET text=excluded.text, title=excluded.title, comment=excluded.comment,
+                page=excluded.page, source_id=excluded.source_id, folder_id=excluded.folder_id,
+                updated_at=excluded.updated_at, is_favorite=excluded.is_favorite, is_hidden=excluded.is_hidden,
+                deleted_at=excluded.deleted_at, allows_returns=excluded.allows_returns, version=excluded.version,
+                preview=excluded.preview, sort_title=excluded.sort_title
+            """, arguments: [card.id.uuidString, text, card.title, card.comment, card.page,
+                card.source?.id.uuidString, card.folder?.id.uuidString, createdAt, card.updatedAt.timeIntervalSince1970,
+                card.isFavorite, card.isHidden, card.deletedAt?.timeIntervalSince1970, card.allowsReturns,
+                card.version + 1, String(text.prefix(360)), TextNormalization.normalize(card.displayTitle), Self.shuffleKey(card.id)])
+        try db.execute(sql: "DELETE FROM card_attachments WHERE card_id=?", arguments: [card.id.uuidString])
+        for (position, id) in card.attachmentIDs.enumerated() {
+            try db.execute(sql: "INSERT INTO card_attachments VALUES (?,?,?)", arguments: [card.id.uuidString, id.uuidString, position])
+        }
+        try db.execute(sql: "DELETE FROM card_tags WHERE card_id = ?", arguments: [card.id.uuidString])
+        for tag in card.tags {
+            try db.execute(sql: "INSERT INTO tags(id, name) VALUES (?, ?) ON CONFLICT(id) DO UPDATE SET name=excluded.name", arguments: [tag.id.uuidString, tag.name])
+            try db.execute(sql: "INSERT INTO card_tags(card_id, tag_id) VALUES (?, ?)", arguments: [card.id.uuidString, tag.id.uuidString])
+        }
+        // Shared source/author edits must update every affected search document.
+        var affected = Set([card.id.uuidString])
+        if sourceChanged, let source = card.source {
+            affected.formUnion(try String.fetchAll(db, sql: "SELECT id FROM cards WHERE source_id = ?", arguments: [source.id.uuidString]))
+            for authorID in changedAuthors {
+                affected.formUnion(try String.fetchAll(db, sql: "SELECT c.id FROM cards c JOIN source_authors sa ON sa.source_id=c.source_id WHERE sa.author_id=?", arguments: [authorID.uuidString]))
+            }
+        }
+        for id in affected { try Self.reindex(id, db: db) }
+        if let existing {
+            let wasEligible = !(existing["is_hidden"] as Bool) && (existing["deleted_at"] as Double?) == nil && (existing["allows_returns"] as Bool)
+            if !wasEligible && !card.isHidden && card.deletedAt == nil && card.allowsReturns {
+                try LocalReturnRepository.validateCurrentSchedules(db, now: operationDate, calendar: operationCalendar)
+            }
+        }
+        try Self.bumpRevision(db)
     }
 
     public func attachmentIDs() async throws -> Set<UUID> {
         try await database.writer.read { db in
-            Set(try String.fetchAll(db, sql: "SELECT attachment_id FROM card_attachments").map(Self.uuid))
+            Set(try String.fetchAll(db, sql: "SELECT attachment_id FROM card_attachments UNION SELECT attachment_id FROM draft_attachments").map(Self.uuid))
         }
     }
 
