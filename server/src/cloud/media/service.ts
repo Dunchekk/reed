@@ -49,6 +49,7 @@ export class CloudMedia {
 
   async append(scope: CloudScope, epoch: string, uploadID: string, rawVariant: MediaVariant, offset: number, bytes: Buffer): Promise<Upload> {
     const id = uuid(uploadID), part = variant(rawVariant);
+    if (!Buffer.isBuffer(bytes)) throw new CloudError("invalid_record");
     integer(offset); integer(bytes.length,1,chunkLimit);
     return this.database.device(scope,epoch,async client => {
       const row = (await client.query<UploadRow>("SELECT * FROM cloud_uploads WHERE account_id=$1 AND epoch=$2 AND id=$3",[scope.accountID,epoch,id])).rows[0];

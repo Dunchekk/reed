@@ -3,7 +3,11 @@ import { AuthError } from "./auth/provider.ts";
 import { registerAuthRoutes } from "./auth/routes.ts";
 import type { AuthDependencies } from "./auth/routes.ts";
 
-export function buildApp(dependencies?: AuthDependencies) {
+import {CloudError} from "./cloud/contracts.ts";
+import {registerCloudRoutes} from "./cloud/routes.ts";
+import type {CloudDependencies} from "./cloud/routes.ts";
+
+export function buildApp(dependencies?: AuthDependencies, cloud?: CloudDependencies) {
   const app = Fastify({
     bodyLimit: 64 * 1024,
     logger: {
@@ -18,7 +22,10 @@ export function buildApp(dependencies?: AuthDependencies) {
   app.get("/health", async () => ({ status: "ok" }));
   if (dependencies) app.register((scope) => registerAuthRoutes(scope, dependencies));
 
+  if (dependencies && cloud) app.register(scope => registerCloudRoutes(scope,dependencies,cloud));
+
   app.setErrorHandler((error, request, reply) => {
+    if (error instanceof CloudError) return reply.code(error.statusCode).send({error:{code:error.code,message:error.message}});
     if (error instanceof AuthError) {
       return reply.code(error.statusCode).send({ error: {
         code: error.code, message: error.message,
