@@ -63,10 +63,11 @@ import ReedPersistence
     let second = Card(text: "Второй текст", source: source)
     try await library.repository.save(first)
     try await library.repository.save(second)
-    var edited = try #require(await library.repository.card(id: first.id))
-    edited.source?.title = "Новое название"
-    edited.source?.authors[0].name = "Обновлённый автор"
-    try await library.repository.save(edited)
+    let catalog = LocalCatalogManagementRepository(database: try LibraryDatabase(root: library.root, accountID: library.accountID))
+    let sourceRevision = try await catalog.entries(kind: .sources).revision
+    try await catalog.update(kind: .sources, mutation: .rename(id: source.id, name: "Новое название"), expectedRevision: sourceRevision)
+    let authorRevision = try await catalog.entries(kind: .authors).revision
+    try await catalog.update(kind: .authors, mutation: .rename(id: source.authors[0].id, name: "Обновлённый автор"), expectedRevision: authorRevision)
     var query = ArchiveQuery()
     query.search = "новое обновленный"
     #expect(Set(try await library.repository.archive(query).cards.map(\.id)) == Set([first.id, second.id]))

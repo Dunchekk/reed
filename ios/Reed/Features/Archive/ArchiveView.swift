@@ -65,6 +65,12 @@ struct ArchiveView: View {
             }.padding(ReedTheme.inset)
         }
         .background(ReedTheme.background)
+        .toolbar {
+            ToolbarItem(placement: .topBarLeading) {
+                NavigationLink { CatalogView(context: context) } label: { Image(systemName: "slider.horizontal.3") }
+                    .accessibilityLabel("Управление библиотекой").accessibilityIdentifier("archive.manage")
+            }
+        }
         .task(id: ArchiveLoadKey(query: model.query, revision: context.revision)) { await model.reload(debounce: true) }
         .refreshable { await model.reload() }
         .sheet(isPresented: $showsFilters) {

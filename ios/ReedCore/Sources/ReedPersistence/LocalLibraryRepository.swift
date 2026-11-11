@@ -34,20 +34,8 @@ public final class LocalLibraryRepository: Sendable {
             guard card.version == existing["version"] else { throw LibraryError.conflict }
         } else if card.version != 0 { throw LibraryError.notFound }
         let createdAt: Double = existing?["created_at"] ?? card.createdAt.timeIntervalSince1970
-        var sourceChanged = false
-        var changedAuthors: [UUID] = []
-        if let source = card.source {
-            let previous = try Row.fetchOne(db, sql: "SELECT * FROM sources WHERE id=?", arguments: [source.id.uuidString]).map { try Self.source($0, db: db) }
-            sourceChanged = previous != source
-            for author in source.authors {
-                let name = try String.fetchOne(db, sql: "SELECT name FROM authors WHERE id=?", arguments: [author.id.uuidString])
-                if let name, name != author.name { changedAuthors.append(author.id) }
-            }
-            if sourceChanged { try Self.save(source, db: db) }
-        }
-        if let folder = card.folder {
-            try db.execute(sql: "INSERT INTO folders(id, name) VALUES (?, ?) ON CONFLICT(id) DO UPDATE SET name = excluded.name", arguments: [folder.id.uuidString, folder.name])
-        }
+        if let source = card.source { try Self.save(source, db: db) }
+        if let folder = card.folder { try Self.ensureName(kind: .folders, id: folder.id, name: folder.name, db: db) }
         let text = card.text.trimmingCharacters(in: .whitespacesAndNewlines)
         try db.execute(sql: """
             INSERT INTO cards(id, text, title, comment, page, source_id, folder_id, created_at, updated_at,
@@ -68,18 +56,10 @@ public final class LocalLibraryRepository: Sendable {
         }
         try db.execute(sql: "DELETE FROM card_tags WHERE card_id = ?", arguments: [card.id.uuidString])
         for tag in card.tags {
-            try db.execute(sql: "INSERT INTO tags(id, name) VALUES (?, ?) ON CONFLICT(id) DO UPDATE SET name=excluded.name", arguments: [tag.id.uuidString, tag.name])
+            try Self.ensureName(kind: .tags, id: tag.id, name: tag.name, db: db)
             try db.execute(sql: "INSERT INTO card_tags(card_id, tag_id) VALUES (?, ?)", arguments: [card.id.uuidString, tag.id.uuidString])
         }
-        // Shared source/author edits must update every affected search document.
-        var affected = Set([card.id.uuidString])
-        if sourceChanged, let source = card.source {
-            affected.formUnion(try String.fetchAll(db, sql: "SELECT id FROM cards WHERE source_id = ?", arguments: [source.id.uuidString]))
-            for authorID in changedAuthors {
-                affected.formUnion(try String.fetchAll(db, sql: "SELECT c.id FROM cards c JOIN source_authors sa ON sa.source_id=c.source_id WHERE sa.author_id=?", arguments: [authorID.uuidString]))
-            }
-        }
-        for id in affected { try Self.reindex(id, db: db) }
+        try Self.reindex(card.id.uuidString, db: db)
         if let existing {
             let wasEligible = !(existing["is_hidden"] as Bool) && (existing["deleted_at"] as Double?) == nil && (existing["allows_returns"] as Bool)
             if !wasEligible && !card.isHidden && card.deletedAt == nil && card.allowsReturns {
@@ -154,17 +134,33 @@ public final class LocalLibraryRepository: Sendable {
     }
 
     private static func save(_ source: Source, db: Database) throws {
-        try db.execute(sql: "INSERT INTO sources(id, title, url) VALUES (?, ?, ?) ON CONFLICT(id) DO UPDATE SET title=excluded.title, url=excluded.url", arguments: [source.id.uuidString, source.title, source.url])
-        try db.execute(sql: "DELETE FROM source_authors WHERE source_id=?", arguments: [source.id.uuidString])
-        for (index, author) in source.authors.enumerated() {
-            try db.execute(sql: "INSERT INTO authors(id, name) VALUES (?, ?) ON CONFLICT(id) DO UPDATE SET name=excluded.name", arguments: [author.id.uuidString, author.name])
-            try db.execute(sql: "INSERT INTO source_authors(source_id, author_id, position) VALUES (?, ?, ?)", arguments: [source.id.uuidString, author.id.uuidString, index])
+        if let row = try Row.fetchOne(db, sql: "SELECT * FROM sources WHERE id=?", arguments: [source.id.uuidString]) {
+            guard try Self.source(row, db: db) == source else { throw LibraryError.conflict }
+            return
         }
+        try ensureNotDeleted(kind: .sources, id: source.id, db: db)
+        try db.execute(sql: "INSERT INTO sources(id,title,url) VALUES (?,?,?)", arguments: [source.id.uuidString,source.title,source.url])
+        for (position, author) in source.authors.enumerated() {
+            try ensureName(kind: .authors, id: author.id, name: author.name, db: db)
+            try db.execute(sql: "INSERT INTO source_authors VALUES (?,?,?)", arguments: [source.id.uuidString,author.id.uuidString,position])
+        }
+    }
+    static func ensureName(kind: CatalogKind, id: UUID, name: String, db: Database) throws {
+        // Identifiers come only from the closed enum, never from user input.
+        if let current = try String.fetchOne(db, sql: "SELECT name FROM \(kind.rawValue) WHERE id=?", arguments: [id.uuidString]) {
+            guard current == name else { throw LibraryError.conflict }
+        } else {
+            try ensureNotDeleted(kind: kind, id: id, db: db)
+            try db.execute(sql: "INSERT INTO \(kind.rawValue)(id,name) VALUES (?,?)", arguments: [id.uuidString,name])
+        }
+    }
+    private static func ensureNotDeleted(kind: CatalogKind, id: UUID, db: Database) throws {
+        guard try !Bool.fetchOne(db, sql: "SELECT EXISTS(SELECT 1 FROM catalog_tombstones WHERE kind=? AND id=?)", arguments: [kind.rawValue,id.uuidString])! else { throw LibraryError.conflict }
     }
 
     static func bumpRevision(_ db: Database) throws { try db.execute(sql: "UPDATE library_state SET revision=revision+1 WHERE id=1") }
 
-    private static func reindex(_ id: String, db: Database) throws {
+    static func reindex(_ id: String, db: Database) throws {
         guard let row = try Row.fetchOne(db, sql: "SELECT * FROM cards WHERE id=?", arguments: [id]) else { return }
         let card = try card(row, db: db)
         let document = TextNormalization.normalize([card.text, card.title, card.comment, card.source?.displayName ?? ""].joined(separator: " "))

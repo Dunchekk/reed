@@ -17,6 +17,7 @@ final class LibraryContext {
     let drafts: any DraftRepository
     let capturePreferences: any CapturePreferencesRepository
     let editor: CardEditingService
+    let catalogManagement: any CatalogManagementRepository
     let directory: URL
     private(set) var revision = 0
     private(set) var draftRevision = 0
@@ -25,6 +26,7 @@ final class LibraryContext {
     init(account: Account, database: LibraryDatabase) {
         self.account = account
         repository = LocalLibraryRepository(database: database)
+        catalogManagement = LocalCatalogManagementRepository(database: database)
         activity = LocalActivityRepository(database: database)
         feed = LocalFeedRepository(database: database)
         let returns = LocalReturnRepository(database: database)

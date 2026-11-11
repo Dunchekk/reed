@@ -106,6 +106,9 @@ public final class LibraryDatabase: Sendable {
                 CREATE TABLE draft_attachments (draft_id TEXT NOT NULL REFERENCES drafts(id) ON DELETE CASCADE, attachment_id TEXT NOT NULL, PRIMARY KEY(draft_id,attachment_id));
                 """)
         }
+        migrator.registerMigration("009_catalog_tombstones") { db in
+            try db.execute(sql: "CREATE TABLE catalog_tombstones (kind TEXT NOT NULL,id TEXT NOT NULL,PRIMARY KEY(kind,id))")
+        }
         return migrator
     }
 }

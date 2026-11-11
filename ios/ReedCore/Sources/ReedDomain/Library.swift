@@ -72,6 +72,13 @@ public struct Card: Codable, Equatable, Sendable, Identifiable {
         title.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ? String(text.prefix(64)) : title
     }
 
+    public func replacingVersion(_ version: Int) -> Card {
+        Card(id: id, text: text, title: title, comment: comment, source: source, page: page,
+             tags: tags, folder: folder, createdAt: createdAt, updatedAt: updatedAt,
+             isFavorite: isFavorite, isHidden: isHidden, deletedAt: deletedAt,
+             allowsReturns: allowsReturns, version: version, attachmentIDs: attachmentIDs)
+    }
+
     public func validate() throws {
         guard !text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else { throw LibraryError.emptyText }
         let names = tags.map(\.name) + (folder.map { [$0.name] } ?? [])

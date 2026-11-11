@@ -25,6 +25,7 @@
 		3BC6B683DA69A9486E469B39 /* ActivityView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F2B48F6D694F4C3B92EA4FCF /* ActivityView.swift */; };
 		49D99AD76297B6273347D925 /* KeychainSessionStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 96A8296BCC16155B37CB28FA /* KeychainSessionStore.swift */; };
 		504142EE2A47CDCD50A3E2D1 /* PhotoReviewView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A03C0735763CC89B2C57568 /* PhotoReviewView.swift */; };
+		58E57CA07A1C7DB2F760DAF9 /* CatalogView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2CE73F5106F621DDE3FCF7AF /* CatalogView.swift */; };
 		67ACABABDB432E8F21CDBFE5 /* DatePresentation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 551B422A1F74415E0A4E1949 /* DatePresentation.swift */; };
 		6E52253F8D1160D00181CBFB /* ReedApplication in Frameworks */ = {isa = PBXBuildFile; productRef = 387F9F5DD3CABFE8AEB345F8 /* ReedApplication */; };
 		7A712B3E31711DAAA6E8C7B3 /* ArchiveModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65944AF392F5D88BDBAA8BFD /* ArchiveModel.swift */; };
@@ -48,6 +49,7 @@
 		CF7F4FFB14AECF78DCD3714F /* CardEditorModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 14A9A252493AF1944B124805 /* CardEditorModel.swift */; };
 		D2E76AE48A9F0D65346E0564 /* ReturnSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 728AC33816253A2109DC6836 /* ReturnSettingsView.swift */; };
 		DCD8C0AF23910245B1BBD433 /* ReedDomain in Frameworks */ = {isa = PBXBuildFile; productRef = 9961AE4853F3B89C2A66FE04 /* ReedDomain */; };
+		F4C8166F0DB5BE029E746445 /* CatalogModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8A323D3EE628EA014842B310 /* CatalogModel.swift */; };
 		F78AC1AA0DED65AF645D0A27 /* HTTPAuthenticationClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = CB9F2A086B1281DF6883650F /* HTTPAuthenticationClient.swift */; };
 		F8A8D6F1199759E0625F4F70 /* CameraPicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D580E5E5367BA5BC364073F /* CameraPicker.swift */; };
 /* End PBXBuildFile section */
@@ -79,6 +81,7 @@
 		221E7708F7D6338CD6FA5791 /* ReturnCoordinatorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReturnCoordinatorTests.swift; sourceTree = "<group>"; };
 		29333A990F07B4AB2D14D5FC /* ReedTests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = ReedTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		2BCA768643C47B8840380E3F /* AuthenticationModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthenticationModel.swift; sourceTree = "<group>"; };
+		2CE73F5106F621DDE3FCF7AF /* CatalogView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CatalogView.swift; sourceTree = "<group>"; };
 		30F744958FC28735513FF7E2 /* ReturnFilterView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReturnFilterView.swift; sourceTree = "<group>"; };
 		321E2E043B1F508D5C2A9FFB /* LibraryHostView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LibraryHostView.swift; sourceTree = "<group>"; };
 		3A9B22E299CFF5C1C490A742 /* AttachmentPreview.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AttachmentPreview.swift; sourceTree = "<group>"; };
@@ -96,6 +99,7 @@
 		7A47A3779CC84B7670724BD1 /* PhotoInputView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhotoInputView.swift; sourceTree = "<group>"; };
 		7E478926F57605678FBD4C8C /* ArchiveFiltersView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ArchiveFiltersView.swift; sourceTree = "<group>"; };
 		84D2C286BAEB4463AE530844 /* LibraryJourneyTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LibraryJourneyTests.swift; sourceTree = "<group>"; };
+		8A323D3EE628EA014842B310 /* CatalogModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CatalogModel.swift; sourceTree = "<group>"; };
 		8EC298BB02E6ACA2DCD21F81 /* CardReturnSettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CardReturnSettingsView.swift; sourceTree = "<group>"; };
 		96A8296BCC16155B37CB28FA /* KeychainSessionStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeychainSessionStore.swift; sourceTree = "<group>"; };
 		9D580E5E5367BA5BC364073F /* CameraPicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraPicker.swift; sourceTree = "<group>"; };
@@ -153,6 +157,15 @@
 			path = Settings;
 			sourceTree = "<group>";
 		};
+		0F43A10C708FDBE152EB7CE8 /* Catalog */ = {
+			isa = PBXGroup;
+			children = (
+				8A323D3EE628EA014842B310 /* CatalogModel.swift */,
+				2CE73F5106F621DDE3FCF7AF /* CatalogView.swift */,
+			);
+			path = Catalog;
+			sourceTree = "<group>";
+		};
 		28E1EEE8D8D64A549A084BD6 /* Returns */ = {
 			isa = PBXGroup;
 			children = (
@@ -182,6 +195,7 @@
 				EA17D7477589429399C6A438 /* Auth */,
 				F1579959B3EE8CDD7FF3A894 /* CardDetail */,
 				A2E70DB97BA9CA6D5D520309 /* CardEditor */,
+				0F43A10C708FDBE152EB7CE8 /* Catalog */,
 				ADB47E356268FFAB748AC39C /* Drafts */,
 				F147C58A166304ECABC07978 /* Feed */,
 				28E1EEE8D8D64A549A084BD6 /* Returns */,
@@ -524,6 +538,8 @@
 				CCC862FA3EFE9D720A5A15DB /* CardEditorView.swift in Sources */,
 				0FEF426EBECBBEBA52AE2268 /* CardPreview.swift in Sources */,
 				ADF485C313F10BD48B4557CF /* CardReturnSettingsView.swift in Sources */,
+				F4C8166F0DB5BE029E746445 /* CatalogModel.swift in Sources */,
+				58E57CA07A1C7DB2F760DAF9 /* CatalogView.swift in Sources */,
 				67ACABABDB432E8F21CDBFE5 /* DatePresentation.swift in Sources */,
 				1AD51B222E4E80409AB84EA1 /* DraftsView.swift in Sources */,
 				266394EF7F8D3055724816B8 /* FeedView.swift in Sources */,

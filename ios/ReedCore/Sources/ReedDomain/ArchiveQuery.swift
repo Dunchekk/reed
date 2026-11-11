@@ -48,7 +48,7 @@ public struct ArchivePage: Sendable {
     public init(cards: [CardSummary], nextCursor: String?) { self.cards = cards; self.nextCursor = nextCursor }
 }
 
-public struct LibraryCatalog: Sendable {
+public struct LibraryCatalog: Codable, Equatable, Sendable {
     public var sources: [Source]
     public var authors: [Author]
     public var tags: [Tag]
