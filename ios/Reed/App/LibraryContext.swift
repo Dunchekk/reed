@@ -14,8 +14,12 @@ final class LibraryContext {
     let feed: any FeedRepository
     let activity: any ActivityRepository
     let attachments: any AttachmentStore
+    let drafts: any DraftRepository
+    let capturePreferences: any CapturePreferencesRepository
+    let editor: CardEditingService
     let directory: URL
     private(set) var revision = 0
+    private(set) var draftRevision = 0
     private(set) var maintenanceError: String?
 
     init(account: Account, database: LibraryDatabase) {
@@ -31,7 +35,12 @@ final class LibraryContext {
         #endif
         returnCoordinator = ReturnCoordinator(repository: returns, queue: queue, accountID: account.id)
         directory = database.directory
-        attachments = FileAttachmentStore(directory: database.directory)
+        let attachments = FileAttachmentStore(directory: database.directory)
+        self.attachments = attachments
+        let drafts = LocalDraftRepository(database: database)
+        self.drafts = drafts
+        capturePreferences = LocalCapturePreferencesRepository(database: database)
+        editor = CardEditingService(library: repository, drafts: drafts, attachments: attachments)
     }
 
     func prepare() async throws {
@@ -53,4 +62,5 @@ final class LibraryContext {
     }
 
     func markChanged() { revision += 1; returnCoordinator.refresh() }
+    func markDraftsChanged() { draftRevision += 1 }
 }

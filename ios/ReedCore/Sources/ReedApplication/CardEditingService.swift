@@ -31,6 +31,14 @@ public struct CardEditingService: Sendable {
         try await drafts.publishDraft(id: draft.id, card: card)
         return card.id
     }
+    public static func fragment(from input: CardDraft, text: String) -> CardDraft {
+        var result = CardDraft(card: Card(text: text))
+        result.sourceID = input.sourceID; result.folderID = input.folderID
+        result.sourceTitle = input.sourceTitle; result.authorNames = input.authorNames
+        result.tagNames = input.tagNames; result.folderName = input.folderName
+        result.card.page = input.card.page
+        return result
+    }
     public static func card(from draft: CardDraft, catalog: LibraryCatalog) throws -> Card {
         var card = draft.card
         card.title = card.title.trimmingCharacters(in: .whitespacesAndNewlines); card.updatedAt = Date()

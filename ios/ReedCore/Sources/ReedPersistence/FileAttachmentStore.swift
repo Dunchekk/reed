@@ -22,6 +22,7 @@ public actor FileAttachmentStore: AttachmentStore {
         } catch { try? FileManager.default.removeItem(at: folder); throw error }
     }
     public func thumbnail(id: UUID) throws -> Data { try Data(contentsOf: path(id).appendingPathComponent("thumbnail.jpg")) }
+    public func original(id: UUID) throws -> Data { try Data(contentsOf: originalURL(id: id)) }
     public func originalURL(id: UUID) throws -> URL {
         let url = path(id).appendingPathComponent("original")
         guard FileManager.default.fileExists(atPath: url.path) else { throw CocoaError(.fileNoSuchFile) }

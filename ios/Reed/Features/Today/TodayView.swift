@@ -9,12 +9,21 @@ struct TodayView: View {
     let add: (CardInput, String) -> Void
     @State private var actionError: String?
     @State private var position: String?
+    @State private var draftCount = 0
     private var entries: [PlannedReturn] { context.returnCoordinator.plan.entries.filter { Calendar.current.isDateInToday($0.slot.date) && $0.card != nil } }
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 24) {
                 Text("Reed / Сегодня").reedFont(.display)
                 Text("Ваши сохранённые тексты.\nПлан на \(ReedDatePresentation.date(Date())).").reedFont(.body)
+                if draftCount > 0 {
+                    NavigationLink { DraftsView(context: context) } label: {
+                        HStack {
+                            Text(draftLabel).reedFont(.caption)
+                            Spacer(); Image(systemName: "chevron.right")
+                        }.padding(12).background(ReedTheme.surface, in: RoundedRectangle(cornerRadius: ReedTheme.radius))
+                    }.accessibilityIdentifier("today.drafts")
+                }
                 if context.returnCoordinator.isRefreshing { ProgressView("Обновляем план…") }
                 if let actionError { Text(actionError).foregroundStyle(.red) }
                 if let error = context.returnCoordinator.errorMessage {
@@ -61,6 +70,15 @@ struct TodayView: View {
                 }
             }.padding(ReedTheme.inset)
         }.background(ReedTheme.background)
+        .task(id: context.draftRevision) {
+            do { draftCount = try await context.drafts.drafts().count }
+            catch { actionError = "Не удалось загрузить черновики." }
+        }
+    }
+    private var draftLabel: String {
+        let tens = draftCount % 100, ones = draftCount % 10
+        let word = (11...14).contains(tens) ? "черновиков" : ones == 1 ? "черновик" : (2...4).contains(ones) ? "черновика" : "черновиков"
+        return "\(draftCount) \(word)"
     }
     private var selectedIndex: Int { entries.firstIndex { $0.id == position } ?? 0 }
     private func move(_ delta: Int) {

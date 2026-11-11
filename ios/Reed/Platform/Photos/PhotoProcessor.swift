@@ -2,13 +2,7 @@ import Foundation
 import ImageIO
 import Vision
 import UniformTypeIdentifiers
-
-struct PhotoDraft: Sendable {
-    let original: Data
-    let thumbnail: Data
-    let recognizedText: String
-    let recognitionFailed: Bool
-}
+import ReedApplication
 
 enum PhotoError: LocalizedError {
     case invalid, tooLarge
@@ -21,8 +15,9 @@ enum PhotoError: LocalizedError {
 }
 
 /// Actor isolation keeps decoding and recognition away from the UI executor.
-actor PhotoProcessor {
-    func process(_ data: Data) throws -> PhotoDraft {
+actor PhotoProcessor: PhotoProcessing {
+    func process(_ data: Data, region: PhotoRegion = PhotoRegion()) throws -> ProcessedPhoto {
+        guard region.isValid else { throw PhotoError.invalid }
         guard data.count <= 40 * 1_024 * 1_024 else { throw PhotoError.tooLarge }
         guard let source = CGImageSourceCreateWithData(data as CFData, [kCGImageSourceShouldCache: false] as CFDictionary) else { throw PhotoError.invalid }
         try Task.checkCancellation()
@@ -37,7 +32,10 @@ actor PhotoProcessor {
         do {
             let supported = try request.supportedRecognitionLanguages()
             request.recognitionLanguages = ["ru-RU", "en-US"].filter { supported.contains($0) }
-            try VNImageRequestHandler(cgImage: image).perform([request])
+            let rect = CGRect(x: region.x * Double(image.width), y: region.y * Double(image.height),
+                              width: region.width * Double(image.width), height: region.height * Double(image.height)).integral
+            guard let cropped = image.cropping(to: rect.intersection(CGRect(x: 0, y: 0, width: image.width, height: image.height))) else { throw PhotoError.invalid }
+            try VNImageRequestHandler(cgImage: cropped).perform([request])
             text = (request.results ?? []).compactMap { $0.topCandidates(1).first?.string }.joined(separator: "\n")
         } catch { recognitionFailed = true }
         try Task.checkCancellation()
@@ -48,6 +46,6 @@ actor PhotoProcessor {
         guard let destination = CGImageDestinationCreateWithData(output, UTType.jpeg.identifier as CFString, 1, nil) else { throw PhotoError.invalid }
         CGImageDestinationAddImage(destination, thumbnail, [kCGImageDestinationLossyCompressionQuality: 0.85] as CFDictionary)
         guard CGImageDestinationFinalize(destination) else { throw PhotoError.invalid }
-        return PhotoDraft(original: data, thumbnail: output as Data, recognizedText: text, recognitionFailed: recognitionFailed)
+        return ProcessedPhoto(original: data, thumbnail: output as Data, recognizedText: text, recognitionFailed: recognitionFailed)
     }
 }
