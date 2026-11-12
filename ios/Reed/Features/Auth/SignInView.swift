@@ -40,6 +40,7 @@ struct SignInView: View {
                             .accessibilityIdentifier("auth.request")
                     }
                 }
+                NavigationLink("Нет доступа к номеру") { RecoveryView(authentication: model) }.disabled(!model.isConfigured || model.isWorking)
                 if model.isWorking { ProgressView("Подождите…") }
                 if let error = model.errorMessage { Text(error).foregroundStyle(.red).accessibilityIdentifier("auth.error") }
                 if !model.isConfigured {

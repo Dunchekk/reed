@@ -15,12 +15,14 @@ struct SettingsView: View {
                 NavigationLink("Корзина · 7 дней") { ArchiveView(context: context, visibility: .trash, open: open).navigationTitle("Корзина") }
             }
             Section("Хранение") {
+                NavigationLink("Добавление карточек") { CaptureSettingsView(context: context) }
                 NavigationLink("Данные и резервная копия") { DataSettingsView(context: context) }
                 if let error = context.maintenanceError { Text(error).foregroundStyle(.red) }
                 Label("На этом iPhone", systemImage: "iphone")
                 Text("Тексты и фотографии хранятся локально. Облачный перенос пока недоступен. Выход сохраняет библиотеку для повторного входа в тот же аккаунт.").reedFont(.caption)
             }
             Section("Аккаунт") {
+                NavigationLink("Управление аккаунтом") { AccountSettingsView(authentication: authentication, context: context) }
                 Text(authentication.account?.phone.value ?? "")
                 if authentication.serverNeedsSignIn { Text("Серверная сессия требует обновления. Локальная библиотека доступна.").reedFont(.caption) }
                 Button("Выйти", role: .destructive) {

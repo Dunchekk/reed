@@ -32,6 +32,8 @@ struct ReedApp: App {
                         Text(authentication.errorMessage ?? "Открываем Reed…")
                         if authentication.errorMessage != nil { Button("Повторить", action: authentication.restore) }
                     }.task { authentication.restore() }
+                } else if let session = authentication.session, session.deletionProgress != nil {
+                    AccountDeletionRecoveryView(authentication: authentication, account: session.account)
                 } else if let account = authentication.account {
                     LibraryHostView(account: account, authentication: authentication).id(account.id)
                         .task { await authentication.refreshIfNeeded() }

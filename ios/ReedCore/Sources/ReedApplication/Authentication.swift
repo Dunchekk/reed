@@ -6,12 +6,14 @@ public struct AuthSession: Codable, Equatable, Sendable {
     public let accessToken: String
     public let refreshToken: String
     public let expiresAt: Date
+    public let deletionProgress: AccountDeletionProgress?
 
-    public init(account: Account, accessToken: String, refreshToken: String, expiresAt: Date) {
+    public init(account: Account, accessToken: String, refreshToken: String, expiresAt: Date, deletionProgress: AccountDeletionProgress? = nil) {
         self.account = account
         self.accessToken = accessToken
         self.refreshToken = refreshToken
         self.expiresAt = expiresAt
+        self.deletionProgress = deletionProgress
     }
 }
 

@@ -35,7 +35,7 @@ import Foundation
             var success = false
             defer { task.setTaskCompleted(success: success) }
             do {
-                guard let session = try KeychainSessionStore().load() else { return }
+                guard let session = try KeychainSessionStore().load(), session.deletionProgress == nil else { return }
                 let context = try await LibrarySessionController.shared.open(session.account)
                 guard !Task.isCancelled, token == generation,
                       try KeychainSessionStore().load()?.account.id == session.account.id else { return }

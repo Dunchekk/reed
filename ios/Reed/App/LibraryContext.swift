@@ -73,3 +73,16 @@ final class LibraryContext {
     func markChanged() { revision += 1; returnCoordinator.refresh() }
     func markDraftsChanged() { draftRevision += 1 }
 }
+
+
+extension LibraryContext: AccountLocalCleanup {
+    func prepareForDeletion() async throws {
+        BackgroundReturnRefresh.shared.cancel()
+        try await returnCoordinator.stop()
+    }
+    func stopAndClear() async throws {
+        BackgroundReturnRefresh.shared.cancel()
+        try await returnCoordinator.stop()
+        try await transfer.clear()
+    }
+}

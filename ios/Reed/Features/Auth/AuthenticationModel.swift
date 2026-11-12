@@ -23,6 +23,7 @@ final class AuthenticationModel {
         self.store = store
     }
 
+    var accountClient: (any AccountManagementClient)? { client as? any AccountManagementClient }
     var isConfigured: Bool { client != nil }
     var account: Account? { session?.account }
 
@@ -34,6 +35,35 @@ final class AuthenticationModel {
             serverNeedsSignIn = session.map { $0.expiresAt <= Date() } ?? false
         } catch {
             errorMessage = "Не удалось прочитать сохранённый вход. Попробуйте ещё раз."
+        }
+    }
+
+    func accept(_ newSession: AuthSession) throws {
+        try store.save(newSession)
+        session = newSession; serverNeedsSignIn = false; errorMessage = nil
+    }
+    func updateAccount(_ account: Account) throws {
+        guard let session, session.account.id == account.id else { throw LibraryError.conflict }
+        try accept(session.withAccount(account))
+    }
+    func accessToken() async throws -> String {
+        await refreshIfNeeded()
+        guard let session, session.expiresAt > Date() else { throw URLError(.userAuthenticationRequired) }
+        return session.accessToken
+    }
+    func deleteAccount(local: any AccountLocalCleanup, onlyLocal: Bool = false) async throws {
+        guard !isWorking, let session, let client = accountClient else { throw URLError(.userAuthenticationRequired) }
+        generation = UUID(); isWorking = true
+        defer { isWorking = false }
+        let service = AccountDeletionService(client: client, sessions: store, local: local)
+        do {
+            if onlyLocal { try await service.finishLocal() } else { try await service.delete(session) }
+            BackgroundReturnRefresh.shared.cancel(); LibrarySessionController.shared.forget()
+            self.session = nil; requestedPhone = nil; codeInput = ""; errorMessage = nil
+        } catch {
+            // Re-read the durable phase even when the network/local cleanup failed.
+            if let recorded = try? store.load() { self.session = recorded }
+            throw error
         }
     }
 
@@ -68,7 +98,7 @@ final class AuthenticationModel {
     }
 
     func refreshIfNeeded() async {
-        guard !isWorking, let current = session, let client,
+        guard !isWorking, let current = session, current.deletionProgress == nil, let client,
               current.expiresAt.timeIntervalSinceNow < 60 else { return }
         let expectedGeneration = generation
         isWorking = true

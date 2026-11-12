@@ -3,10 +3,12 @@ import Foundation
 public struct Account: Codable, Equatable, Sendable, Identifiable {
     public let id: UUID
     public let phone: PhoneNumber
+    public let recoveryEmail: String?
 
-    public init(id: UUID, phone: PhoneNumber) {
+    public init(id: UUID, phone: PhoneNumber, recoveryEmail: String? = nil) {
         self.id = id
         self.phone = phone
+        self.recoveryEmail = recoveryEmail
     }
 }
 

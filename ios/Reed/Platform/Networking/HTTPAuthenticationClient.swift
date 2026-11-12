@@ -2,7 +2,7 @@ import Foundation
 import ReedApplication
 import ReedDomain
 
-final class HTTPAuthenticationClient: AuthenticationClient {
+final class HTTPAuthenticationClient: AuthenticationClient, AccountManagementClient {
     private let baseURL: URL
     private let session: URLSession
 
@@ -35,11 +35,30 @@ final class HTTPAuthenticationClient: AuthenticationClient {
         _ = try await execute(request)
     }
 
-    private func send<T: Decodable>(_ path: String, body: [String: String]) async throws -> T {
+    func profile(token: String) async throws -> AccountProfile { try await send("v1/account/profile", body: nil, token: token, method: "GET") }
+    func requestContact(token: String, kind: ContactKind, value: String) async throws -> CodeRequest {
+        try await send("v1/account/\(kind.rawValue)/request", body: ["value": value], token: token)
+    }
+    func verifyContact(token: String, kind: ContactKind, code: String) async throws -> ContactConfirmation {
+        try await send("v1/account/\(kind.rawValue)/verify", body: ["code": code], token: token)
+    }
+    func requestRecovery(email: String) async throws -> CodeRequest {
+        try await send("v1/auth/recovery/request", body: ["email": email])
+    }
+    func verifyRecovery(email: String, code: String) async throws -> AuthSession {
+        try await send("v1/auth/recovery/verify", body: ["email": email, "code": code])
+    }
+    func deleteAccount(token: String) async throws {
+        struct Accepted: Decodable { let status: String }
+        let result: Accepted = try await send("v1/account", body: nil, token: token, method: "DELETE")
+        guard result.status == "deletion_pending" else { throw URLError(.badServerResponse) }
+    }
+    private func send<T: Decodable>(_ path: String, body: [String: String]?, token: String? = nil, method: String = "POST") async throws -> T {
         var request = URLRequest(url: baseURL.appendingPathComponent(path))
-        request.httpMethod = "POST"
+        request.httpMethod = method
+        if let token { request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization") }
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-        request.httpBody = try JSONEncoder().encode(body)
+        if let body { request.httpBody = try JSONEncoder().encode(body) }
         return try WireJSON.decoder().decode(T.self, from: await execute(request))
     }
 
