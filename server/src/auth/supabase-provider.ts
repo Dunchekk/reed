@@ -1,3 +1,5 @@
+import type { AccountLifecycleProvider, ContactKind } from "../accounts/lifecycle.ts";
+import { ensureSameIdentity } from "../accounts/lifecycle.ts";
 import type { VerifiedIdentity } from "../accounts/account-repository.ts";
 import { AuthError } from "./provider.ts";
 import type { AuthenticationProvider, AuthErrorCode, ProviderSession } from "./provider.ts";
@@ -9,13 +11,15 @@ function object(value: unknown): Record<string, unknown> {
 }
 
 /** Stateless adapter: credentials are explicit and never shared between users. */
-export class SupabaseAuthProvider implements AuthenticationProvider {
+export class SupabaseAuthProvider implements AuthenticationProvider, AccountLifecycleProvider {
+  private readonly serviceKey: string | undefined;
+  get deletionAvailable() { return Boolean(this.serviceKey); }
   private readonly base: URL;
   private readonly key: string;
   private readonly fetcher: Fetch;
   private readonly now: () => number;
 
-  constructor(url: string, key: string, fetcher: Fetch = fetch, now: () => number = Date.now) {
+  constructor(url: string, key: string, fetcher: Fetch = fetch, now: () => number = Date.now, serviceKey?: string) {
     const project = new URL(url);
     if (project.protocol !== "https:" || project.username || project.password || !key) {
       throw new Error("Supabase requires an HTTPS project URL and a publishable key");
@@ -24,6 +28,7 @@ export class SupabaseAuthProvider implements AuthenticationProvider {
     this.key = key;
     this.fetcher = fetcher;
     this.now = now;
+    this.serviceKey = serviceKey;
   }
 
   async requestCode(phone: string): Promise<{ retryAt: string }> {
@@ -47,6 +52,36 @@ export class SupabaseAuthProvider implements AuthenticationProvider {
     await this.request("logout?scope=local", "POST", undefined, accessToken, "unauthorized");
   }
 
+  async requestContact(token: string, kind: ContactKind, value: string) {
+    await this.request("user", "PUT", {[kind]: value}, token, "invalid_request");
+    return {retryAt: new Date(this.now() + 60_000).toISOString()};
+  }
+  async verifyContact(token: string, kind: ContactKind, value: string, code: string) {
+    const before = await this.authenticate(token);
+    const response = object(await this.request("verify", "POST", {[kind]: value, token: code, type: kind === "phone" ? "phone_change" : "email_change"}, undefined, "invalid_code"));
+    if (response.user) ensureSameIdentity(before, this.identity(response.user));
+    const after = await this.authenticate(token);
+    ensureSameIdentity(before, after);
+    return after;
+  }
+  async requestRecovery(email: string) {
+    await this.request("otp", "POST", {email, create_user: false}, undefined, "provider_unavailable");
+    return {retryAt: new Date(this.now() + 60_000).toISOString()};
+  }
+  async verifyRecovery(email: string, code: string) {
+    return this.session(await this.request("verify", "POST", {email, token: code, type: "email"}, undefined, "invalid_code"));
+  }
+  async deleteIdentity(subject: string): Promise<void> {
+    if (!this.serviceKey || !/^[0-9a-f-]{36}$/i.test(subject)) throw new AuthError("provider_unavailable");
+    try {
+      const response = await this.fetcher(new URL(`admin/users/${subject}`, this.base), {
+        method: "DELETE", headers: {apikey: this.serviceKey, Authorization: `Bearer ${this.serviceKey}`},
+        signal: AbortSignal.timeout(10_000), redirect: "error",
+      });
+      if (!response.ok && response.status !== 404) throw new AuthError("provider_unavailable");
+    } catch { throw new AuthError("provider_unavailable"); }
+  }
+
   private identity(value: unknown): VerifiedIdentity {
     const user = object(value);
     const phone = typeof user.phone === "string" ? "+" + user.phone.replace(/^\+/, "") : "";
@@ -54,7 +89,8 @@ export class SupabaseAuthProvider implements AuthenticationProvider {
       || !/^\+7\d{10}$/.test(phone) || typeof user.phone_confirmed_at !== "string" || !user.phone_confirmed_at) {
       throw new AuthError("unauthorized");
     }
-    return { provider: "supabase", subject: user.id, phone };
+    return { provider: "supabase", subject: user.id, phone,
+      recoveryEmail: typeof user.email === "string" && user.email_confirmed_at ? user.email.toLowerCase() : null };
   }
 
   private session(value: unknown): ProviderSession {

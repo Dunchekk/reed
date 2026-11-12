@@ -1,3 +1,5 @@
+import { PostgresDevelopmentIdentities } from "./auth/development-identities.ts";
+import { AccountDeletionWorker } from "./accounts/lifecycle.ts";
 import { buildApp } from "./app.ts";
 import { loadConfig } from "./config.ts";
 import { Pool } from "pg";
@@ -7,12 +9,17 @@ import { SupabaseAuthProvider } from "./auth/supabase-provider.ts";
 
 const config = loadConfig(process.env);
 if (!process.env.DATABASE_URL) throw new Error("DATABASE_URL is required");
-const auth = config.authProvider === "development"
-  ? new DevelopmentAuthProvider(config.environment)
-  : new SupabaseAuthProvider(process.env.SUPABASE_URL ?? "", process.env.SUPABASE_PUBLISHABLE_KEY ?? "");
 const database = new Pool({ connectionString: process.env.DATABASE_URL, connectionTimeoutMillis: 5_000, max: 10 });
-const app = buildApp({ auth, accounts: new PostgresAccountRepository(database) });
-app.addHook("onClose", () => database.end());
+const auth = config.authProvider === "development"
+  ? new DevelopmentAuthProvider(config.environment, Date.now, new PostgresDevelopmentIdentities(database))
+  : new SupabaseAuthProvider(process.env.SUPABASE_URL ?? "", process.env.SUPABASE_PUBLISHABLE_KEY ?? "", fetch, Date.now, process.env.SUPABASE_SERVICE_ROLE_KEY);
+const accounts = new PostgresAccountRepository(database);
+const app = buildApp({auth, accounts, lifecycle: {provider: auth, repository: accounts}});
+const deletion = new AccountDeletionWorker(accounts,auth,config.authProvider);
+const retryDeletion = () => deletion.run().catch(() => app.log.error("Account deletion will retry"));
+const deletionTimer = setInterval(() => { void retryDeletion(); }, 30_000).unref();
+app.addHook("onReady", async () => { await retryDeletion(); });
+app.addHook("onClose", async () => { clearInterval(deletionTimer); await deletion.run().catch(() => {}); await database.end(); });
 database.on("error", () => app.log.error("Database connection failed"));
 
 for (const signal of ["SIGTERM", "SIGINT"] as const) {

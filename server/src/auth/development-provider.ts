@@ -1,3 +1,6 @@
+import type { AccountLifecycleProvider, ContactKind } from "../accounts/lifecycle.ts";
+import { MemoryDevelopmentIdentities } from "./development-identities.ts";
+import type { DevelopmentIdentityStore } from "./development-identities.ts";
 import { randomBytes } from "node:crypto";
 import type { VerifiedIdentity } from "../accounts/account-repository.ts";
 import { AuthError } from "./provider.ts";
@@ -7,21 +10,28 @@ interface Challenge { expiresAt: number; retryAt: number; attempts: number }
 interface StoredSession { value: ProviderSession; refreshExpiresAt: number }
 
 /** Isolated synthetic auth. Never a fallback for a failed real provider. */
-export class DevelopmentAuthProvider implements AuthenticationProvider {
+export class DevelopmentAuthProvider implements AuthenticationProvider, AccountLifecycleProvider {
+  readonly deletionAvailable = true;
   private readonly challenges = new Map<string, Challenge>();
   private readonly access = new Map<string, StoredSession>();
   private readonly refreshTokens = new Map<string, StoredSession>();
+  private readonly identities: DevelopmentIdentityStore;
   private readonly now: () => number;
 
-  constructor(environment: string, now: () => number = Date.now) {
+  constructor(environment: string, now: () => number = Date.now, identities: DevelopmentIdentityStore = new MemoryDevelopmentIdentities()) {
     if (environment !== "development" && environment !== "test") {
       throw new Error("Development authentication is forbidden outside development/test");
     }
     this.now = now;
+    this.identities = identities;
   }
 
   async requestCode(phone: string): Promise<{ retryAt: string }> {
     if (!/^\+700000000\d{2}$/.test(phone)) throw new AuthError("invalid_request");
+    return this.challenge(phone);
+  }
+
+  private async challenge(phone: string): Promise<{retryAt: string}> {
     this.prune();
     const previous = this.challenges.get(phone);
     if (previous && previous.retryAt > this.now()) {
@@ -33,16 +43,41 @@ export class DevelopmentAuthProvider implements AuthenticationProvider {
   }
 
   async verifyCode(phone: string, code: string): Promise<ProviderSession> {
+    this.consume(phone, code);
+    return this.issue(await this.identities.forPhone(phone));
+  }
+  private consume(key: string, code: string): void {
     this.prune();
-    const challenge = this.challenges.get(phone);
+    const challenge = this.challenges.get(key);
     if (!challenge) throw new AuthError("invalid_code");
-    if (challenge.attempts >= 5) {
-      throw new AuthError("rate_limited", new Date(challenge.retryAt).toISOString());
-    }
+    if (challenge.attempts >= 5) throw new AuthError("rate_limited", new Date(challenge.retryAt).toISOString());
     challenge.attempts += 1;
     if (code !== "123456") throw new AuthError("invalid_code");
-    this.challenges.delete(phone);
-    return this.issue({ provider: "development", subject: phone, phone });
+    this.challenges.delete(key);
+  }
+  async requestContact(token: string, kind: ContactKind, value: string) {
+    const identity = await this.authenticate(token);
+    if (kind === "phone" ? !/^\+700000000\d{2}$/.test(value) : !/^[a-z0-9._+-]+@example\.test$/.test(value)) throw new AuthError("invalid_request");
+    return this.challenge(`${identity.subject}:${kind}:${value}`);
+  }
+  async verifyContact(token: string, kind: ContactKind, value: string, code: string) {
+    const identity = await this.authenticate(token);
+    this.consume(`${identity.subject}:${kind}:${value}`, code);
+    return this.identities.update(identity.subject, kind, value);
+  }
+  async requestRecovery(email: string) {
+    if (!/^[a-z0-9._+-]+@example\.test$/.test(email)) throw new AuthError("invalid_request");
+    return this.challenge(`recovery:${email}`);
+  }
+  async verifyRecovery(email: string, code: string) {
+    this.consume(`recovery:${email}`, code);
+    const identity = await this.identities.forEmail(email);
+    if (!identity) throw new AuthError("invalid_code");
+    return this.issue(identity);
+  }
+  async deleteIdentity(subject: string) {
+    await this.identities.remove(subject);
+    for (const session of this.access.values()) if (session.value.identity.subject === subject) this.remove(session);
   }
 
   async refresh(refreshToken: string): Promise<ProviderSession> {
@@ -50,14 +85,18 @@ export class DevelopmentAuthProvider implements AuthenticationProvider {
     const session = this.refreshTokens.get(refreshToken);
     if (!session) throw new AuthError("unauthorized");
     this.remove(session);
-    return this.issue(session.value.identity);
+    const identity = await this.identities.get(session.value.identity.subject);
+    if (!identity) throw new AuthError("unauthorized");
+    return this.issue(identity);
   }
 
   async authenticate(accessToken: string): Promise<VerifiedIdentity> {
     this.prune();
     const session = this.access.get(accessToken);
     if (!session || Date.parse(session.value.expiresAt) <= this.now()) throw new AuthError("unauthorized");
-    return session.value.identity;
+    const identity = await this.identities.get(session.value.identity.subject);
+    if (!identity) throw new AuthError("unauthorized");
+    return identity;
   }
 
   async revoke(accessToken: string): Promise<void> {

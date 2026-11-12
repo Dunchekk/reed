@@ -25,3 +25,27 @@ test("Supabase failures are sanitized and unconfirmed identities are rejected", 
   const unconfirmed = new SupabaseAuthProvider("https://example.supabase.co", "key", async () => Response.json({ ...user, phone_confirmed_at: null }));
   await assert.rejects(unconfirmed.authenticate("token"), { code: "unauthorized" });
 });
+
+test("contact changes reject another subject and recovery never creates a user", async () => {
+  const calls: Array<{url: URL; init: RequestInit}> = [];
+  const provider = new SupabaseAuthProvider("https://example.supabase.co","key",async (url,init) => {
+    calls.push({url,init});
+    if (url.pathname.endsWith("/verify")) return Response.json({user:{...user,id:"22222222-2222-4222-8222-222222222222"}});
+    return Response.json(user);
+  });
+  await assert.rejects(provider.verifyContact("access","phone","+70000000002","123456"),{code:"unauthorized"});
+  await provider.requestRecovery("reader@example.test");
+  assert.deepEqual(JSON.parse(String(calls.at(-1)?.init.body)),{email:"reader@example.test",create_user:false});
+  assert.equal(provider.deletionAvailable,false);
+  await assert.rejects(provider.deleteIdentity(user.id),{code:"provider_unavailable"});
+});
+
+test("admin deletion uses server credentials and repeated missing identity is success",async () => {
+  const provider = new SupabaseAuthProvider("https://example.supabase.co","public",async (url,init) => {
+    assert.equal(url.pathname,`/auth/v1/admin/users/${user.id}`);
+    assert.equal(init.method,"DELETE");
+    assert.equal((init.headers as Record<string,string>).Authorization,"Bearer service-only");
+    return new Response(null,{status:404});
+  },Date.now,"service-only");
+  await provider.deleteIdentity(user.id);
+});

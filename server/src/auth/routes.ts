@@ -1,21 +1,15 @@
-import type { FastifyInstance, FastifyRequest } from "fastify";
+import {bearer, body, phone, token} from "./http-contract.ts";
+import type { FastifyInstance } from "fastify";
+import { registerAccountRoutes } from "../accounts/routes.ts";
 import rateLimit from "@fastify/rate-limit";
 import type { AccountRepository } from "../accounts/account-repository.ts";
 import { AuthError } from "./provider.ts";
 import type { AuthenticationProvider, ProviderSession } from "./provider.ts";
 
-export interface AuthDependencies { auth: AuthenticationProvider; accounts: AccountRepository }
-const phone = { type: "string", pattern: "^\\+7[0-9]{10}$" };
-const token = { type: "string", minLength: 1, maxLength: 8192 };
-const body = (properties: Record<string, object>) => ({
-  type: "object", required: Object.keys(properties), additionalProperties: false, properties,
-});
-
-function bearer(request: FastifyRequest): string {
-  const value = request.headers.authorization;
-  if (!value || !/^Bearer \S{1,8192}$/.test(value)) throw new AuthError("unauthorized");
-  return value.slice(7);
-}
+export interface AuthDependencies { auth: AuthenticationProvider; accounts: AccountRepository; lifecycle?: {
+  provider: import("../accounts/lifecycle.ts").AccountLifecycleProvider;
+  repository: import("../accounts/lifecycle.ts").AccountLifecycleRepository;
+} }
 
 export async function registerAuthRoutes(app: FastifyInstance, dependencies: AuthDependencies): Promise<void> {
   const { auth, accounts } = dependencies;
@@ -23,6 +17,7 @@ export async function registerAuthRoutes(app: FastifyInstance, dependencies: Aut
     max: 60, timeWindow: 60_000, cache: 10_000,
     errorResponseBuilder: (_request, context) => new AuthError("rate_limited", new Date(Date.now() + context.ttl).toISOString()),
   });
+  if (dependencies.lifecycle) registerAccountRoutes(app, dependencies, dependencies.lifecycle);
   const session = async (value: ProviderSession) => ({
     account: await accounts.findOrCreate(value.identity),
     accessToken: value.accessToken, refreshToken: value.refreshToken, expiresAt: value.expiresAt,
