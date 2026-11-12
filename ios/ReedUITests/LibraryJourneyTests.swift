@@ -54,6 +54,33 @@ final class LibraryJourneyTests: XCTestCase {
         reveal(words, in: app)
         XCTAssertEqual(words.value as? String, "journey")
     }
+    func testDraftSurvivesRelaunchAndCapturePreferencePersists() throws {
+        continueAfterFailure = false
+        let app = XCUIApplication()
+        app.launchArguments = ["--ui-testing", "--ui-test-run", UUID().uuidString, "-AppleLanguages", "(ru)", "-AppleLocale", "ru_RU"]
+        app.launch()
+        XCTAssertTrue(app.buttons["library.add"].waitForExistence(timeout: 30))
+        app.buttons["library.add"].tap()
+        let toggle = app.switches["editor.savePhotos"]
+        XCTAssertTrue(toggle.waitForExistence(timeout: 10)); toggle.tap()
+        let text = app.textViews["editor.text"]
+        reveal(text, in: app); text.tap(); text.typeText("Persistent draft")
+        app.buttons["Закрыть"].tap()
+        XCTAssertTrue(app.buttons["today.drafts"].waitForExistence(timeout: 10))
+        app.terminate(); app.launch()
+        XCTAssertTrue(app.buttons["today.drafts"].waitForExistence(timeout: 30)); app.buttons["today.drafts"].tap()
+        let draft = app.buttons.containing(.staticText, identifier: "Persistent draft").firstMatch
+        XCTAssertTrue(draft.waitForExistence(timeout: 10)); draft.tap()
+        XCTAssertTrue(toggle.waitForExistence(timeout: 10)); XCTAssertEqual(toggle.value as? String, "0")
+        XCTAssertEqual(text.value as? String, "Persistent draft")
+        screenshot("Draft editor", app)
+        app.buttons["editor.save"].tap()
+        XCTAssertTrue(app.staticTexts["Нет черновиков"].waitForExistence(timeout: 10))
+        app.tabBars.buttons["Архив"].tap()
+        XCTAssertTrue(app.buttons["archive.manage"].waitForExistence(timeout: 10)); app.buttons["archive.manage"].tap()
+        XCTAssertTrue(app.switches["Только без карточек"].waitForExistence(timeout: 10))
+        screenshot("Library management", app)
+    }
     private func reveal(_ element: XCUIElement, in app: XCUIApplication) {
         for _ in 0..<16 {
             if element.exists && element.isHittable { return }

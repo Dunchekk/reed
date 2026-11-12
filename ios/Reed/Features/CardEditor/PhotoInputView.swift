@@ -14,6 +14,7 @@ struct PhotoInputView: View {
     @State private var showsCamera = false
     @State private var loading = false
     @State private var errorMessage: String?
+    @State private var cameraPhoto: Data?
     @State private var review: PhotoReviewInput?
 
     var body: some View {
@@ -33,10 +34,11 @@ struct PhotoInputView: View {
             guard !items.isEmpty else { return }
             queued = items; selection = []; advance()
         }
-        .sheet(isPresented: $showsCamera) {
+        .sheet(isPresented: $showsCamera, onDismiss: {
+            if let data = cameraPhoto { cameraPhoto = nil; review = PhotoReviewInput(data: data) }
+        }) {
             CameraPicker { data in
-                showsCamera = false
-                if let data { review = PhotoReviewInput(data: data) }
+                cameraPhoto = data; showsCamera = false
             }.ignoresSafeArea()
         }
         .sheet(item: $review, onDismiss: { advance() }) { input in

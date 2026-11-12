@@ -1,7 +1,7 @@
 name: Checks
 on:
   push:
-    branches: [main, reed/implementation]
+    branches: [main, 'reed/**']
   pull_request:
 permissions:
   contents: read

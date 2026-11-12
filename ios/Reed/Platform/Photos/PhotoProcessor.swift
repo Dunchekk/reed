@@ -24,6 +24,9 @@ actor PhotoProcessor: PhotoProcessing {
         let options: [CFString: Any] = [kCGImageSourceCreateThumbnailFromImageAlways: true,
             kCGImageSourceCreateThumbnailWithTransform: true, kCGImageSourceThumbnailMaxPixelSize: 2400]
         guard let image = CGImageSourceCreateThumbnailAtIndex(source, 0, options as CFDictionary) else { throw PhotoError.invalid }
+        let rect = CGRect(x: region.x * Double(image.width), y: region.y * Double(image.height),
+                          width: region.width * Double(image.width), height: region.height * Double(image.height)).integral
+        guard let cropped = image.cropping(to: rect.intersection(CGRect(x: 0, y: 0, width: image.width, height: image.height))) else { throw PhotoError.invalid }
         let request = VNRecognizeTextRequest()
         request.recognitionLevel = .accurate
         request.usesLanguageCorrection = true
@@ -32,9 +35,6 @@ actor PhotoProcessor: PhotoProcessing {
         do {
             let supported = try request.supportedRecognitionLanguages()
             request.recognitionLanguages = ["ru-RU", "en-US"].filter { supported.contains($0) }
-            let rect = CGRect(x: region.x * Double(image.width), y: region.y * Double(image.height),
-                              width: region.width * Double(image.width), height: region.height * Double(image.height)).integral
-            guard let cropped = image.cropping(to: rect.intersection(CGRect(x: 0, y: 0, width: image.width, height: image.height))) else { throw PhotoError.invalid }
             try VNImageRequestHandler(cgImage: cropped).perform([request])
             text = (request.results ?? []).compactMap { $0.topCandidates(1).first?.string }.joined(separator: "\n")
         } catch { recognitionFailed = true }
@@ -42,10 +42,21 @@ actor PhotoProcessor: PhotoProcessing {
         let thumbnailOptions: [CFString: Any] = [kCGImageSourceCreateThumbnailFromImageAlways: true,
             kCGImageSourceCreateThumbnailWithTransform: true, kCGImageSourceThumbnailMaxPixelSize: 1200]
         guard let thumbnail = CGImageSourceCreateThumbnailAtIndex(source, 0, thumbnailOptions as CFDictionary) else { throw PhotoError.invalid }
+        let preview = try jpeg(thumbnail)
+        guard region != PhotoRegion() else {
+            return ProcessedPhoto(original: data, thumbnail: preview, recognizedText: text, recognitionFailed: recognitionFailed)
+        }
+        let croppedData = try jpeg(cropped)
+        guard let croppedSource = CGImageSourceCreateWithData(croppedData as CFData, nil),
+              let croppedThumbnail = CGImageSourceCreateThumbnailAtIndex(croppedSource, 0, thumbnailOptions as CFDictionary) else { throw PhotoError.invalid }
+        return ProcessedPhoto(original: croppedData, thumbnail: try jpeg(croppedThumbnail), recognizedText: text,
+                              recognitionFailed: recognitionFailed, preview: preview)
+    }
+    private func jpeg(_ image: CGImage) throws -> Data {
         let output = NSMutableData()
         guard let destination = CGImageDestinationCreateWithData(output, UTType.jpeg.identifier as CFString, 1, nil) else { throw PhotoError.invalid }
-        CGImageDestinationAddImage(destination, thumbnail, [kCGImageDestinationLossyCompressionQuality: 0.85] as CFDictionary)
+        CGImageDestinationAddImage(destination, image, [kCGImageDestinationLossyCompressionQuality: 0.85] as CFDictionary)
         guard CGImageDestinationFinalize(destination) else { throw PhotoError.invalid }
-        return ProcessedPhoto(original: data, thumbnail: output as Data, recognizedText: text, recognitionFailed: recognitionFailed)
+        return output as Data
     }
 }

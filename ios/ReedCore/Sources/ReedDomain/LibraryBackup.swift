@@ -33,10 +33,11 @@ public struct LibraryBackup: Codable, Sendable {
     }
     public var attachmentIDs: Set<UUID> { Set(cards.flatMap(\.attachmentIDs) + drafts.flatMap { $0.card.attachmentIDs }) }
     public func validate() throws {
+        func validDate(_ value: Date) -> Bool { value.timeIntervalSince1970.isFinite && abs(value.timeIntervalSince1970) < 253_402_300_800 }
         func unique<T: Hashable>(_ values: [T]) -> Bool { Set(values).count == values.count }
         guard unique(cards.map(\.id)), unique(drafts.map(\.id)), unique(catalog.sources.map(\.id)), unique(catalog.authors.map(\.id)),
               unique(catalog.tags.map(\.id)), unique(catalog.folders.map(\.id)), unique(openings.map(\.id)),
-              unique(cardReturns.map(\.cardID)), unique(returnHistory.map { $0.slot.id }), createdAt.timeIntervalSince1970.isFinite else { throw BackupError.invalidArchive }
+              unique(cardReturns.map(\.cardID)), unique(returnHistory.map { $0.slot.id }), validDate(createdAt) else { throw BackupError.invalidArchive }
         let sources = Dictionary(uniqueKeysWithValues: catalog.sources.map { ($0.id,$0) })
         let authors = Dictionary(uniqueKeysWithValues: catalog.authors.map { ($0.id,$0) })
         let tags = Dictionary(uniqueKeysWithValues: catalog.tags.map { ($0.id,$0) })
@@ -49,20 +50,21 @@ public struct LibraryBackup: Codable, Sendable {
         guard (catalog.authors.map(\.name) + catalog.tags.map(\.name) + catalog.folders.map(\.name)).allSatisfy({ !$0.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty }) else { throw BackupError.invalidArchive }
         for card in cards {
             try card.validate()
-            guard card.version >= 1, card.source.map({ sources[$0.id] == $0 }) ?? true,
+            guard (1...1_000_000_000).contains(card.version), card.source.map({ sources[$0.id] == $0 }) ?? true,
                   card.folder.map({ folders[$0.id] == $0 }) ?? true, card.tags.allSatisfy({ tags[$0.id] == $0 }),
-                  card.createdAt.timeIntervalSince1970.isFinite, card.updatedAt.timeIntervalSince1970.isFinite,
-                  card.deletedAt?.timeIntervalSince1970.isFinite ?? true else { throw BackupError.invalidArchive }
+                  validDate(card.createdAt), validDate(card.updatedAt),
+                  card.deletedAt.map(validDate) ?? true else { throw BackupError.invalidArchive }
         }
         for draft in drafts {
             guard unique(draft.card.attachmentIDs), draft.newAttachmentIDs.isSubset(of: Set(draft.card.attachmentIDs)),
-                  draft.updatedAt.timeIntervalSince1970.isFinite,
+                  validDate(draft.updatedAt), validDate(draft.card.createdAt), validDate(draft.card.updatedAt),
+                  (0...1_000_000_000).contains(draft.card.version),
                   draft.sourceID.map({ sources[$0] != nil }) ?? true, draft.folderID.map({ folders[$0] != nil }) ?? true else { throw BackupError.invalidArchive }
         }
         try returns.validate()
         for rule in cardReturns { guard ids.contains(rule.cardID) else { throw BackupError.invalidArchive }; try rule.validate() }
-        guard openings.allSatisfy({ ids.contains($0.cardID) && $0.date.timeIntervalSince1970.isFinite }),
-              returnHistory.allSatisfy({ $0.slot.date <= createdAt && $0.slot.date.timeIntervalSince1970.isFinite && ($0.decision.automaticOrdinal ?? 0) >= 0 }) else { throw BackupError.invalidArchive }
+        guard openings.allSatisfy({ ids.contains($0.cardID) && validDate($0.date) }),
+              returnHistory.allSatisfy({ $0.slot.date <= createdAt && validDate($0.slot.date) && (0...1_000_000_000).contains($0.decision.automaticOrdinal ?? 0) }) else { throw BackupError.invalidArchive }
     }
     public func remappingAttachments(_ mapping: [UUID: UUID]) throws -> LibraryBackup {
         func map(_ ids: [UUID]) throws -> [UUID] {

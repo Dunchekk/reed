@@ -49,3 +49,10 @@ test("admin deletion uses server credentials and repeated missing identity is su
   },Date.now,"service-only");
   await provider.deleteIdentity(user.id);
 });
+
+test("recovery request hides unknown emails without hiding provider outages", async () => {
+  const missing = new SupabaseAuthProvider("https://example.supabase.co","key",async () => new Response(null,{status:400}));
+  assert.ok((await missing.requestRecovery("missing@example.test")).retryAt);
+  const down = new SupabaseAuthProvider("https://example.supabase.co","key",async () => new Response(null,{status:503}));
+  await assert.rejects(down.requestRecovery("reader@example.test"),{code:"provider_unavailable"});
+});

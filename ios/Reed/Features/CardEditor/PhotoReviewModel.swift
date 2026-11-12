@@ -6,6 +6,8 @@ import ReedApplication
 final class PhotoReviewModel {
     var region = PhotoRegion()
     var text = ""
+    private(set) var recognizedRegion: PhotoRegion?
+    var readyToApply: Bool { result != nil && recognizedRegion == region && !working }
     private(set) var result: ProcessedPhoto?
     private(set) var working = false
     private(set) var message: String?
@@ -14,10 +16,12 @@ final class PhotoReviewModel {
     init(data: Data, processor: any PhotoProcessing = PhotoProcessor()) { self.data = data; self.processor = processor }
     func recognize() async {
         guard !working else { return }
+        let selection = region
         working = true; defer { working = false }
         do {
-            let photo = try await processor.process(data, region: region)
+            let photo = try await processor.process(data, region: selection)
             guard !Task.isCancelled else { return }
+            recognizedRegion = selection
             result = photo; text = photo.recognizedText
             message = photo.recognitionFailed ? "Не удалось распознать текст. Можно ввести его вручную." : photo.recognizedText.isEmpty ? "Текст не найден. Выберите другой участок или введите текст." : nil
         } catch { message = (error as? LocalizedError)?.errorDescription ?? "Не удалось обработать фотографию." }

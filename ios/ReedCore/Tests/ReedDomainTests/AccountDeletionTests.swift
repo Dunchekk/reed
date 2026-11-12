@@ -35,7 +35,7 @@ private func deletionSession() throws -> AuthSession {
     let service = AccountDeletionService(client: client,sessions:sessions,local:local)
     await local.setFailure(true)
     await #expect(throws: (any Error).self) { try await service.delete(deletionSession()) }
-    let pending = try #require(sessions.load())
+    let pending = try #require(try sessions.load())
     #expect(pending.deletionProgress == .accepted)
     #expect(await local.stopped)
     await local.setFailure(false)

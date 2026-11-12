@@ -100,11 +100,17 @@ final class CardEditorModel {
             let id = try await context.editor.publish(draft)
             context.markChanged(); context.markDraftsChanged()
             if continueEditing {
-                let saved = try await context.repository.card(id: id)
-                var next = CardDraft(); next.sourceID = saved?.source?.id; next.folderID = saved?.folder?.id
-                next.tagNames = draft.tagNames
-                draft = next; isChanged = false; saveStatus = "Карточка сохранена. Можно добавить следующий фрагмент."
-                catalog = try await context.repository.catalog()
+                let previous = draft
+                draft = CardDraft(); isChanged = false
+                do {
+                    let saved = try await context.repository.card(id: id)
+                    catalog = try await context.repository.catalog()
+                    draft.sourceID = saved?.source?.id; draft.folderID = saved?.folder?.id
+                    draft.tagNames = previous.tagNames
+                    saveStatus = "Карточка сохранена. Можно добавить следующий фрагмент."
+                } catch {
+                    saveStatus = "Карточка сохранена. Не удалось перенести контекст в следующий фрагмент; выберите его снова."
+                }
             } else { closed = true }
             return id
         } catch { errorMessage = libraryErrorMessage(error); return nil }

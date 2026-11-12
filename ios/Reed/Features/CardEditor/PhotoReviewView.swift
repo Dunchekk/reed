@@ -18,7 +18,7 @@ struct PhotoReviewView: View {
         NavigationStack {
             Form {
                 Section("Выберите участок страницы") {
-                    if let photo = model.result, let image = UIImage(data: photo.thumbnail) {
+                    if let photo = model.result, let image = UIImage(data: photo.preview ?? photo.thumbnail) {
                         Image(uiImage: image).resizable().scaledToFit()
                             .overlay {
                                 GeometryReader { proxy in
@@ -41,18 +41,19 @@ struct PhotoReviewView: View {
                         Spacer()
                         Button("Распознать участок") { Task { await model.recognize() } }
                     }.buttonStyle(.borderless)
-                    Text("Выделение ограничивает распознавание. Если сохранение фото включено, прикрепляется полный оригинал.").reedFont(.metadata)
+                    Text("Выделение обрезает новое вложение и ограничивает распознавание. «Вся страница» сохраняет полный оригинал.").reedFont(.metadata)
                 }
                 Section("Оставьте нужный фрагмент") {
                     TextEditor(text: $model.text).frame(minHeight: 200).reedFont(.body)
+                    if !model.readyToApply && !model.working { Text("Выделение изменилось. Нажмите «Распознать участок».").reedFont(.metadata) }
                     if let message = model.message { Text(message).foregroundStyle(ReedTheme.secondary) }
                     if savedFragment { Text("Фрагмент добавлен в черновики. Можно выбрать следующий.").foregroundStyle(ReedTheme.secondary) }
-                    Text(savesPhotos ? "Оригинал будет прикреплён." : "Будет сохранён только текст.").reedFont(.metadata)
+                    Text(savesPhotos ? "Фото выбранного участка будет прикреплено." : "Будет сохранён только текст.").reedFont(.metadata)
                     Button("Добавить отдельный черновик") {
                         guard let photo = model.result else { return }
                         applying = true
                         Task { savedFragment = await apply(photo, model.text, true); applying = false }
-                    }.disabled(model.text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+                    }.disabled(!model.readyToApply || model.text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
                 }
                 if model.working || applying { ProgressView("Обрабатываем…") }
             }.disabled(model.working || applying)
@@ -64,7 +65,7 @@ struct PhotoReviewView: View {
                         guard let photo = model.result else { return }
                         applying = true
                         Task { if await apply(photo, model.text, false) { dismiss() }; applying = false }
-                    }.disabled(model.result == nil || model.working || applying)
+                    }.disabled(!model.readyToApply || applying)
                 }
             }.interactiveDismissDisabled(applying)
             .task { await model.recognize() }

@@ -8,7 +8,12 @@ import ReedPersistence
     private var opening: (id: UUID, task: Task<LibraryContext, Error>)?
     func open(_ account: Account) async throws -> LibraryContext {
         if let current, current.account.id == account.id { return current }
-        if let opening { _ = try await opening.task.value; return try await open(account) }
+        if let opening {
+            let result = try await opening.task.value
+            if opening.id == account.id { return result }
+            self.opening = nil; current = result
+            return try await open(account)
+        }
         let task = Task { @MainActor in
             if let current { try await current.returnCoordinator.stop() }
             var root = try FileManager.default.url(for: .applicationSupportDirectory, in: .userDomainMask,

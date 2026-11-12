@@ -8,7 +8,7 @@ public struct CardReturnSettings: Codable, Equatable, Sendable {
     public var weekdays: Set<Int> = Set(1...7)
     public init(cardID: UUID) { self.cardID = cardID }
     public func validate() throws {
-        guard deferredUntil?.timeIntervalSince1970.isFinite ?? true, minutes.count <= 10, Set(minutes).count == minutes.count, minutes.allSatisfy({ (0...1439).contains($0) }),
+        guard deferredUntil.map({ $0.timeIntervalSince1970.isFinite && abs($0.timeIntervalSince1970) < 253_402_300_800 }) ?? true, minutes.count <= 10, Set(minutes).count == minutes.count, minutes.allSatisfy({ (0...1439).contains($0) }),
               weekdays.isSubset(of: Set(1...7)) else { throw ReturnError.invalidSchedule }
     }
 }

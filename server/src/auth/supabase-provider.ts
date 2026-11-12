@@ -65,7 +65,11 @@ export class SupabaseAuthProvider implements AuthenticationProvider, AccountLife
     return after;
   }
   async requestRecovery(email: string) {
-    await this.request("otp", "POST", {email, create_user: false}, undefined, "provider_unavailable");
+    try { await this.request("otp", "POST", {email, create_user: false}, undefined, "invalid_request"); }
+    catch (error) {
+      // Do not reveal whether an otherwise valid email belongs to an existing user.
+      if (!(error instanceof AuthError) || error.code !== "invalid_request") throw error;
+    }
     return {retryAt: new Date(this.now() + 60_000).toISOString()};
   }
   async verifyRecovery(email: string, code: string) {

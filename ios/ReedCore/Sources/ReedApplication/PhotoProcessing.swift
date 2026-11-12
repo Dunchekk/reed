@@ -11,9 +11,11 @@ public struct PhotoRegion: Equatable, Sendable {
 public struct ProcessedPhoto: Sendable {
     public let original: Data
     public let thumbnail: Data
+    public let preview: Data?
     public let recognizedText: String
     public let recognitionFailed: Bool
-    public init(original: Data, thumbnail: Data, recognizedText: String, recognitionFailed: Bool) {
+    public init(original: Data, thumbnail: Data, recognizedText: String, recognitionFailed: Bool, preview: Data? = nil) {
+        self.preview = preview
         self.original = original; self.thumbnail = thumbnail; self.recognizedText = recognizedText; self.recognitionFailed = recognitionFailed
     }
 }

@@ -71,3 +71,23 @@ import ReedPersistence
     await #expect(throws: (any Error).self) { _ = try await files.original(id: id) }
     await #expect(throws: (any Error).self) { _ = try await files.original(id: orphan) }
 }
+
+@Test func restoringAfterClearPreservesClosedDraftProtection() async throws {
+    let library = try TestLibrary(); defer { library.cleanup() }
+    let db = try LibraryDatabase(root: library.root, accountID: library.accountID)
+    let drafts = LocalDraftRepository(database: db), backups = LocalLibraryBackupRepository(database: db)
+    let draft = CardDraft(card: Card(text: "Сохранённый черновик"))
+    try await drafts.saveDraft(draft)
+    let snapshot = try await backups.snapshot()
+    _ = try await backups.clearLibrary()
+    #expect(try await backups.restore(snapshot) == .restored)
+    let restored = try await drafts.drafts()
+    #expect(restored.count == 1); #expect(restored.first?.id != draft.id)
+    await #expect(throws: LibraryError.notFound) { try await drafts.saveDraft(draft) }
+}
+
+@Test func backupRejectsOrdinalOverflowBeforeWriting() throws {
+    let event = BackupReturn(slot: ReturnTimeSlot(id: "overflow", date: .distantPast), decision: ReturnDecision(cardID: nil, reason: .noCandidates, automaticOrdinal: Int.max))
+    let backup = LibraryBackup(cards: [], catalog: LibraryCatalog(), drafts: [], capture: CapturePreferences(), returns: ReturnSettings(), cardReturns: [], feed: [], historyEnabled: false, openings: [], returnHistory: [event])
+    #expect(throws: BackupError.invalidArchive) { try backup.validate() }
+}

@@ -49,7 +49,7 @@ public struct LocalLibraryBackupRepository: LibraryBackupRepository {
                 guard try Int.fetchOne(db, sql: "SELECT COUNT(*) FROM \(table)") == 0 else { throw BackupError.nonemptyLibrary }
             }
             guard try Int.fetchOne(db, sql: "SELECT COUNT(*) FROM drafts WHERE state='active'") == 0 else { throw BackupError.nonemptyLibrary }
-            try db.execute(sql: "DELETE FROM catalog_tombstones; DELETE FROM drafts; DELETE FROM return_slots; DELETE FROM return_days; DELETE FROM preferences;")
+            try db.execute(sql: "DELETE FROM catalog_tombstones; DELETE FROM return_slots; DELETE FROM return_days; DELETE FROM preferences;")
             for author in backup.catalog.authors { try LocalLibraryRepository.ensureName(kind: .authors, id: author.id, name: author.name, db: db) }
             for source in backup.catalog.sources { try LocalLibraryRepository.save(source, db: db) }
             for tag in backup.catalog.tags { try LocalLibraryRepository.ensureName(kind: .tags, id: tag.id, name: tag.name, db: db) }
@@ -59,7 +59,9 @@ public struct LocalLibraryBackupRepository: LibraryBackupRepository {
                 try LocalLibraryRepository.save(card.replacingVersion(0), db: db, now: Date(), calendar: .current)
                 try db.execute(sql: "UPDATE cards SET version=? WHERE id=?", arguments: [card.version,card.id.uuidString])
             }
-            for draft in backup.drafts {
+            for original in backup.drafts {
+                let occupied = try Bool.fetchOne(db, sql: "SELECT EXISTS(SELECT 1 FROM drafts WHERE id=?)", arguments: [original.id.uuidString]) ?? false
+                let draft = occupied ? original.replacingID(UUID()) : original
                 try db.execute(sql: "INSERT INTO drafts VALUES (?,?,'active',?)", arguments: [draft.id.uuidString,draft.updatedAt.timeIntervalSince1970,try JSONEncoder().encode(draft)])
                 for id in draft.card.attachmentIDs { try db.execute(sql: "INSERT INTO draft_attachments VALUES (?,?)", arguments: [draft.id.uuidString,id.uuidString]) }
             }
@@ -72,6 +74,7 @@ public struct LocalLibraryBackupRepository: LibraryBackupRepository {
             for event in backup.returnHistory {
                 try db.execute(sql: "INSERT INTO return_slots VALUES (?,?,?,?,? ,?,'planned',?,0)", arguments: [event.slot.id,event.slot.date.timeIntervalSince1970,event.decision.cardID?.uuidString,event.decision.automaticOrdinal,try JSONEncoder().encode(event.slot),try JSONEncoder().encode(event.decision),UUID().uuidString])
             }
+            try LocalReturnRepository.validateCurrentSchedules(db, now: Date(), calendar: .current)
             try db.execute(sql: "INSERT INTO backup_imports VALUES (?)", arguments: [backup.id.uuidString])
             try LocalLibraryRepository.bumpRevision(db)
             return .restored

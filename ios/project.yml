@@ -43,6 +43,9 @@ targets:
     info:
       path: Reed/Info.plist
       properties:
+        ReedAPIBaseURL: "$(REED_API_BASE_URL)"
+        CFBundleShortVersionString: "$(MARKETING_VERSION)"
+        CFBundleVersion: "$(CURRENT_PROJECT_VERSION)"
         UIBackgroundModes: [fetch]
         BGTaskSchedulerPermittedIdentifiers: [dev.dunchekk.reed.returns]
     scheme:

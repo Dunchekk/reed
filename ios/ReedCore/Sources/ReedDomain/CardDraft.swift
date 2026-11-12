@@ -19,6 +19,14 @@ public struct CardDraft: Codable, Equatable, Sendable, Identifiable {
         tagNames = card.tags.map(\.name).joined(separator: ", ")
         newAttachmentIDs = []; updatedAt = Date()
     }
+    public func replacingID(_ id: UUID) -> CardDraft {
+        var result = CardDraft(id: id, card: card)
+        result.sourceID = sourceID; result.folderID = folderID
+        result.sourceTitle = sourceTitle; result.authorNames = authorNames
+        result.tagNames = tagNames; result.folderName = folderName
+        result.newAttachmentIDs = newAttachmentIDs; result.updatedAt = updatedAt
+        return result
+    }
     public var isEmpty: Bool {
         [card.text, card.title, card.comment, card.page, sourceTitle, authorNames, tagNames, folderName]
             .allSatisfy { $0.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty }
