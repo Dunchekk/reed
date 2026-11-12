@@ -52,12 +52,16 @@ final class AuthenticationModel {
         return session.accessToken
     }
     func deleteAccount(local: any AccountLocalCleanup, onlyLocal: Bool = false) async throws {
-        guard !isWorking, let session, let client = accountClient else { throw URLError(.userAuthenticationRequired) }
+        guard !isWorking, let session else { throw URLError(.userAuthenticationRequired) }
         generation = UUID(); isWorking = true
         defer { isWorking = false }
-        let service = AccountDeletionService(client: client, sessions: store, local: local)
         do {
-            if onlyLocal { try await service.finishLocal() } else { try await service.delete(session) }
+            if onlyLocal || session.deletionProgress == .accepted {
+                try await AccountDeletionService.finishLocal(sessions: store, local: local)
+            } else {
+                guard let accountClient, let client else { throw URLError(.unsupportedURL) }
+                try await AccountDeletionService(client: accountClient, authentication: client, sessions: store, local: local).delete(session)
+            }
             BackgroundReturnRefresh.shared.cancel(); LibrarySessionController.shared.forget()
             self.session = nil; requestedPhone = nil; codeInput = ""; errorMessage = nil
         } catch {

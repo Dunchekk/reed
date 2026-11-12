@@ -75,6 +75,8 @@ targets:
         product: ReedDomain
       - package: ReedCore
         product: ReedApplication
+      - package: ReedCore
+        product: ReedPersistence
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: dev.dunchekk.reed.tests

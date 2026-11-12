@@ -30,22 +30,32 @@ public protocol AccountLocalCleanup: Sendable {
 /// A network timeout never counts as acceptance by the server.
 public struct AccountDeletionService: Sendable {
     private let client: any AccountManagementClient
+    private let authentication: any AuthenticationClient
     private let sessions: any SessionStore
     private let local: any AccountLocalCleanup
-    public init(client: any AccountManagementClient, sessions: any SessionStore, local: any AccountLocalCleanup) {
-        self.client = client; self.sessions = sessions; self.local = local
+    public init(client: any AccountManagementClient, authentication: any AuthenticationClient, sessions: any SessionStore, local: any AccountLocalCleanup) {
+        self.client = client; self.authentication = authentication; self.sessions = sessions; self.local = local
     }
     public func delete(_ session: AuthSession) async throws {
-        if session.deletionProgress != .accepted {
-            try sessions.save(session.withDeletionProgress(.requested))
+        var current = session
+        if current.deletionProgress != .accepted {
+            if current.expiresAt.timeIntervalSinceNow < 60 {
+                let refreshed = try await authentication.refresh(token: current.refreshToken)
+                guard refreshed.account.id == current.account.id else { throw LibraryError.conflict }
+                current = refreshed
+                if let progress = session.deletionProgress { current = current.withDeletionProgress(progress) }
+                try sessions.save(current)
+            }
+            try sessions.save(current.withDeletionProgress(.requested))
             try await local.prepareForDeletion()
-            try await client.deleteAccount(token: session.accessToken)
-            try sessions.save(session.withDeletionProgress(.accepted))
+            try await client.deleteAccount(token: current.accessToken)
+            try sessions.save(current.withDeletionProgress(.accepted))
         }
         try await finishLocal()
     }
     /// Explicit escape hatch after an unconfirmed remote request; does not claim remote deletion.
-    public func finishLocal() async throws {
+    public func finishLocal() async throws { try await Self.finishLocal(sessions: sessions, local: local) }
+    public static func finishLocal(sessions: any SessionStore, local: any AccountLocalCleanup) async throws {
         try await local.stopAndClear()
         try sessions.clear()
     }

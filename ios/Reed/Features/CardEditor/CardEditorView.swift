@@ -21,7 +21,7 @@ struct CardEditorView: View {
                 Section("Фото и распознавание") {
                     Toggle("Сохранять фото", isOn: Binding(get: { model.savesPhotos }, set: { value in Task { await model.setSavesPhotos(value) } }))
                         .accessibilityIdentifier("editor.savePhotos")
-                    Text("Выбор запоминается. Выключение оставляет текст и ранее сохранённые фотографии.").reedFont(.metadata).foregroundStyle(ReedTheme.secondary)
+                    Text("Выбор запоминается для следующих фото. Уже прикреплённые фотографии можно удалить отдельно.").reedFont(.metadata).foregroundStyle(ReedTheme.secondary)
                     PhotoInputView(initialInput: initialInput, savesPhotos: model.savesPhotos, apply: { photo, text, separate in
                         await model.applyPhoto(photo, text: text, separate: separate)
                     })

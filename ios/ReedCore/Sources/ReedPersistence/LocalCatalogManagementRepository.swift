@@ -115,13 +115,16 @@ public struct LocalCatalogManagementRepository: CatalogManagementRepository {
             var draft = try JSONDecoder().decode(CardDraft.self, from: data)
             if kind == .sources && draft.sourceID == id { draft.sourceID = target }
             if kind == .folders && draft.folderID == id { draft.folderID = target }
-            if kind == .tags {
+            if kind == .tags || kind == .authors {
+                let separator: Character = kind == .tags ? "," : ";"
+                let input = kind == .tags ? draft.tagNames : draft.authorNames
                 var seen = Set<String>()
-                draft.tagNames = draft.tagNames.split(separator: ",").compactMap { part -> String? in
+                let updated = input.split(separator: separator).compactMap { part -> String? in
                     let name = part.trimmingCharacters(in: .whitespacesAndNewlines)
                     let next = TextNormalization.normalize(name) == TextNormalization.normalize(oldName) ? newName : name
                     guard let next, seen.insert(TextNormalization.normalize(next)).inserted else { return nil }; return next
-                }.joined(separator: ", ")
+                }.joined(separator: String(separator) + " ")
+                if kind == .tags { draft.tagNames = updated } else { draft.authorNames = updated }
             }
             // Only rebase metadata-only changes; a draft already stale before this command stays stale.
             if versions[draft.card.id.uuidString] == draft.card.version {

@@ -50,3 +50,23 @@ func mergingCatalogEntriesPreservesCardsAndRemapsLinks(kind: CatalogKind) async 
     #expect(try await library.repository.card(id: card.id)?.text == "Незаконченная правка")
     #expect(try await manager.entries(kind: .tags).entries.isEmpty)
 }
+
+@Test(arguments: ["rename", "merge", "remove"])
+func authorManagementUpdatesUnpublishedSourceDraftBeforePublication(operation: String) async throws {
+    let library = try TestLibrary(); defer { library.cleanup() }
+    let db = try LibraryDatabase(root: library.root, accountID: library.accountID)
+    let drafts = LocalDraftRepository(database: db), manager = LocalCatalogManagementRepository(database: db)
+    let old = Author(name: "Старый Автор"), target = Author(name: "Новый Автор")
+    try await library.repository.save(Card(text:"Существующий",source:Source(title:"Книга",authors:[old,target])))
+    var draft = CardDraft(card:Card(text:"Новый фрагмент"))
+    draft.sourceTitle = "Новый источник"; draft.authorNames = "  старый автор ; Новый Автор"
+    try await drafts.saveDraft(draft)
+    let mutation: CatalogMutation = operation == "rename" ? .rename(id:old.id,name:"Переименованный") : operation == "merge" ? .merge(id:old.id,into:target.id) : .remove(id:old.id)
+    try await manager.update(kind:.authors,mutation:mutation,expectedRevision:manager.entries(kind:.authors).revision)
+    let recovered = try #require(await drafts.draft(id:draft.id))
+    let editor = CardEditingService(library:library.repository,drafts:drafts,attachments:FileAttachmentStore(directory:db.directory))
+    _ = try await editor.publish(recovered)
+    let saved = try #require(await library.repository.card(id:draft.card.id))
+    #expect(saved.source?.authors.map(\.name) == (operation == "rename" ? ["Переименованный","Новый Автор"] : ["Новый Автор"]))
+    #expect(try await manager.entries(kind:.authors).entries.contains { $0.name == "Старый Автор" } == false)
+}

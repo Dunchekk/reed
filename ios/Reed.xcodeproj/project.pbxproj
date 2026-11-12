@@ -16,6 +16,7 @@
 		12A0D50BF71F4308827DDCF3 /* AccountSettingsModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = C7676CBF103D0C0EF2B8B16B /* AccountSettingsModel.swift */; };
 		19A38778492295382B8ED466 /* LibraryJourneyTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84D2C286BAEB4463AE530844 /* LibraryJourneyTests.swift */; };
 		1AD51B222E4E80409AB84EA1 /* DraftsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 56D38D19B1DAF51E63A9D2D0 /* DraftsView.swift */; };
+		1B16E693C56945803CA63599 /* LibraryToolsRegressionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 134FE15D6DD26E0A2EE00816 /* LibraryToolsRegressionTests.swift */; };
 		1C7AB1A327D2B80C3851C523 /* ReedDomain in Frameworks */ = {isa = PBXBuildFile; productRef = 4E3FBA9F0F539704045E7EEA /* ReedDomain */; };
 		204EFA47B58B7FF6B7F22BD7 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 436AE5FA74AABD818FE7FE8C /* Assets.xcassets */; };
 		24536C6DD53B128559A57D36 /* LibraryContext.swift in Sources */ = {isa = PBXBuildFile; fileRef = C1EC736F24E97170F63BB42E /* LibraryContext.swift */; };
@@ -31,6 +32,7 @@
 		49D99AD76297B6273347D925 /* KeychainSessionStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 96A8296BCC16155B37CB28FA /* KeychainSessionStore.swift */; };
 		504142EE2A47CDCD50A3E2D1 /* PhotoReviewView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A03C0735763CC89B2C57568 /* PhotoReviewView.swift */; };
 		52EB373D8E3C6924B00B3160 /* AccountDeletionRecoveryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B47C083FB7EA24DC2219BD5E /* AccountDeletionRecoveryView.swift */; };
+		53BBFDC4ADC354D4B1C2A576 /* ReedPersistence in Frameworks */ = {isa = PBXBuildFile; productRef = FACC2A137CBDE6D7FD98623C /* ReedPersistence */; };
 		58E57CA07A1C7DB2F760DAF9 /* CatalogView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2CE73F5106F621DDE3FCF7AF /* CatalogView.swift */; };
 		67ACABABDB432E8F21CDBFE5 /* DatePresentation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 551B422A1F74415E0A4E1949 /* DatePresentation.swift */; };
 		6D69885015D2680E566BB00F /* LibrarySessionController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6A58A70DE25828C7944C96A4 /* LibrarySessionController.swift */; };
@@ -86,6 +88,7 @@
 		0579E3266F9E669906F3C361 /* NotificationRouter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationRouter.swift; sourceTree = "<group>"; };
 		08EC1F2F38AC35602A4E1D10 /* ReedUITests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = ReedUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		0A03C0735763CC89B2C57568 /* PhotoReviewView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhotoReviewView.swift; sourceTree = "<group>"; };
+		134FE15D6DD26E0A2EE00816 /* LibraryToolsRegressionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LibraryToolsRegressionTests.swift; sourceTree = "<group>"; };
 		14A9A252493AF1944B124805 /* CardEditorModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CardEditorModel.swift; sourceTree = "<group>"; };
 		16E76830BA52EE634276EAD4 /* BackgroundReturnRefresh.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackgroundReturnRefresh.swift; sourceTree = "<group>"; };
 		1D10516915064E4D7474CB1E /* CardEditorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CardEditorView.swift; sourceTree = "<group>"; };
@@ -156,6 +159,7 @@
 			files = (
 				1C7AB1A327D2B80C3851C523 /* ReedDomain in Frameworks */,
 				1239D539F89481300C5827BA /* ReedApplication in Frameworks */,
+				53BBFDC4ADC354D4B1C2A576 /* ReedPersistence in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -338,6 +342,7 @@
 		B5FA11B32F840143DE276A50 /* ReedTests */ = {
 			isa = PBXGroup;
 			children = (
+				134FE15D6DD26E0A2EE00816 /* LibraryToolsRegressionTests.swift */,
 				2B8F319B13C76A899DE93FF5 /* PhotoProcessorTests.swift */,
 				221E7708F7D6338CD6FA5791 /* ReturnCoordinatorTests.swift */,
 			);
@@ -506,6 +511,7 @@
 			packageProductDependencies = (
 				4E3FBA9F0F539704045E7EEA /* ReedDomain */,
 				C09619A288BBE7476F7D8453 /* ReedApplication */,
+				FACC2A137CBDE6D7FD98623C /* ReedPersistence */,
 			);
 			productName = ReedTests;
 			productReference = 29333A990F07B4AB2D14D5FC /* ReedTests.xctest */;
@@ -565,6 +571,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				1B16E693C56945803CA63599 /* LibraryToolsRegressionTests.swift in Sources */,
 				27EEB56FDC107175420F7534 /* PhotoProcessorTests.swift in Sources */,
 				09460565B64F9CFB727A3A47 /* ReturnCoordinatorTests.swift in Sources */,
 			);
@@ -960,6 +967,10 @@
 		C09619A288BBE7476F7D8453 /* ReedApplication */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = ReedApplication;
+		};
+		FACC2A137CBDE6D7FD98623C /* ReedPersistence */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = ReedPersistence;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

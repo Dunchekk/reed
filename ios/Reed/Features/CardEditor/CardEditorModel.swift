@@ -68,11 +68,7 @@ final class CardEditorModel {
         do {
             try await context.capturePreferences.setCapturePreferences(CapturePreferences(savesPhotos: value))
             savesPhotos = value
-            if !value {
-                draft.card.attachmentIDs.removeAll { draft.newAttachmentIDs.contains($0) }
-                draft.newAttachmentIDs = []
-                changed()
-            }
+
         } catch { errorMessage = libraryErrorMessage(error) }
     }
     func removePhoto(_ id: UUID) {
