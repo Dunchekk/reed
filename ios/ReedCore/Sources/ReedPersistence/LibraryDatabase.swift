@@ -109,6 +109,9 @@ public final class LibraryDatabase: Sendable {
         migrator.registerMigration("009_catalog_tombstones") { db in
             try db.execute(sql: "CREATE TABLE catalog_tombstones (kind TEXT NOT NULL,id TEXT NOT NULL,PRIMARY KEY(kind,id))")
         }
+        migrator.registerMigration("010_backup_imports") { db in
+            try db.execute(sql: "CREATE TABLE backup_imports (id TEXT PRIMARY KEY NOT NULL)")
+        }
         return migrator
     }
 }

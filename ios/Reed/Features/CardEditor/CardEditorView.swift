@@ -79,7 +79,7 @@ struct CardEditorView: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button("Закрыть") { Task { await model.flush(); if !model.isChanged || model.errorMessage == nil { context.markDraftsChanged(); dismiss() } } }.disabled(model.isSaving)
+                    Button("Закрыть") { Task { if await model.finishEditing() { dismiss() } } }.disabled(model.isSaving)
                 }
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Сохранить") { Task { if await model.save() != nil { dismiss() } } }

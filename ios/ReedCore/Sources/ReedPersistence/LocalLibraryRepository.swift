@@ -76,13 +76,14 @@ public final class LocalLibraryRepository: Sendable {
     }
 
     public func catalog() async throws -> LibraryCatalog {
-        try await database.writer.read { db in
-            let sources = try Row.fetchAll(db, sql: "SELECT * FROM sources ORDER BY title, id").map { try Self.source($0, db: db) }
-            let authors = try Row.fetchAll(db, sql: "SELECT * FROM authors ORDER BY name, id").map { Author(id: try Self.uuid($0["id"]), name: $0["name"]) }
-            let tags = try Row.fetchAll(db, sql: "SELECT * FROM tags ORDER BY name, id").map { Tag(id: try Self.uuid($0["id"]), name: $0["name"]) }
-            let folders = try Row.fetchAll(db, sql: "SELECT * FROM folders ORDER BY name, id").map { Folder(id: try Self.uuid($0["id"]), name: $0["name"]) }
-            return LibraryCatalog(sources: sources, authors: authors, tags: tags, folders: folders)
-        }
+        try await database.writer.read(Self.catalog)
+    }
+    static func catalog(_ db: Database) throws -> LibraryCatalog {
+        let sources = try Row.fetchAll(db, sql: "SELECT * FROM sources ORDER BY title,id").map { try Self.source($0, db: db) }
+        let authors = try Row.fetchAll(db, sql: "SELECT * FROM authors ORDER BY name,id").map { Author(id: try Self.uuid($0["id"]), name: $0["name"]) }
+        let tags = try Row.fetchAll(db, sql: "SELECT * FROM tags ORDER BY name,id").map { Tag(id: try Self.uuid($0["id"]), name: $0["name"]) }
+        let folders = try Row.fetchAll(db, sql: "SELECT * FROM folders ORDER BY name,id").map { Folder(id: try Self.uuid($0["id"]), name: $0["name"]) }
+        return LibraryCatalog(sources: sources, authors: authors, tags: tags, folders: folders)
     }
 
     public func purgeTrash(before date: Date) async throws -> [UUID] {
@@ -133,7 +134,7 @@ public final class LocalLibraryRepository: Sendable {
             attachmentIDs: try String.fetchAll(db, sql: "SELECT attachment_id FROM card_attachments WHERE card_id=? ORDER BY position", arguments: [id]).map(Self.uuid))
     }
 
-    private static func save(_ source: Source, db: Database) throws {
+    static func save(_ source: Source, db: Database) throws {
         if let row = try Row.fetchOne(db, sql: "SELECT * FROM sources WHERE id=?", arguments: [source.id.uuidString]) {
             guard try Self.source(row, db: db) == source else { throw LibraryError.conflict }
             return

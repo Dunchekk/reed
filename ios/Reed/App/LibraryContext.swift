@@ -18,6 +18,8 @@ final class LibraryContext {
     let capturePreferences: any CapturePreferencesRepository
     let editor: CardEditingService
     let catalogManagement: any CatalogManagementRepository
+    let transfer: LibraryTransferService
+    private let backupArchive: FileBackupArchive
     let directory: URL
     private(set) var revision = 0
     private(set) var draftRevision = 0
@@ -43,9 +45,12 @@ final class LibraryContext {
         self.drafts = drafts
         capturePreferences = LocalCapturePreferencesRepository(database: database)
         editor = CardEditingService(library: repository, drafts: drafts, attachments: attachments)
+        backupArchive = FileBackupArchive(directory: database.directory)
+        transfer = LibraryTransferService(repository: LocalLibraryBackupRepository(database: database), attachments: attachments, archive: backupArchive)
     }
 
     func prepare() async throws {
+        try await backupArchive.cleanTemporaryFiles()
         let cutoff = Calendar.current.date(byAdding: .day, value: -7, to: Date()) ?? Date().addingTimeInterval(-604800)
         _ = try await repository.purgeTrash(before: cutoff)
         _ = try await activity.activity(now: Date())

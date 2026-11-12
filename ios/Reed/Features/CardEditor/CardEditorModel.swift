@@ -58,6 +58,11 @@ final class CardEditorModel {
         enqueueSave(debounced: false)
         await pending?.value
     }
+    func finishEditing() async -> Bool {
+        await flush()
+        guard !isChanged || errorMessage == nil else { return false }
+        closed = true; context.markDraftsChanged(); return true
+    }
     func setSavesPhotos(_ value: Bool) async {
         guard !isSaving else { return }
         do {
