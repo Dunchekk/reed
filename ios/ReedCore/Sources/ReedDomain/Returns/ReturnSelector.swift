@@ -31,46 +31,66 @@ public struct ReturnDecision: Codable, Equatable, Sendable {
 public enum ReturnSelector {
     public static let cooldown: TimeInterval = 72 * 3600
 
-    /// All eligible metadata participates: no top-N shortlist or sampling window.
+    public struct PreparedCandidates: Sendable {
+        fileprivate struct Entry: Sendable { let card: ReturnCandidate; let key: String }
+        fileprivate let automatic: [Entry]
+        fileprivate let explicit: [UUID: ReturnCandidate]
+        public init(_ candidates: [ReturnCandidate], settings: ReturnSettings) {
+            automatic = candidates.filter { ReturnPolicy.admits($0, settings: settings, explicit: false) }.map { Entry(card: $0, key: $0.id.uuidString) }
+            explicit = Dictionary(candidates.filter { ReturnPolicy.admits($0, settings: settings, explicit: true) }.map { ($0.id,$0) }, uniquingKeysWith: { first, _ in first })
+        }
+    }
+
+    /// Preparation is reusable across slots; every eligible card still participates.
     public static func select(slot: ReturnTimeSlot, candidates: [ReturnCandidate], settings: ReturnSettings,
                               reservations: [ReturnReservation], previousAutomaticOrdinal: Int,
                               historyEnabled: Bool, sourcesUsedToday: Set<UUID> = []) -> ReturnDecision {
+        select(slot: slot, prepared: PreparedCandidates(candidates, settings: settings), settings: settings,
+               reservations: reservations, previousAutomaticOrdinal: previousAutomaticOrdinal,
+               historyEnabled: historyEnabled, sourcesUsedToday: sourcesUsedToday)
+    }
+    public static func select(slot: ReturnTimeSlot, prepared: PreparedCandidates, settings: ReturnSettings,
+                              reservations: [ReturnReservation], previousAutomaticOrdinal: Int,
+                              historyEnabled: Bool, sourcesUsedToday: Set<UUID> = []) -> ReturnDecision {
         if let id = slot.explicitCardID {
-            guard let card = candidates.first(where: { $0.id == id }), ReturnPolicy.admits(card, settings: settings, explicit: true) else {
-                return ReturnDecision(cardID: nil, reason: .noCandidates)
-            }
-            return ReturnDecision(cardID: id, reason: .explicit)
+            return ReturnDecision(cardID: prepared.explicit[id]?.id, reason: prepared.explicit[id] == nil ? .noCandidates : .explicit)
         }
         let blocked = Set(reservations.filter { abs($0.date.timeIntervalSince(slot.date)) < cooldown }.map(\.cardID))
         var last: [UUID: Date] = [:]
         for reservation in reservations where reservation.date <= slot.date {
             last[reservation.cardID] = max(last[reservation.cardID] ?? .distantPast, reservation.date)
         }
-        let eligible = candidates.filter { !blocked.contains($0.id) && ReturnPolicy.admits($0, settings: settings, explicit: false) }
-        guard !eligible.isEmpty else { return ReturnDecision(cardID: nil, reason: .noCandidates) }
         let ordinal = previousAutomaticOrdinal + 1, coverage = ordinal % 5 == 0
-        func waiting(_ card: ReturnCandidate) -> Double { max(0, slot.date.timeIntervalSince(last[card.id] ?? card.createdAt) / 86400) }
-        func boosted(_ card: ReturnCandidate) -> Bool {
-            settings.boostEnabled && (settings.boostFolderID.map { card.folderID == $0 } ?? card.isFavorite)
-        }
-        func score(_ card: ReturnCandidate) -> Double {
-            var result = max(0.1, waiting(card)) * (boosted(card) ? 2 : 1)
+        let prefixHash = SlotPlanner.stableHash(slot.id)
+        var winner: (entry: PreparedCandidates.Entry, wait: Double, score: Double, never: Bool, boosted: Bool, hash: UInt64?)?
+        for entry in prepared.automatic {
+            let card = entry.card
+            guard !blocked.contains(card.id), card.deferredUntil.map({ slot.date >= $0 }) ?? true else { continue }
+            let waiting = max(0, slot.date.timeIntervalSince(last[card.id] ?? card.createdAt) / 86400)
+            let boosted = settings.boostEnabled && (settings.boostFolderID.map { card.folderID == $0 } ?? card.isFavorite)
+            var score = max(0.1, waiting) * (boosted ? 2 : 1)
             if historyEnabled {
                 let unseen = min(1, max(0, slot.date.timeIntervalSince(card.lastManualOpening ?? card.createdAt) / (90 * 86400)))
-                result += unseen + Double(min(3, card.manualOpeningDays)) * 0.2
+                score += unseen + Double(min(3, card.manualOpeningDays)) * 0.2
             }
-            if let source = card.sourceID, !sourcesUsedToday.contains(source) { result += 0.25 }
-            return result
+            if let source = card.sourceID, !sourcesUsedToday.contains(source) { score += 0.25 }
+            let never = last[card.id] == nil
+            var wins = winner == nil, hash: UInt64?
+            if let current = winner {
+                if coverage && never != current.never { wins = never }
+                else if coverage && waiting != current.wait { wins = waiting > current.wait }
+                else if !coverage && score != current.score { wins = score > current.score }
+                else {
+                    let candidateHash = SlotPlanner.stableHash(entry.key, startingAt: prefixHash)
+                    let currentHash = current.hash ?? SlotPlanner.stableHash(current.entry.key, startingAt: prefixHash)
+                    winner?.hash = currentHash; hash = candidateHash
+                    wins = candidateHash == currentHash ? entry.key < current.entry.key : candidateHash < currentHash
+                }
+            }
+            if wins { winner = (entry,waiting,score,never,boosted,hash) }
         }
-        let chosen = eligible.min { left, right in
-            if coverage {
-                if (last[left.id] == nil) != (last[right.id] == nil) { return last[left.id] == nil }
-                if waiting(left) != waiting(right) { return waiting(left) > waiting(right) }
-            } else if score(left) != score(right) { return score(left) > score(right) }
-            let l = SlotPlanner.stableHash(slot.id + left.id.uuidString), r = SlotPlanner.stableHash(slot.id + right.id.uuidString)
-            return l == r ? left.id.uuidString < right.id.uuidString : l < r
-        }!
-        let reason: ReturnReason = coverage ? .coverage : boosted(chosen) ? .preferred : last[chosen.id] == nil ? .firstReturn : .longWait
-        return ReturnDecision(cardID: chosen.id, reason: reason, waitingDays: waiting(chosen), automaticOrdinal: ordinal)
+        guard let winner else { return ReturnDecision(cardID: nil, reason: .noCandidates) }
+        let reason: ReturnReason = coverage ? .coverage : winner.boosted ? .preferred : winner.never ? .firstReturn : .longWait
+        return ReturnDecision(cardID: winner.entry.card.id, reason: reason, waitingDays: winner.wait, automaticOrdinal: ordinal)
     }
 }

@@ -3,11 +3,12 @@ import Foundation
 public struct CardReturnSettings: Codable, Equatable, Sendable {
     public let cardID: UUID
     public var notificationsEnabled = true
+    public var deferredUntil: Date?
     public var minutes: [Int] = []
     public var weekdays: Set<Int> = Set(1...7)
     public init(cardID: UUID) { self.cardID = cardID }
     public func validate() throws {
-        guard minutes.count <= 10, Set(minutes).count == minutes.count, minutes.allSatisfy({ (0...1439).contains($0) }),
+        guard deferredUntil?.timeIntervalSince1970.isFinite ?? true, minutes.count <= 10, Set(minutes).count == minutes.count, minutes.allSatisfy({ (0...1439).contains($0) }),
               weekdays.isSubset(of: Set(1...7)) else { throw ReturnError.invalidSchedule }
     }
 }
@@ -37,9 +38,13 @@ public enum SlotPlanner {
         var chosen: [ReturnTimeSlot] = []
         for rule in explicit.sorted(by: { $0.cardID.uuidString < $1.cardID.uuidString }) where rule.notificationsEnabled {
             try rule.validate()
+            if let time = rule.deferredUntil, calendar.isDate(time, inSameDayAs: day) {
+                guard chosen.allSatisfy({ abs($0.date.timeIntervalSince(time)) >= interval }) else { throw ReturnError.conflictingExplicitTimes }
+                chosen.append(ReturnTimeSlot(id: "\(key).d.\(rule.cardID).\(Int(time.timeIntervalSince1970))", date: time, explicitCardID: rule.cardID))
+            }
             guard rule.weekdays.contains(calendar.component(.weekday, from: day)) else { continue }
             for minute in rule.minutes.sorted() {
-                guard let time = date(minute) else { continue }
+                guard let time = date(minute), rule.deferredUntil.map({ time > $0 }) ?? true else { continue }
                 guard chosen.allSatisfy({ abs($0.date.timeIntervalSince(time)) >= interval }) else { throw ReturnError.conflictingExplicitTimes }
                 chosen.append(ReturnTimeSlot(id: "\(key).e.\(rule.cardID).\(minute)", date: time, explicitCardID: rule.cardID))
             }
@@ -65,7 +70,7 @@ public enum SlotPlanner {
         return chosen.sorted { $0.date == $1.date ? $0.id < $1.id : $0.date < $1.date }
     }
 
-    public static func stableHash(_ text: String) -> UInt64 {
-        text.utf8.reduce(UInt64(14_695_981_039_346_656_037)) { ($0 ^ UInt64($1)) &* 1_099_511_628_211 }
+    public static func stableHash(_ text: String, startingAt seed: UInt64 = 14_695_981_039_346_656_037) -> UInt64 {
+        text.utf8.reduce(seed) { ($0 ^ UInt64($1)) &* 1_099_511_628_211 }
     }
 }

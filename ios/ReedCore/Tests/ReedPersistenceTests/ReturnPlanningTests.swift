@@ -138,3 +138,19 @@ func reactivatingConflictingCardRollsBackWithoutDisturbingExistingPlan(mode: Str
     let extended = try await fixture.returns.replan(now: lastEvening.addingTimeInterval(15*60), calendar: fixture.calendar, authorized: true)
     #expect(extended.entries.contains { $0.slot.date == midnight && $0.decision.cardID == appointed.id && $0.decision.reason == .explicit })
 }
+
+@Test func postponingProducesOneAppointmentAndStopsEarlierReturns() async throws {
+    let fixture = try PlanningFixture(); defer { fixture.library.cleanup() }
+    let card = Card(text: "Отложенная карточка")
+    try await fixture.library.repository.save(card); try await fixture.enable()
+    var rule = CardReturnSettings(cardID: card.id)
+    rule.deferredUntil = fixture.now.addingTimeInterval(86400)
+    try await fixture.returns.saveCardSettings(rule, now: fixture.now, calendar: fixture.calendar)
+    let plan = try await fixture.returns.replan(now: fixture.now, calendar: fixture.calendar, authorized: true)
+    #expect(plan.entries.filter { $0.decision.reason == .explicit }.count == 1)
+    #expect(plan.entries.filter { $0.card != nil }.allSatisfy { $0.slot.date >= rule.deferredUntil! })
+    #expect(plan.entries.contains { $0.decision.cardID == card.id && $0.slot.date == rule.deferredUntil })
+    var latest = try #require(await fixture.library.repository.card(id: card.id)); latest.allowsReturns = false
+    try await fixture.library.repository.save(latest)
+    #expect(try await fixture.returns.replan(now: fixture.now, calendar: fixture.calendar, authorized: true).entries.allSatisfy { $0.card == nil })
+}

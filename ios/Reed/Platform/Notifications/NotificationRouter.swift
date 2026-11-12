@@ -28,6 +28,7 @@ final class ReedAppDelegate: NSObject, UIApplicationDelegate {
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]? = nil) -> Bool {
         UINavigationBar.appearance().largeTitleTextAttributes = [.font: UIFontMetrics(forTextStyle: .largeTitle).scaledFont(for: UIFont.systemFont(ofSize: 40, weight: .regular))]
         UNUserNotificationCenter.current().delegate = NotificationRouter.shared
+        BackgroundReturnRefresh.shared.register()
         return true
     }
 }

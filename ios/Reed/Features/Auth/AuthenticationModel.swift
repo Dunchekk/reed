@@ -90,6 +90,8 @@ final class AuthenticationModel {
         let token = session?.accessToken
         do { try store.clear() }
         catch { errorMessage = "Не удалось завершить вход на устройстве. Попробуйте ещё раз."; return }
+        BackgroundReturnRefresh.shared.cancel()
+        LibrarySessionController.shared.forget()
         generation = UUID()
         session = nil
         requestedPhone = nil

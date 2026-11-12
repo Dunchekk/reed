@@ -47,3 +47,15 @@ private func enabledSettings() -> ReturnSettings { var value = ReturnSettings();
     for index in cards.indices { cards[index].manualOpeningDays = index; cards[index].lastManualOpening = now }
     #expect(ReturnSelector.select(slot: slot, candidates: cards.reversed(), settings: enabledSettings(), reservations: [], previousAutomaticOrdinal: 0, historyEnabled: false) == original)
 }
+
+@Test func preparedSelectionKeepsStableTieBreakAcrossOrderingAndCoverage() {
+    let now = Date(timeIntervalSince1970: 1_800_000_000)
+    let cards = (1...50).map { ReturnCandidate(id: UUID(uuidString: String(format: "00000000-0000-0000-0000-%012d", $0))!, createdAt: now.addingTimeInterval(-86400)) }
+    let slot = ReturnTimeSlot(id: "tie", date: now), settings = enabledSettings()
+    let expected = cards.min { SlotPlanner.stableHash(slot.id + $0.id.uuidString) < SlotPlanner.stableHash(slot.id + $1.id.uuidString) }!.id
+    for ordinal in [0,4,9] {
+        let choice = ReturnSelector.select(slot: slot, prepared: .init(cards.reversed(), settings: settings), settings: settings, reservations: [], previousAutomaticOrdinal: ordinal, historyEnabled: false)
+        #expect(choice.cardID == expected)
+        #expect(choice.reason == (ordinal == 0 ? .firstReturn : .coverage))
+    }
+}

@@ -29,6 +29,7 @@
 		504142EE2A47CDCD50A3E2D1 /* PhotoReviewView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A03C0735763CC89B2C57568 /* PhotoReviewView.swift */; };
 		58E57CA07A1C7DB2F760DAF9 /* CatalogView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2CE73F5106F621DDE3FCF7AF /* CatalogView.swift */; };
 		67ACABABDB432E8F21CDBFE5 /* DatePresentation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 551B422A1F74415E0A4E1949 /* DatePresentation.swift */; };
+		6D69885015D2680E566BB00F /* LibrarySessionController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6A58A70DE25828C7944C96A4 /* LibrarySessionController.swift */; };
 		6E52253F8D1160D00181CBFB /* ReedApplication in Frameworks */ = {isa = PBXBuildFile; productRef = 387F9F5DD3CABFE8AEB345F8 /* ReedApplication */; };
 		7A712B3E31711DAAA6E8C7B3 /* ArchiveModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65944AF392F5D88BDBAA8BFD /* ArchiveModel.swift */; };
 		7EFA7F87E2E2816E1BB480D6 /* SignInView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47D08843EC6229125741AF0C /* SignInView.swift */; };
@@ -51,6 +52,7 @@
 		CF7F4FFB14AECF78DCD3714F /* CardEditorModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 14A9A252493AF1944B124805 /* CardEditorModel.swift */; };
 		D2E76AE48A9F0D65346E0564 /* ReturnSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 728AC33816253A2109DC6836 /* ReturnSettingsView.swift */; };
 		DCD8C0AF23910245B1BBD433 /* ReedDomain in Frameworks */ = {isa = PBXBuildFile; productRef = 9961AE4853F3B89C2A66FE04 /* ReedDomain */; };
+		DFFA8BF39C5B52DE067DA488 /* BackgroundReturnRefresh.swift in Sources */ = {isa = PBXBuildFile; fileRef = 16E76830BA52EE634276EAD4 /* BackgroundReturnRefresh.swift */; };
 		F4C8166F0DB5BE029E746445 /* CatalogModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8A323D3EE628EA014842B310 /* CatalogModel.swift */; };
 		F78AC1AA0DED65AF645D0A27 /* HTTPAuthenticationClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = CB9F2A086B1281DF6883650F /* HTTPAuthenticationClient.swift */; };
 		F8A8D6F1199759E0625F4F70 /* CameraPicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D580E5E5367BA5BC364073F /* CameraPicker.swift */; };
@@ -79,6 +81,7 @@
 		08EC1F2F38AC35602A4E1D10 /* ReedUITests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = ReedUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		0A03C0735763CC89B2C57568 /* PhotoReviewView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhotoReviewView.swift; sourceTree = "<group>"; };
 		14A9A252493AF1944B124805 /* CardEditorModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CardEditorModel.swift; sourceTree = "<group>"; };
+		16E76830BA52EE634276EAD4 /* BackgroundReturnRefresh.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackgroundReturnRefresh.swift; sourceTree = "<group>"; };
 		1D10516915064E4D7474CB1E /* CardEditorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CardEditorView.swift; sourceTree = "<group>"; };
 		1E61FE6A3F9843744449B9FF /* ArchiveView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ArchiveView.swift; sourceTree = "<group>"; };
 		221E7708F7D6338CD6FA5791 /* ReturnCoordinatorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReturnCoordinatorTests.swift; sourceTree = "<group>"; };
@@ -98,8 +101,10 @@
 		57BDD9551B3C13603DB45750 /* Reed.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = Reed.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		5EFA614C462C236FF3B63048 /* RootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootView.swift; sourceTree = "<group>"; };
 		65944AF392F5D88BDBAA8BFD /* ArchiveModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ArchiveModel.swift; sourceTree = "<group>"; };
+		6A58A70DE25828C7944C96A4 /* LibrarySessionController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LibrarySessionController.swift; sourceTree = "<group>"; };
 		728AC33816253A2109DC6836 /* ReturnSettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReturnSettingsView.swift; sourceTree = "<group>"; };
 		734A254D2DFD0F13B7C59C82 /* UITestBootstrap.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UITestBootstrap.swift; sourceTree = "<group>"; };
+		7A28C39B333CFBE256025BC6 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		7A47A3779CC84B7670724BD1 /* PhotoInputView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhotoInputView.swift; sourceTree = "<group>"; };
 		7E478926F57605678FBD4C8C /* ArchiveFiltersView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ArchiveFiltersView.swift; sourceTree = "<group>"; };
 		84D2C286BAEB4463AE530844 /* LibraryJourneyTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LibraryJourneyTests.swift; sourceTree = "<group>"; };
@@ -231,6 +236,7 @@
 		692D385A005C6892DC70F979 /* Reed */ = {
 			isa = PBXGroup;
 			children = (
+				7A28C39B333CFBE256025BC6 /* Info.plist */,
 				C7DDB43930BE233667EE3672 /* App */,
 				604224FF37982421414A7229 /* DesignSystem */,
 				3A26439587F2EA582917FB9A /* Features */,
@@ -346,6 +352,7 @@
 			children = (
 				C1EC736F24E97170F63BB42E /* LibraryContext.swift */,
 				321E2E043B1F508D5C2A9FFB /* LibraryHostView.swift */,
+				6A58A70DE25828C7944C96A4 /* LibrarySessionController.swift */,
 				B38E8F0B3C13C4EB1BD0D8C5 /* ReedApp.swift */,
 				D385F185275C618DB1080B38 /* ReturnCoordinator.swift */,
 				5EFA614C462C236FF3B63048 /* RootView.swift */,
@@ -382,6 +389,7 @@
 			isa = PBXGroup;
 			children = (
 				3DC90A6EB51B024CC29CD355 /* AppleNotificationQueue.swift */,
+				16E76830BA52EE634276EAD4 /* BackgroundReturnRefresh.swift */,
 				0579E3266F9E669906F3C361 /* NotificationRouter.swift */,
 			);
 			path = Notifications;
@@ -546,6 +554,7 @@
 				9DBB3486B76BAAAAA0434CA3 /* ArchiveView.swift in Sources */,
 				B55DAE03C0BA8D953B274E19 /* AttachmentPreview.swift in Sources */,
 				B5EAB05413D03EC0D4656705 /* AuthenticationModel.swift in Sources */,
+				DFFA8BF39C5B52DE067DA488 /* BackgroundReturnRefresh.swift in Sources */,
 				F8A8D6F1199759E0625F4F70 /* CameraPicker.swift in Sources */,
 				371CA04BC4A71A8AB7767D9E /* CardDetailView.swift in Sources */,
 				CF7F4FFB14AECF78DCD3714F /* CardEditorModel.swift in Sources */,
@@ -563,6 +572,7 @@
 				49D99AD76297B6273347D925 /* KeychainSessionStore.swift in Sources */,
 				24536C6DD53B128559A57D36 /* LibraryContext.swift in Sources */,
 				9D77A02AC470B52213CED707 /* LibraryHostView.swift in Sources */,
+				6D69885015D2680E566BB00F /* LibrarySessionController.swift in Sources */,
 				9E97E58B9E09CAD6EF7BF7FE /* NotificationRouter.swift in Sources */,
 				0EB967BEEAA92A933A7F7D1F /* PhotoInputView.swift in Sources */,
 				B731BF2573ACA22DCFAA1B9B /* PhotoProcessor.swift in Sources */,
@@ -695,6 +705,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = Reed/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = Reed;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.productivity";
 				INFOPLIST_KEY_NSCameraUsageDescription = "Снять страницу и распознать текст на устройстве.";
@@ -830,6 +841,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = Reed/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = Reed;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.productivity";
 				INFOPLIST_KEY_NSCameraUsageDescription = "Снять страницу и распознать текст на устройстве.";

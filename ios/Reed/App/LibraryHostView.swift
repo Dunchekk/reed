@@ -20,22 +20,7 @@ struct LibraryHostView: View {
         }
         .task(id: retry) {
             do {
-                var root = try FileManager.default.url(for: .applicationSupportDirectory, in: .userDomainMask,
-                    appropriateFor: nil, create: true).appendingPathComponent("Reed", isDirectory: true)
-                #if DEBUG
-                if let testRoot = UITestBootstrap.root { root = testRoot }
-                #endif
-                let accountID = account.id
-                let databaseRoot = root
-                let database = try await Task.detached(priority: .userInitiated) {
-                    try LibraryDatabase(root: databaseRoot, accountID: accountID)
-                }.value
-                guard !Task.isCancelled else { return }
-                let library = LibraryContext(account: account, database: database)
-                try await library.prepare()
-                #if DEBUG
-                try await UITestBootstrap.seed(library)
-                #endif
+                let library = try await LibrarySessionController.shared.open(account)
                 guard !Task.isCancelled else { return }
                 context = library
                 errorMessage = nil

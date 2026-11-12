@@ -11,6 +11,7 @@ final class LibraryContext {
     let repository: any LibraryRepository
     let returns: any ReturnRepository
     let returnCoordinator: ReturnCoordinator
+    let returnActions: ReturnActions
     let feed: any FeedRepository
     let activity: any ActivityRepository
     let attachments: any AttachmentStore
@@ -33,6 +34,7 @@ final class LibraryContext {
         feed = LocalFeedRepository(database: database)
         let returns = LocalReturnRepository(database: database)
         self.returns = returns
+        returnActions = ReturnActions(library: repository, returns: returns)
         var queue: any CardNotificationQueue = AppleNotificationQueue()
         #if DEBUG
         if UITestBootstrap.enabled { queue = UITestNotificationQueue() }

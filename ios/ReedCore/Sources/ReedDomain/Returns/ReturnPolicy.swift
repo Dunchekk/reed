@@ -74,6 +74,7 @@ public struct ReturnCandidate: Sendable {
     public var allowsReturns = true
     public var notificationsEnabled = true
     public var wordMatches: Set<WordRule> = []
+    public var deferredUntil: Date?
     public var lastManualOpening: Date?
     public var manualOpeningDays = 0
     public init(id: UUID, createdAt: Date) { self.id = id; self.createdAt = createdAt }

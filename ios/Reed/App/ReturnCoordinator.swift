@@ -57,6 +57,13 @@ final class ReturnCoordinator {
             }
         }
     }
+    func refreshInBackground() async -> Bool {
+        guard active else { return false }
+        refresh()
+        let captured = work
+        await withTaskCancellationHandler { await captured?.value } onCancel: { captured?.cancel() }
+        return !Task.isCancelled && errorMessage == nil && active
+    }
     func stop() async throws {
         active = false; work?.cancel()
         await work?.value

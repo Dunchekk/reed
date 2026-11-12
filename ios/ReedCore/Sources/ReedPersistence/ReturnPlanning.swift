@@ -12,6 +12,7 @@ extension LocalReturnRepository {
             try db.execute(sql: "UPDATE return_slots SET state='cancelled' WHERE scheduled_at>?", arguments: [now.timeIntervalSince1970])
             guard authorized, settings.enabled, settings.notificationsEnabled else { return try Self.readPlan(db, now: now, calendar: calendar) }
             let candidates = try Self.candidates(db, settings: settings, now: now, calendar: calendar)
+            let prepared = ReturnSelector.PreparedCandidates(candidates, settings: settings)
             let eligibleIDs = Set(candidates.filter { ReturnPolicy.admits($0, settings: settings, explicit: true) }.map(\.id))
             let individual = try Self.individualSettings(db).filter { eligibleIDs.contains($0.cardID) }
             let libraryRevision = try Int64.fetchOne(db, sql: "SELECT revision FROM library_state WHERE id=1") ?? 0
@@ -51,10 +52,11 @@ extension LocalReturnRepository {
             }
             var previousTime = past.map { Date(timeIntervalSince1970: $0["scheduled_at"]) }.max()
             for slot in slots {
+                try Task.checkCancellation()
                 // Day-local generation also observes the previous day's last occupied slot.
                 if let previousTime, slot.date.timeIntervalSince(previousTime) < Double(settings.minimumIntervalMinutes * 60) { continue }
                 let key = SlotPlanner.dayKey(slot.date, calendar: calendar)
-                let decision = ReturnSelector.select(slot: slot, candidates: candidates, settings: settings, reservations: reservations,
+                let decision = ReturnSelector.select(slot: slot, prepared: prepared, settings: settings, reservations: reservations,
                     previousAutomaticOrdinal: ordinal, historyEnabled: historyEnabled, sourcesUsedToday: usedByDay[key] ?? [])
                 if let id = decision.cardID {
                     reservations.append(ReturnReservation(cardID: id, date: slot.date))

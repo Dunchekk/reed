@@ -12,6 +12,7 @@ struct CardDetailView: View {
     @State private var errorMessage: String?
     @State private var showsEditor = false
     @State private var confirmsTrash = false
+    @State private var returnNotice: String?
 
     var body: some View {
         Group {
@@ -29,6 +30,7 @@ struct CardDetailView: View {
                         FlowLayout { ForEach(card.tags) { TagChip(title: $0.name) } }
                         if let folder = card.folder { Label(folder.name, systemImage: "folder").reedFont(.caption) }
                         if card.deletedAt == nil { NavigationLink("Возвращения этой карточки") { CardReturnSettingsView(context: context, cardID: card.id) } }
+                        if let returnNotice { Text(returnNotice).foregroundStyle(ReedTheme.secondary) }
                         if let errorMessage { Text(errorMessage).foregroundStyle(.red) }
                     }.padding(ReedTheme.inset)
                 }.background(ReedTheme.background)
@@ -41,6 +43,10 @@ struct CardDetailView: View {
                 ToolbarItem(placement: .topBarTrailing) {
                     Menu {
                         if card.deletedAt == nil {
+                            if card.allowsReturns && !card.isHidden {
+                                Button("Отложить до завтра", systemImage: "clock.arrow.circlepath") { returnAction(postpone: true) }
+                                Button("Больше не возвращать", systemImage: "bell.slash") { returnAction(postpone: false) }
+                            }
                             Button("Изменить", systemImage: "pencil") { showsEditor = true }
                             Button(card.isFavorite ? "Убрать из избранного" : "В избранное", systemImage: "star") { update { $0.isFavorite.toggle() } }
                             Button(card.isHidden ? "Показать в архиве" : "Скрыть", systemImage: "eye.slash") { update { $0.isHidden.toggle() } }
@@ -60,6 +66,24 @@ struct CardDetailView: View {
         .sheet(isPresented: $showsEditor) { if let card { CardEditorView(context: context, card: card) } }
         .task(id: context.revision) { await load() }
 
+    }
+
+    private func returnAction(postpone: Bool) {
+        guard !isSaving else { return }
+        isSaving = true
+        Task {
+            defer { isSaving = false }
+            do {
+                if postpone {
+                    let date = try await context.returnActions.deferUntilTomorrow(cardID: cardID, now: Date(), calendar: .current)
+                    returnNotice = "Отложено: " + date.formatted(date: .abbreviated, time: .shortened)
+                } else {
+                    try await context.returnActions.stop(cardID: cardID)
+                    returnNotice = "Автоматические возвращения выключены. Включить их снова можно в настройках карточки."
+                }
+                context.markChanged()
+            } catch { errorMessage = returnErrorMessage(error) }
+        }
     }
 
     private func load() async {

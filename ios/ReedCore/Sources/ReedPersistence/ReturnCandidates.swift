@@ -29,12 +29,14 @@ extension LocalReturnRepository {
             }
         }
         let individual = try Self.individualSettings(db)
+        let deferred = Dictionary(uniqueKeysWithValues: individual.compactMap { rule in rule.deferredUntil.map { (rule.cardID, $0) } })
         let disabled = Set(individual.filter { !$0.notificationsEnabled }.map(\.cardID))
         return try rows.map { row in
             let id: String = row["id"], source: String? = row["source_id"], folder: String? = row["folder_id"]
             var card = ReturnCandidate(id: try LocalLibraryRepository.uuid(id), createdAt: Date(timeIntervalSince1970: row["created_at"]))
             card.sourceID = try source.map(LocalLibraryRepository.uuid); card.folderID = try folder.map(LocalLibraryRepository.uuid)
             card.tags = tags[id] ?? []; card.authors = source.flatMap { authors[$0] } ?? []
+            card.deferredUntil = deferred[card.id]
             card.isFavorite = row["is_favorite"]; card.notificationsEnabled = !disabled.contains(card.id)
             card.wordMatches = Set(matches.compactMap { $0.value.contains(id) ? $0.key : nil })
             card.manualOpeningDays = openingDays[id]?.count ?? 0; card.lastManualOpening = lastOpening[id]
