@@ -1,3 +1,4 @@
+import {eraseOpeningPayloads} from "./privacy.ts";
 import {createHash} from "node:crypto";
 import type {PoolClient} from "pg";
 import {CloudDatabase} from "./database.ts";
@@ -26,7 +27,8 @@ export async function appendRecord(client:PoolClient,accountID:string,state:Libr
 }
 export class CloudRecords {
   readonly database:CloudDatabase;
-  constructor(database:CloudDatabase){this.database=database;}
+  readonly quotaBytes:number;
+  constructor(database:CloudDatabase,quotaBytes=512*1024*1024){this.database=database;this.quotaBytes=quotaBytes;}
   async push(scope:CloudScope,epoch:string,raw:Mutation):Promise<MutationResult>{
     const mutation=validateMutation(raw),fingerprint=createHash("sha256").update(canonical(mutation)).digest("hex");
     return this.database.device(scope,epoch,async(client,state)=>{
@@ -46,7 +48,10 @@ export class CloudRecords {
         result={outcome:"applied",record:saved};
 
       }
+      if(mutation.kind==="opening" && result.outcome==="applied" && result.record.payload===null)await eraseOpeningPayloads(client,scope.accountID,[mutation.id]);
       await client.query("INSERT INTO cloud_operations(account_id,operation_id,request_hash,result) VALUES($1,$2,$3,$4)",[scope.accountID,mutation.operationID,fingerprint,JSON.stringify(result)]);
+      const usage=(await client.query("SELECT metadata_bytes FROM cloud_libraries WHERE account_id=$1",[scope.accountID])).rows[0];
+      if(Number(usage.metadata_bytes)>this.quotaBytes)throw new CloudError("quota_exceeded");
       return result;
     });
   }

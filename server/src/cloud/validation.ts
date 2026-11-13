@@ -1,3 +1,4 @@
+import {tokens} from "../returns/policy.ts";
 import {CloudError,recordKinds} from "./contracts.ts";
 import type {Mutation,Payload,RecordKind,MediaManifest} from "./contracts.ts";
 
@@ -21,7 +22,7 @@ export function uuid(value: unknown): string {
 function boolean(value: unknown): boolean { if(typeof value!=="boolean") throw new CloudError("invalid_record");return value; }
 function date(value: unknown): string {
   const raw=string(value,40), timestamp=Date.parse(raw);
-  if(!Number.isFinite(timestamp) || Math.abs(timestamp)>=253402300800000 || !/^\d{4}-\d\d-\d\dT/.test(raw)) throw new CloudError("invalid_record");
+  if(!Number.isFinite(timestamp) || Math.abs(timestamp)>=253402300800000 || !/^\d{4}-\d\d-\d\dT\d\d:\d\d:\d\d(?:\.\d{1,3})?Z$/.test(raw) || new Date(timestamp).toISOString().slice(0,19)!==raw.slice(0,19)) throw new CloudError("invalid_record");
   return new Date(timestamp).toISOString();
 }
 function keys(value: Record<string,unknown>, allowed: string[]) {
@@ -41,6 +42,7 @@ function optional(output: Record<string,unknown>, input:Record<string,unknown>, 
 function filter(raw:unknown):Record<string,unknown> {
   const input=object(raw);keys(input,["tags","folders","authors","words","tagMode","authorMode","wordMode","createdAfter","createdBefore"]);
   const result:Record<string,unknown>={tags:ids(input.tags),folders:ids(input.folders),authors:ids(input.authors),words:string(input.words,8192,false)};
+  if(tokens(String(result.words)).length>64)throw new CloudError("invalid_record");
   for(const key of ["tagMode","authorMode","wordMode"]) {if(input[key]!=="any"&&input[key]!=="all")throw new CloudError("invalid_record");result[key]=input[key];}
   optional(result,input,"createdAfter",date);optional(result,input,"createdBefore",date);
   if(result.createdAfter&&result.createdBefore&&String(result.createdAfter)>=String(result.createdBefore))throw new CloudError("invalid_record");return result;

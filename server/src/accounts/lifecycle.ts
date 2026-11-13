@@ -25,9 +25,10 @@ export class AccountDeletionWorker {
   private running: Promise<void> | undefined;
   private readonly repository: AccountLifecycleRepository;
   private readonly provider: AccountLifecycleProvider;
+  private readonly cleanup: ((accountID:string)=>Promise<void>)|undefined;
   private readonly providerName: string;
-  constructor(repository: AccountLifecycleRepository, provider: AccountLifecycleProvider, providerName: string) {
-    this.repository = repository; this.provider = provider; this.providerName = providerName;
+  constructor(repository: AccountLifecycleRepository, provider: AccountLifecycleProvider, providerName: string, cleanup?: (accountID:string)=>Promise<void>) {
+    this.repository = repository; this.provider = provider; this.providerName = providerName; this.cleanup = cleanup;
   }
   run(): Promise<void> {
     if (this.running) return this.running;
@@ -40,6 +41,7 @@ export class AccountDeletionWorker {
     for (const job of await this.repository.pendingDeletions()) {
       if (job.provider !== this.providerName) continue;
       try {
+        await this.cleanup?.(job.id);
         await this.provider.deleteIdentity(job.subject);
         await this.repository.finishDeletion(job.id);
       } catch { failed = true; }

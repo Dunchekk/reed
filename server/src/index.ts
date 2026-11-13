@@ -1,6 +1,8 @@
 import {configuredAPNs} from "./notifications/apns.ts";
 import {CloudPushWorker} from "./notifications/worker.ts";
 import {CloudReturns} from "./returns/service.ts";
+import {CloudMaintenance} from "./cloud/maintenance.ts";
+import {isAbsolute} from "node:path";
 import {CloudDatabase} from "./cloud/database.ts";
 import {CloudLibrary} from "./cloud/library.ts";
 import {CloudRecords} from "./cloud/records.ts";
@@ -24,6 +26,7 @@ const auth = config.authProvider === "development"
   : new SupabaseAuthProvider(process.env.SUPABASE_URL ?? "", process.env.SUPABASE_PUBLISHABLE_KEY ?? "", fetch, Date.now, process.env.SUPABASE_SERVICE_ROLE_KEY);
 const accounts = new PostgresAccountRepository(database);
 const cloudDatabase = new CloudDatabase(database);
+if(config.environment === "production" && (!process.env.CLOUD_STORAGE_PATH || !isAbsolute(process.env.CLOUD_STORAGE_PATH))) throw new Error("Production requires an absolute CLOUD_STORAGE_PATH");
 const objects = new FileObjectStore(process.env.CLOUD_STORAGE_PATH ?? ".local/cloud-objects");
 const pushProvider = await configuredAPNs(process.env);
 const cloud = {library:new CloudLibrary(cloudDatabase,!!pushProvider),records:new CloudRecords(cloudDatabase),
@@ -33,11 +36,15 @@ const pushWorker = new CloudPushWorker(cloudDatabase,cloud.returns,pushProvider)
 const refreshReturns = () => pushWorker.run().catch(() => app.log.error("Cloud returns will retry"));
 const returnsTimer = setInterval(() => { void refreshReturns(); }, 30_000).unref();
 app.addHook("onReady", async () => { await refreshReturns(); });
-const deletion = new AccountDeletionWorker(accounts,auth,config.authProvider);
+const maintenance = new CloudMaintenance(cloudDatabase,objects);
+const maintainCloud = () => maintenance.run().catch(() => app.log.error("Cloud cleanup will retry"));
+const maintenanceTimer = setInterval(() => { void maintainCloud(); }, 3600_000).unref();
+app.addHook("onReady", async () => { await maintainCloud(); });
+const deletion = new AccountDeletionWorker(accounts,auth,config.authProvider,id => maintenance.deleteAccount(id));
 const retryDeletion = () => deletion.run().catch(() => app.log.error("Account deletion will retry"));
 const deletionTimer = setInterval(() => { void retryDeletion(); }, 30_000).unref();
 app.addHook("onReady", async () => { await retryDeletion(); });
-app.addHook("onClose", async () => { clearInterval(deletionTimer); clearInterval(returnsTimer); await pushWorker.run().catch(() => {}); await deletion.run().catch(() => {}); await database.end(); });
+app.addHook("onClose", async () => { clearInterval(deletionTimer); clearInterval(returnsTimer); clearInterval(maintenanceTimer); await maintenance.run().catch(() => {}); await pushWorker.run().catch(() => {}); await deletion.run().catch(() => {}); await database.end(); });
 database.on("error", () => app.log.error("Database connection failed"));
 
 for (const signal of ["SIGTERM", "SIGINT"] as const) {

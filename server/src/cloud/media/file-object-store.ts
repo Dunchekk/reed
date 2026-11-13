@@ -1,6 +1,6 @@
 import {createHash} from "node:crypto";
 import {createReadStream} from "node:fs";
-import {mkdir, open, rename, rm} from "node:fs/promises";
+import {mkdir, open, rename, rm, readdir, lstat} from "node:fs/promises";
 import {join, resolve} from "node:path";
 import {CloudError} from "../contracts.ts";
 import type {MediaPart, MediaVariant} from "../contracts.ts";
@@ -82,6 +82,19 @@ export class FileObjectStore implements ObjectStore {
     } finally { await file.close(); }
   }
 
+  async removeMedia(scope: ObjectScope, id: string): Promise<void> { await rm(this.directory(scope,"media",id),{recursive:true,force:true}); }
+  async removeOrphans(scope: ObjectScope, uploads: Set<string>, media: Set<string>, olderThan: Date): Promise<void> {
+    for(const [area,keep] of [["upload",uploads],["media",media]] as const){
+      const parent=join(this.root,uuid(scope.accountID),uuid(scope.epoch),area);
+      let names:string[];try{names=await readdir(parent);}catch(error){if(missing(error))continue;throw error;}
+      for(const name of names){
+        // Only store-owned UUID directories; never traverse symlinks or unrelated files.
+        if(!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/.test(name) || keep.has(name))continue;
+        const path=this.directory(scope,area,name),entry=await lstat(path);
+        if(!entry.isSymbolicLink() && entry.isDirectory() && entry.mtime<olderThan)await rm(path,{recursive:true,force:true});
+      }
+    }
+  }
   async removeUpload(scope: ObjectScope, id: string): Promise<void> {
     await rm(this.directory(scope,"upload",id),{recursive:true,force:true});
   }

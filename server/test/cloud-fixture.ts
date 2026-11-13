@@ -12,6 +12,6 @@ export async function cloudFixture(){
   await pool.query("INSERT INTO cloud_libraries(account_id,epoch) VALUES($1,$2)",[accountID,epoch]);
   await pool.query("INSERT INTO cloud_devices(account_id,id,name,time_zone) VALUES($1,$2,'Test phone','UTC')",[accountID,deviceID]);
   const scope:CloudScope={accountID,deviceID},database=new CloudDatabase(pool);
-  return {pool,database,scope,epoch,async cleanup(){await pool.query("DELETE FROM cloud_libraries WHERE account_id=$1",[accountID]);await pool.query("DELETE FROM accounts WHERE id=$1",[accountID]);await pool.end();}};
+  return {pool,database,scope,epoch,async cleanup(){await pool.query("DELETE FROM cloud_object_cleanup WHERE account_id=$1",[accountID]);await pool.query("DELETE FROM cloud_libraries WHERE account_id=$1",[accountID]);await pool.query("DELETE FROM accounts WHERE id=$1",[accountID]);await pool.end();}};
 }
 export function tagMutation(name="Тема",id:string=randomUUID(),baseVersion=0):Mutation{return {operationID:randomUUID(),kind:"tag",id,baseVersion,payload:{id,name}};}
