@@ -36,6 +36,7 @@
 		52EB373D8E3C6924B00B3160 /* AccountDeletionRecoveryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B47C083FB7EA24DC2219BD5E /* AccountDeletionRecoveryView.swift */; };
 		53BBFDC4ADC354D4B1C2A576 /* ReedPersistence in Frameworks */ = {isa = PBXBuildFile; productRef = FACC2A137CBDE6D7FD98623C /* ReedPersistence */; };
 		58E57CA07A1C7DB2F760DAF9 /* CatalogView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2CE73F5106F621DDE3FCF7AF /* CatalogView.swift */; };
+		6369786F20CD34658261E9A8 /* CloudDevicesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65CC91B4DDADE07823F096C0 /* CloudDevicesView.swift */; };
 		649C57B9DAFB2B2981748C3C /* CloudRuntime.swift in Sources */ = {isa = PBXBuildFile; fileRef = F841C5966C1D3A194ADC280B /* CloudRuntime.swift */; };
 		67ACABABDB432E8F21CDBFE5 /* DatePresentation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 551B422A1F74415E0A4E1949 /* DatePresentation.swift */; };
 		6D69885015D2680E566BB00F /* LibrarySessionController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6A58A70DE25828C7944C96A4 /* LibrarySessionController.swift */; };
@@ -119,6 +120,7 @@
 		57BDD9551B3C13603DB45750 /* Reed.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = Reed.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		5EFA614C462C236FF3B63048 /* RootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootView.swift; sourceTree = "<group>"; };
 		65944AF392F5D88BDBAA8BFD /* ArchiveModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ArchiveModel.swift; sourceTree = "<group>"; };
+		65CC91B4DDADE07823F096C0 /* CloudDevicesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CloudDevicesView.swift; sourceTree = "<group>"; };
 		65FBFD72B6C3A152756F7974 /* CloudConflictsModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CloudConflictsModel.swift; sourceTree = "<group>"; };
 		66C67682F61EFDE958A5CA2A /* AppleCloudParticipation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppleCloudParticipation.swift; sourceTree = "<group>"; };
 		6A58A70DE25828C7944C96A4 /* LibrarySessionController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LibrarySessionController.swift; sourceTree = "<group>"; };
@@ -195,6 +197,7 @@
 			children = (
 				65FBFD72B6C3A152756F7974 /* CloudConflictsModel.swift */,
 				CAC316AEE1C62240E2609B1C /* CloudConflictsView.swift */,
+				65CC91B4DDADE07823F096C0 /* CloudDevicesView.swift */,
 				FDC03C15D2386E4C08399CFD /* CloudSettingsModel.swift */,
 				8097D5D6467B6B88D6FBD6A4 /* CloudSettingsView.swift */,
 			);
@@ -645,6 +648,7 @@
 				58E57CA07A1C7DB2F760DAF9 /* CatalogView.swift in Sources */,
 				386FC704BEF02966544248BE /* CloudConflictsModel.swift in Sources */,
 				92A5C3E2070F7CCE94355E88 /* CloudConflictsView.swift in Sources */,
+				6369786F20CD34658261E9A8 /* CloudDevicesView.swift in Sources */,
 				649C57B9DAFB2B2981748C3C /* CloudRuntime.swift in Sources */,
 				44480A99F19810F1710A4883 /* CloudSettingsModel.swift in Sources */,
 				B78ECCC88B8807A4E1724C88 /* CloudSettingsView.swift in Sources */,

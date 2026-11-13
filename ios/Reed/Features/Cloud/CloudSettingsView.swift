@@ -6,6 +6,8 @@ struct CloudSettingsView: View {
     let context: LibraryContext
     @State private var model: CloudSettingsModel
     @State private var confirmsDisable = false
+    @State private var confirmsKeepLocal = false
+    @State private var deletingEpoch: UUID?
     init(context: LibraryContext) {
         self.context = context
         _model = State(initialValue: CloudSettingsModel(repository: context.cloud.repository, remote: context.cloud.remote, engine: context.cloud.engine))
@@ -64,7 +66,29 @@ struct CloudSettingsView: View {
                         Text("Доставка облачных уведомлений ещё не подключена. Общий план доступен в приложении.").reedFont(.caption).foregroundStyle(.orange)
                     }
                 }
+                if model.state.mode == .revoked {
+                    VStack(alignment: .leading, spacing: 12) {
+                        Text("Обмен остановлен").reedFont(.section)
+                        Text("Облако изменилось или этот iPhone отключён. Локальные правки сохранены. Можно подтвердить новое объединение или оставить проверенную локальную библиотеку.").reedFont(.caption)
+                        Button("Подключить заново") { Task { await model.requestEnable() } }
+                        Button("Оставить только локальную копию") { confirmsKeepLocal = true }
+                    }.buttonStyle(CloudOutlineButtonStyle()).disabled(model.busy || !model.available)
+                }
+                if model.enabled, let remote = context.cloud.remote, let engine = context.cloud.engine, model.state.mode != .leaving {
+                    NavigationLink("Устройства и уведомления") { CloudDevicesView(remote: remote, identity: context.cloud.identity, engine: engine) }
+                        .reedFont(.caption).accessibilityIdentifier("cloud.devices")
+                }
                 NavigationLink("Резервная копия и локальные данные") { DataSettingsView(context: context) }.reedFont(.caption)
+                if model.state.participates {
+                    separator
+                    VStack(alignment: .leading, spacing: 12) {
+                        Text("Удаление облачных данных").reedFont(.caption).foregroundStyle(ReedTheme.secondary)
+                        Text("Сначала проверим полную копию на этом iPhone. Облачная библиотека будет удалена, обмен на других устройствах остановится. Их локальные копии останутся.").reedFont(.caption)
+                        Button("Удалить библиотеку из облака", role: .destructive) { deletingEpoch = model.state.epoch }
+                            .buttonStyle(CloudOutlineButtonStyle()).disabled(model.busy || !model.available || model.local.conflicts > 0)
+                        if model.local.conflicts > 0 { Text("Перед удалением выберите версии конфликтующих изменений.").reedFont(.metadata) }
+                    }
+                }
             }.padding(ReedTheme.inset)
         }.background(ReedTheme.background).foregroundStyle(ReedTheme.foreground)
         .navigationBarTitleDisplayMode(.inline)
@@ -81,6 +105,12 @@ struct CloudSettingsView: View {
         .confirmationDialog("Отключить облако на этом iPhone?", isPresented: $confirmsDisable, titleVisibility: .visible) {
             Button("Сохранить полную копию и отключить") { Task { await model.disable() } }
         } message: { Text("Сначала завершим обмен и проверим все фото. Облако и другие устройства сохранят данные. Следующие правки на этом iPhone останутся локальными.") }
+        .confirmationDialog("Оставить библиотеку только на этом iPhone?", isPresented: $confirmsKeepLocal, titleVisibility: .visible) {
+            Button("Проверить копию и отключить") { Task { await model.keepLocal() } }
+        } message: { Text("Сохранится показанная локальная версия. Неотправленные правки останутся на устройстве. Облачные варианты конфликтов перестанут быть доступны на этом экране.") }
+        .confirmationDialog("Удалить всю библиотеку из облака?", isPresented: Binding(get: { deletingEpoch != nil }, set: { if !$0 { deletingEpoch = nil } }), titleVisibility: .visible) {
+            if let epoch = deletingEpoch { Button("Удалить из облака", role: .destructive) { Task { await model.deleteCloud(epoch: epoch) } } }
+        } message: { Text("Действие нельзя отменить на сервере. На этом iPhone останется полная локальная копия; её можно экспортировать или явно загрузить заново.") }
     }
     private var separator: some View { Rectangle().fill(ReedTheme.foreground.opacity(0.5)).frame(height: ReedTheme.border) }
     private func sectionTitle(_ title: String) -> some View { Text(title).reedFont(.caption).foregroundStyle(ReedTheme.secondary) }

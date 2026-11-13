@@ -76,6 +76,14 @@ final class CloudSettingsModel {
             else { try await engine.synchronize() }
         }
     }
+    func keepLocal() async {
+        guard let engine else { return }
+        await perform { try await engine.keepLocalAfterRevocation() }
+    }
+    func deleteCloud(epoch: UUID) async {
+        guard let engine else { return }
+        await perform { try await engine.deleteCloud(expectedEpoch: epoch) }
+    }
     func configure(automatic: Bool? = nil, wifiOnly: Bool? = nil) async {
         await perform(refreshRemote: false) {
             let current = try await self.repository.state()
