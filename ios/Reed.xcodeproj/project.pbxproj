@@ -136,6 +136,7 @@
 		96A8296BCC16155B37CB28FA /* KeychainSessionStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeychainSessionStore.swift; sourceTree = "<group>"; };
 		9D580E5E5367BA5BC364073F /* CameraPicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraPicker.swift; sourceTree = "<group>"; };
 		9EE16E6A12E95BD15912C221 /* RecoveryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecoveryView.swift; sourceTree = "<group>"; };
+		ABD7F5D8A619B1B6B6CCC90A /* Reed.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Reed.entitlements; sourceTree = "<group>"; };
 		AEB8D381B79D9702B0E7748D /* CardPreview.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CardPreview.swift; sourceTree = "<group>"; };
 		B38E8F0B3C13C4EB1BD0D8C5 /* ReedApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReedApp.swift; sourceTree = "<group>"; };
 		B47C083FB7EA24DC2219BD5E /* AccountDeletionRecoveryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccountDeletionRecoveryView.swift; sourceTree = "<group>"; };
@@ -287,6 +288,7 @@
 			isa = PBXGroup;
 			children = (
 				7A28C39B333CFBE256025BC6 /* Info.plist */,
+				ABD7F5D8A619B1B6B6CCC90A /* Reed.entitlements */,
 				C7DDB43930BE233667EE3672 /* App */,
 				604224FF37982421414A7229 /* DesignSystem */,
 				3A26439587F2EA582917FB9A /* Features */,
@@ -793,6 +795,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = Reed/Reed.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = Reed/Info.plist;
@@ -809,6 +812,7 @@
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = dev.dunchekk.reed;
 				REED_API_BASE_URL = "";
+				REED_APNS_ENVIRONMENT = development;
 				SDKROOT = iphoneos;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
@@ -929,6 +933,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = Reed/Reed.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = Reed/Info.plist;
@@ -945,6 +950,7 @@
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = dev.dunchekk.reed;
 				REED_API_BASE_URL = "";
+				REED_APNS_ENVIRONMENT = production;
 				SDKROOT = iphoneos;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};

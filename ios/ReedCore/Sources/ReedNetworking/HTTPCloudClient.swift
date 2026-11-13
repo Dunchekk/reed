@@ -49,9 +49,11 @@ public final class HTTPCloudClient: CloudRemote, CloudMediaRemote, CloudDeviceRe
             query: ["offset":String(offset),"count":String(count)])
     }
     public func registerDevice(id: UUID, name: String, timeZone: String, pushToken: String?) async throws -> CloudDevice {
-        struct Registration: Encodable { let id: UUID; let name: String; let timeZone: String; let pushToken: String? }
-        return try await json("devices", method: "POST", body: CloudCoding.encoder().encode(Registration(id: id, name: name, timeZone: timeZone, pushToken: pushToken)))
+        let body = CloudValue.object(["id":.string(id.uuidString.lowercased()),"name":.string(name),"timeZone":.string(timeZone),"pushToken":pushToken.map(CloudValue.string) ?? .null])
+        return try await json("devices", method: "POST", body: CloudCoding.encoder().encode(body))
     }
+    public func markReady(epoch: UUID) async throws { _ = try await send("device/ready", method: "POST", epoch: epoch) }
+    public func pauseDevice() async throws { _ = try await send("device/pause", method: "POST") }
     public func devices() async throws -> [CloudDevice] { try await json("devices", method: "GET") }
     public func selectPrimary(id: UUID) async throws { _ = try await send("devices/\(id.uuidString.lowercased())/primary", method: "PUT") }
     public func unregisterDevice(id: UUID) async throws { _ = try await send("devices/\(id.uuidString.lowercased())", method: "DELETE") }
@@ -67,6 +69,7 @@ public final class HTTPCloudClient: CloudRemote, CloudMediaRemote, CloudDeviceRe
         if !query.isEmpty { components?.queryItems = query.sorted { $0.key < $1.key }.map { URLQueryItem(name: $0.key, value: $0.value) } }
         guard let url = components?.url else { throw CloudError.unavailable }
         var request = URLRequest(url: url)
+        if path == "device/pause" { request.timeoutInterval = 5 }
         request.httpMethod = method; request.httpBody = body
         request.allowsCellularAccess = try await !wifiOnly()
         if body != nil { request.setValue(contentType, forHTTPHeaderField: "Content-Type") }

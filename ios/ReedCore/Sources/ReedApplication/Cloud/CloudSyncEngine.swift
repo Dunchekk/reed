@@ -106,6 +106,7 @@ public actor CloudSyncEngine {
         if remaining.pending == 0 && remaining.conflicts == 0 && remaining.unapplied == 0 {
             try await local.completed(at: Date())
             if try await local.state().mode == .enabling { try await local.setMode(.cloud) }
+            if try await local.state().mode == .cloud { try await participation.synchronizationCompleted(epoch: epoch) }
         }
         emit(CloudProgress(remaining.conflicts > 0 ? .conflicts : .idle))
     }

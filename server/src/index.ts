@@ -1,3 +1,5 @@
+import {configuredAPNs} from "./notifications/apns.ts";
+import {CloudPushWorker} from "./notifications/worker.ts";
 import {CloudReturns} from "./returns/service.ts";
 import {CloudDatabase} from "./cloud/database.ts";
 import {CloudLibrary} from "./cloud/library.ts";
@@ -23,14 +25,19 @@ const auth = config.authProvider === "development"
 const accounts = new PostgresAccountRepository(database);
 const cloudDatabase = new CloudDatabase(database);
 const objects = new FileObjectStore(process.env.CLOUD_STORAGE_PATH ?? ".local/cloud-objects");
-const cloud = {library:new CloudLibrary(cloudDatabase),records:new CloudRecords(cloudDatabase),
+const pushProvider = await configuredAPNs(process.env);
+const cloud = {library:new CloudLibrary(cloudDatabase,!!pushProvider),records:new CloudRecords(cloudDatabase),
   returns:new CloudReturns(cloudDatabase),devices:new CloudDevices(cloudDatabase),media:new CloudMedia(cloudDatabase,objects)};
 const app = buildApp({auth, accounts, lifecycle: {provider: auth, repository: accounts}},cloud);
+const pushWorker = new CloudPushWorker(cloudDatabase,cloud.returns,pushProvider);
+const refreshReturns = () => pushWorker.run().catch(() => app.log.error("Cloud returns will retry"));
+const returnsTimer = setInterval(() => { void refreshReturns(); }, 30_000).unref();
+app.addHook("onReady", async () => { await refreshReturns(); });
 const deletion = new AccountDeletionWorker(accounts,auth,config.authProvider);
 const retryDeletion = () => deletion.run().catch(() => app.log.error("Account deletion will retry"));
 const deletionTimer = setInterval(() => { void retryDeletion(); }, 30_000).unref();
 app.addHook("onReady", async () => { await retryDeletion(); });
-app.addHook("onClose", async () => { clearInterval(deletionTimer); await deletion.run().catch(() => {}); await database.end(); });
+app.addHook("onClose", async () => { clearInterval(deletionTimer); clearInterval(returnsTimer); await pushWorker.run().catch(() => {}); await deletion.run().catch(() => {}); await database.end(); });
 database.on("error", () => app.log.error("Database connection failed"));
 
 for (const signal of ["SIGTERM", "SIGINT"] as const) {

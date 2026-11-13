@@ -13,13 +13,13 @@ export class CloudDevices {
   readonly database: CloudDatabase;
   constructor(database: CloudDatabase) { this.database = database; }
 
-  async register(accountID: string, input: {id: string; name: string; timeZone: string; pushToken?: string}): Promise<Device> {
+  async register(accountID: string, input: {id: string; name: string; timeZone: string; pushToken?: string|null}): Promise<Device> {
     const id = uuid(input.id);
     if (typeof input.name !== "string" || !input.name.trim() || input.name.length > 120 ||
         typeof input.timeZone !== "string" || input.timeZone.length > 100) throw new CloudError("invalid_record");
     try { new Intl.DateTimeFormat("en", {timeZone: input.timeZone}).format(); }
     catch { throw new CloudError("invalid_record"); }
-    if (input.pushToken !== undefined && !/^[a-fA-F0-9]{64,512}$/.test(input.pushToken)) throw new CloudError("invalid_record");
+    if (input.pushToken != null && !/^[a-fA-F0-9]{64,512}$/.test(input.pushToken)) throw new CloudError("invalid_record");
     return this.database.account(accountID, async client => {
       const existing = (await client.query("SELECT * FROM cloud_devices WHERE account_id=$1 AND id=$2", [accountID,id])).rows[0];
       // Rejoining after revocation requires a new device identity, chosen explicitly on the client.
@@ -29,8 +29,8 @@ export class CloudDevices {
       if (!existing && counts.active >= 20) throw new CloudError("quota_exceeded");
       const result = await client.query(`INSERT INTO cloud_devices(account_id,id,name,time_zone,is_primary,push_token)
         VALUES($1,$2,$3,$4,$5,$6) ON CONFLICT(account_id,id) DO UPDATE SET
-        name=EXCLUDED.name,time_zone=EXCLUDED.time_zone,push_token=COALESCE(EXCLUDED.push_token,cloud_devices.push_token),last_seen_at=now() RETURNING *`,
-        [accountID,id,input.name.trim(),input.timeZone,counts.total === 0,input.pushToken?.toLowerCase() ?? null]);
+        name=EXCLUDED.name,time_zone=EXCLUDED.time_zone,push_token=CASE WHEN $7 THEN EXCLUDED.push_token ELSE cloud_devices.push_token END,suspended=false,last_seen_at=now() RETURNING *`,
+        [accountID,id,input.name.trim(),input.timeZone,counts.total === 0,input.pushToken?.toLowerCase() ?? null,input.pushToken !== undefined]);
       if (!existing || existing.time_zone !== input.timeZone) await client.query("DELETE FROM cloud_return_plans WHERE account_id=$1", [accountID]);
       return device(result.rows[0]);
     });
@@ -61,6 +61,16 @@ export class CloudDevices {
       if (target !== scope.deviceID.toLowerCase()) await this.requireActive(client,scope);
       await client.query("DELETE FROM cloud_return_plans WHERE account_id=$1", [scope.accountID]);
       await client.query("UPDATE cloud_devices SET revoked_at=COALESCE(revoked_at,now()),is_primary=false,push_token=NULL WHERE account_id=$1 AND id=$2", [scope.accountID,target]);
+    });
+  }
+
+  async ready(scope: CloudScope, epoch: string): Promise<void> {
+    await this.database.device(scope,epoch,async client => { await client.query("UPDATE cloud_devices SET is_ready=true WHERE account_id=$1 AND id=$2",[scope.accountID,scope.deviceID]); });
+  }
+  async pause(scope: CloudScope): Promise<void> {
+    await this.database.account(scope.accountID,async client => {
+      await this.requireActive(client,scope);
+      await client.query("UPDATE cloud_devices SET suspended=true,is_ready=false,push_token=NULL WHERE account_id=$1 AND id=$2",[scope.accountID,scope.deviceID]);
     });
   }
 

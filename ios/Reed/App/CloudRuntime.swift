@@ -19,6 +19,7 @@ struct CloudConnectionConfiguration: Sendable {
     private let storage: LocalCloudRepository
     private let returns: ReturnCoordinator
     private var scheduled: Task<Void,Never>?
+    private var tokenObservation: Task<Void,Never>?
     private var observation: Task<Void,Never>?
 
     init(accountID: UUID, database: LibraryDatabase, files: FileAttachmentStore, returns: ReturnCoordinator, connection: CloudConnectionConfiguration?) {
@@ -31,10 +32,16 @@ struct CloudConnectionConfiguration: Sendable {
                 participation: AppleCloudParticipation(remote: remote, identity: identity, returns: returns), network: AppleCloudNetworkPolicy(), plan: CloudPlanSynchronizer(remote: remote, local: storage))
         } else { remote = nil; engine = nil }
     }
-    deinit { scheduled?.cancel(); observation?.cancel() }
+    deinit { scheduled?.cancel(); observation?.cancel(); tokenObservation?.cancel() }
 
     func prepare() async throws {
         if try await repository.state().mode != .local { try await returns.suspendForCloud() }
+        tokenObservation?.cancel()
+        tokenObservation = Task { [weak self] in
+            for await _ in NotificationCenter.default.notifications(named: RemotePushRegistration.changed).map({ _ in true }) {
+                guard !Task.isCancelled else { return }; self?.schedule()
+            }
+        }
         if let engine {
             observation = Task { [weak self] in
                 for await event in await engine.events() {
@@ -71,7 +78,11 @@ struct CloudConnectionConfiguration: Sendable {
             return await withTaskCancellationHandler { await refresh() } onCancel: { [engine] in Task { await engine?.cancelCurrent() } }
         } catch { return false }
     }
-    func stop() async { scheduled?.cancel(); observation?.cancel(); await engine?.stop() }
+    func pauseForSignOut() async {
+        guard (try? await repository.state().participates) == true else { return }
+        try? await remote?.pauseDevice()
+    }
+    func stop() async { scheduled?.cancel(); observation?.cancel(); tokenObservation?.cancel(); await engine?.stop() }
     func resumeAfterFailedSignOut() async throws {
         try await engine?.activate()
         try await prepare()

@@ -37,8 +37,10 @@ export async function registerCloudRoutes(app: FastifyInstance, auth: AuthDepend
   app.post("/v1/cloud/devices", request => {
     const body = object(request.body);
     return cloud.devices.register(account(request),{id:uuid(body.id),name:string(body.name,480),timeZone:string(body.timeZone,100),
-      ...(body.pushToken !== undefined ? {pushToken:string(body.pushToken,512)} : {})});
+      ...(body.pushToken !== undefined ? {pushToken:body.pushToken === null ? null : string(body.pushToken,512)} : {})});
   });
+  app.post("/v1/cloud/device/ready", async (request,reply) => { await cloud.devices.ready(scope(request),epoch(request)); return reply.code(204).send(); });
+  app.post("/v1/cloud/device/pause", async (request,reply) => { await cloud.devices.pause(scope(request)); return reply.code(204).send(); });
   app.get("/v1/cloud/devices", request => cloud.devices.list(scope(request)));
   app.put<{Params:{id:string}}>("/v1/cloud/devices/:id/primary", async (request,reply) => {
     await cloud.devices.selectPrimary(scope(request),uuid(request.params.id)); return reply.code(204).send();

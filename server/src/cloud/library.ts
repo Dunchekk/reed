@@ -47,10 +47,10 @@ export class CloudLibrary {
   async reset(scope: CloudScope, epoch: string): Promise<CloudSummary> {
     return this.database.device(scope, epoch, async (client) => {
       // Device identities remain, but no request with the old epoch can mutate the new library.
-      for (const table of ["cloud_return_plans", "cloud_return_days", "cloud_return_slots", "cloud_operations", "cloud_changes", "cloud_records", "cloud_uploads", "cloud_media"]) {
+      for (const table of ["cloud_push_outbox", "cloud_return_plans", "cloud_return_days", "cloud_return_slots", "cloud_operations", "cloud_changes", "cloud_records", "cloud_uploads", "cloud_media"]) {
         await client.query(`DELETE FROM ${table} WHERE account_id=$1`, [scope.accountID]);
       }
-      await client.query("UPDATE cloud_devices SET is_primary=false WHERE account_id=$1", [scope.accountID]);
+      await client.query("UPDATE cloud_devices SET is_primary=false,is_ready=false,push_token=NULL WHERE account_id=$1", [scope.accountID]);
       const next = randomUUID();
       await client.query("UPDATE cloud_libraries SET epoch=$2,sequence=0 WHERE account_id=$1", [scope.accountID, next]);
       return {epoch: next, sequence: 0, cards: 0, mediaBytes: 0, notificationsAvailable: this.notificationsAvailable};

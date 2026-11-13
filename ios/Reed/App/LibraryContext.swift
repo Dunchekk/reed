@@ -55,6 +55,7 @@ final class LibraryContext {
     }
 
     func prepare() async throws {
+        NotificationRouter.shared.activeAccountID = account.id
         try await cloud.prepare()
         try await backupArchive.cleanTemporaryFiles()
         let cutoff = Calendar.current.date(byAdding: .day, value: -7, to: Date()) ?? Date().addingTimeInterval(-604800)
@@ -77,15 +78,21 @@ final class LibraryContext {
     func markChanged() { revision += 1; returnCoordinator.refresh(); cloud.schedule() }
     func stopSession() async throws {
         await cloud.stop()
+        await cloud.pauseForSignOut()
+        NotificationRouter.shared.activeAccountID = nil
         try await returnCoordinator.stop()
     }
-    func resumeAfterFailedSignOut() async throws { try await cloud.resumeAfterFailedSignOut() }
+    func resumeAfterFailedSignOut() async throws {
+        NotificationRouter.shared.activeAccountID = account.id
+        try await cloud.resumeAfterFailedSignOut()
+    }
     func markDraftsChanged() { draftRevision += 1 }
 }
 
 
 extension LibraryContext: AccountLocalCleanup {
     func prepareForDeletion() async throws {
+        NotificationRouter.shared.activeAccountID = nil
         BackgroundReturnRefresh.shared.cancel()
         await cloud.stop()
         try await returnCoordinator.stop()

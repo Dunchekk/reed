@@ -23,9 +23,12 @@ public protocol CloudNetworkPolicy: Sendable {
 }
 /// Platform owns device identity, APNs token, and local notification lifecycle.
 public protocol CloudParticipation: Sendable {
+    func synchronizationCompleted(epoch: UUID) async throws
     func prepareJoin() async throws
     func refreshRegistration() async throws
     func leave() async throws
     func suspendLocalNotifications() async throws
     func resumeLocalNotifications() async throws
 }
+
+public extension CloudParticipation { func synchronizationCompleted(epoch: UUID) async throws {} }

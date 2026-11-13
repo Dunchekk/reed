@@ -35,6 +35,8 @@ public struct CloudDevice: Codable, Equatable, Sendable, Identifiable {
     }
 }
 public protocol CloudDeviceRemote: Sendable {
+    func markReady(epoch: UUID) async throws
+    func pauseDevice() async throws
     func registerDevice(id: UUID, name: String, timeZone: String, pushToken: String?) async throws -> CloudDevice
     func devices() async throws -> [CloudDevice]
     func selectPrimary(id: UUID) async throws
