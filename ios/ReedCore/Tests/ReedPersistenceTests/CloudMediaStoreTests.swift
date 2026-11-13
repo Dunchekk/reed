@@ -46,3 +46,23 @@ import ReedApplication
     var edited = try #require(await library.card(id: card.id)); edited.attachmentIDs = []; try await library.save(edited)
     #expect(try await library.attachmentIDs().contains(photo))
 }
+
+@Test func clearingLibraryErasesInterruptedDownloadsEvenWithoutPublishedAttachments() async throws {
+    let root = FileManager.default.temporaryDirectory.appendingPathComponent("reed-staging-clear-\(UUID())")
+    defer { try? FileManager.default.removeItem(at: root) }
+    let database = try LibraryDatabase(root: root, accountID: UUID())
+    let source = FileAttachmentStore(directory: root.appendingPathComponent("source")), files = FileAttachmentStore(directory: database.directory)
+    let id = try await source.write(original: Data([1,2,3,4]), thumbnail: Data([5,6])), manifest = try await source.manifest(id: id)
+    try await files.appendDownload(manifest: manifest, variant: .original, offset: 0, bytes: Data([1,2]))
+    try await files.collectOrphans(retaining: [id])
+    #expect(try await files.downloadOffset(manifest: manifest, variant: .original) == 2)
+    let staging = database.directory.appendingPathComponent("cloud-downloads/\(id.uuidString.lowercased())/original")
+    #expect(FileManager.default.fileExists(atPath: staging.path))
+    let transfer = LibraryTransferService(repository: LocalLibraryBackupRepository(database: database), attachments: files, archive: FileBackupArchive(directory: database.directory))
+    try await transfer.clear()
+    #expect(!FileManager.default.fileExists(atPath: staging.path))
+    try await transfer.clear()
+    try await files.appendDownload(manifest: manifest, variant: .original, offset: 0, bytes: Data([1,2]))
+    try await files.collectOrphans(retaining: [])
+    #expect(!FileManager.default.fileExists(atPath: staging.path))
+}

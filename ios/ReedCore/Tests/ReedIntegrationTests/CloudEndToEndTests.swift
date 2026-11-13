@@ -35,6 +35,17 @@ private actor LostCardResponse: CloudRemote {
         return result
     }
 }
+private actor InterruptedPhoto: CloudMediaTransferring {
+    let transfer: CloudMediaTransfer
+    var interrupted = false
+    init(_ transfer: CloudMediaTransfer) { self.transfer = transfer }
+    func upload(epoch: UUID, id: UUID, progress: CloudProgressHandler) async throws { try await transfer.upload(epoch: epoch, id: id, progress: progress) }
+    func download(epoch: UUID, id: UUID, progress: CloudProgressHandler) async throws {
+        if !interrupted { interrupted = true; throw CloudError.unavailable }
+        try await transfer.download(epoch: epoch, id: id, progress: progress)
+    }
+    func verifyLocal(ids: [UUID]) async throws { try await transfer.verifyLocal(ids: ids) }
+}
 private struct Replica {
     let database: LibraryDatabase, cloud: LocalCloudRepository, library: LocalLibraryRepository, files: FileAttachmentStore
     let remote: HTTPCloudClient, identity: FileCloudDeviceIdentity, environment: Environment
@@ -72,7 +83,13 @@ func twoSwiftReplicasUseRealHTTPPostgresPhotosConflictsAndEpochs() async throws 
     await #expect(throws: CloudError.unavailable) { try await broken.synchronize() }
     // A fresh repository/engine must recover the durable outbox after the response was lost.
     let restarted = try Replica(root: root.appendingPathComponent("first"), configuration: configuration), a = restarted.engine(), b = second.engine()
-    try await a.synchronize(); try await b.synchronize()
+    try await a.synchronize()
+    let interrupted = CloudSyncEngine(local: second.cloud, remote: second.remote,
+        media: InterruptedPhoto(CloudMediaTransfer(local: second.files, remote: second.remote)), participation: second.environment, network: second.environment)
+    await #expect(throws: CloudError.unavailable) { try await interrupted.synchronize() }
+    var withoutPhoto = try #require(await second.library.card(id: card.id)); withoutPhoto.comment = "Правка до скачивания фото"
+    try await second.library.save(withoutPhoto)
+    try await b.synchronize(); try await a.synchronize()
     #expect(try await second.library.card(id: card.id)?.source == card.source)
     #expect(try await second.files.original(id: attachmentID) == bytes)
     var left = try #require(await restarted.library.card(id: card.id)), right = try #require(await second.library.card(id: card.id))

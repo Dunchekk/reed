@@ -29,12 +29,15 @@ public actor FileAttachmentStore: AttachmentStore {
         return url
     }
     public func remove(id: UUID) throws {
-        if FileManager.default.fileExists(atPath: path(id).path) { try FileManager.default.removeItem(at: path(id)) }
+        for url in [path(id), staged(id)] {
+            if FileManager.default.fileExists(atPath: url.path) { try FileManager.default.removeItem(at: url) }
+        }
     }
     public func collectOrphans(retaining ids: Set<UUID>) throws {
-        guard FileManager.default.fileExists(atPath: directory.path) else { return }
-        for url in try FileManager.default.contentsOfDirectory(at: directory, includingPropertiesForKeys: nil) {
-            if let id = UUID(uuidString: url.lastPathComponent), !ids.contains(id) { try FileManager.default.removeItem(at: url) }
+        for area in [directory, downloads] where FileManager.default.fileExists(atPath: area.path) {
+            for url in try FileManager.default.contentsOfDirectory(at: area, includingPropertiesForKeys: nil) {
+                if let id = UUID(uuidString: url.lastPathComponent), !ids.contains(id) { try FileManager.default.removeItem(at: url) }
+            }
         }
     }
     func path(_ id: UUID) -> URL { directory.appendingPathComponent(id.uuidString.lowercased(), isDirectory: true) }

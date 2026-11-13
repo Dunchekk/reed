@@ -84,22 +84,25 @@ public actor CloudSyncEngine {
         var uploaded: Int64 = 0
         while let pending = try await local.nextPending() {
             try Task.checkCancellation()
-            if pending.mutation.kind == .card, pending.mutation.payload != .null {
+            emit(CloudProgress(.pushing, completed: uploaded))
+            let result: CloudMutationResult
+            do {
+                // A receipt or stale-version conflict must not depend on an old photo still existing.
+                result = try await remote.push(epoch: epoch, mutation: pending.mutation)
+            } catch CloudError.missingMedia where pending.mutation.kind == .card && pending.mutation.payload != .null {
+                // Only an accepted base version can require media. Repair confirmed remote photos
+                // before uploading a card that mixes downloaded and newly attached images.
+                try await downloadPendingMedia(epoch: epoch)
                 for id in try pending.mutation.payload.decode(CloudCard.self).attachmentIDs {
                     try await media.upload(epoch: epoch, id: id) { await self.emit($0) }
                 }
+                result = try await remote.push(epoch: epoch, mutation: pending.mutation)
             }
-            emit(CloudProgress(.pushing, completed: uploaded))
-            let result = try await remote.push(epoch: epoch, mutation: pending.mutation)
             try await local.acknowledge(pending, result: result)
             uploaded += 1
         }
         try await pull(epoch: epoch)
-        for id in try await local.mediaToDownload() {
-            try Task.checkCancellation()
-            try await media.download(epoch: epoch, id: id) { await self.emit($0) }
-            try await local.markMediaAvailable(id: id)
-        }
+        try await downloadPendingMedia(epoch: epoch)
         try await plan?.synchronize(epoch: epoch)
         emit(CloudProgress(.finishing))
         let remaining = try await local.summary()
@@ -109,6 +112,14 @@ public actor CloudSyncEngine {
             if try await local.state().mode == .cloud { try await participation.synchronizationCompleted(epoch: epoch) }
         }
         emit(CloudProgress(remaining.conflicts > 0 ? .conflicts : .idle))
+    }
+
+    private func downloadPendingMedia(epoch: UUID) async throws {
+        for id in try await local.mediaToDownload() {
+            try Task.checkCancellation()
+            try await media.download(epoch: epoch, id: id) { await self.emit($0) }
+            try await local.markMediaAvailable(id: id)
+        }
     }
 
     private func pull(epoch: UUID) async throws {

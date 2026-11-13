@@ -127,3 +127,24 @@ private struct SuspendedSummary: CloudRemote {
     #expect(await latest.next()?.phase == .idle)
     #expect(try await local.state().mode == .enabling)
 }
+
+@Test func stalePhotoOutboxCanReachConflictWithoutReadingAnUnavailableHistoricalBlob() async throws {
+    let root = FileManager.default.temporaryDirectory.appendingPathComponent("reed-stale-photo-\(UUID())")
+    defer { try? FileManager.default.removeItem(at: root) }
+    let database = try LibraryDatabase(root: root, accountID: UUID()), local = LocalCloudRepository(database: database), library = LocalLibraryRepository(database: database)
+    let remote = InMemoryCloud(), environment = TestCloudEnvironment(), card = Card(text: "Фото", attachmentIDs: [UUID()])
+    _ = try await remote.push(epoch: remote.epoch, mutation: CloudMutation(key: CloudKey(.card,card.id), baseVersion: 0, payload: .encode(CloudCard(card))))
+    try await local.begin(epoch: remote.epoch)
+    try await local.apply(remote.pull(epoch: remote.epoch, after: 0, limit: 20))
+    var edit = try #require(await library.card(id: card.id)); edit.text = "Офлайн"; try await library.save(edit)
+    _ = try #require(await local.nextPending())
+    var latest = card; latest.text = "В облаке уже без фото"; latest.attachmentIDs = []
+    _ = try await remote.push(epoch: remote.epoch, mutation: CloudMutation(key: CloudKey(.card,card.id), baseVersion: 1, payload: .encode(CloudCard(latest))))
+    let engine = CloudSyncEngine(local: local, remote: remote, media: NoPhotoTransfer(), participation: environment, network: environment)
+    await #expect(throws: CloudError.missingMedia) { try await engine.synchronize() }
+    let conflict = try #require(await local.conflicts().first)
+    #expect(try await local.nextPending() == nil)
+    try await engine.resolve(id: conflict.id, choice: .remote)
+    #expect(try await library.card(id: card.id)?.text == latest.text)
+    #expect(try await local.summary().pending == 0)
+}

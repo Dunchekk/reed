@@ -4,8 +4,8 @@ import ReedDomain
 import ReedApplication
 
 extension FileAttachmentStore: CloudMediaStore {
-    private var downloads: URL { directory.deletingLastPathComponent().appendingPathComponent("cloud-downloads", isDirectory: true) }
-    private func staged(_ id: UUID) -> URL { downloads.appendingPathComponent(id.uuidString.lowercased(), isDirectory: true) }
+    var downloads: URL { directory.deletingLastPathComponent().appendingPathComponent("cloud-downloads", isDirectory: true) }
+    func staged(_ id: UUID) -> URL { downloads.appendingPathComponent(id.uuidString.lowercased(), isDirectory: true) }
     private func filename(_ variant: CloudMediaVariant) -> String { variant == .original ? "original" : "thumbnail.jpg" }
 
     public func manifest(id: UUID) throws -> CloudMediaManifest {
