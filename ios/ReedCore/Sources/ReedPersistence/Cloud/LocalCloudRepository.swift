@@ -151,7 +151,8 @@ public final class LocalCloudRepository: CloudRepository {
         }
     }
     static func clearReplication(_ db: Database) throws {
-        for table in ["cloud_shadow","cloud_dirty","cloud_outbox","cloud_conflicts","cloud_projection","cloud_media_needed","cloud_return_exports","cloud_media_references"] {
+        try db.execute(sql: "DELETE FROM preferences WHERE key='cloud.plan'")
+        for table in ["cloud_shadow","cloud_dirty","cloud_outbox","cloud_conflicts","cloud_projection","cloud_media_needed","cloud_return_exports","cloud_media_references","cloud_plan_slots"] {
             try db.execute(sql: "DELETE FROM \(table)")
         }
     }

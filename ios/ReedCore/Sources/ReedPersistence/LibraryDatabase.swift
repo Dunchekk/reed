@@ -118,6 +118,7 @@ public final class LibraryDatabase: Sendable {
             try CloudMediaReferences.backfill(db)
         }
         migrator.registerMigration("013_cloud_leaving", migrate: CloudSchema.installTriggers)
+        migrator.registerMigration("014_cloud_plan_ownership", migrate: LocalCloudRepository.migrateReturnOwnership)
         return migrator
     }
 }

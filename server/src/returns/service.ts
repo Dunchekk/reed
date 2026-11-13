@@ -1,3 +1,5 @@
+import {compactHistory} from "./history.ts";
+import type {WireReturn} from "./history.ts";
 import {isDeepStrictEqual} from "node:util";
 import {randomBytes,randomUUID} from "node:crypto";
 import type {PoolClient} from "pg";
@@ -8,8 +10,7 @@ import {ZonedCalendar} from "./calendar.ts";
 import {projectLibrary} from "./projection.ts";
 import {planReturns} from "./planner.ts";
 import {ReturnScheduleError} from "./models.ts";
-import type {ReturnDecision,ReturnSlot} from "./models.ts";
-export interface CloudPlan {epoch:string;sequence:number;timeZone:string;issue?:string;entries:Array<{slot:Omit<ReturnSlot,"date">&{date:string};decision:ReturnDecision;revision:string}>}
+export interface CloudPlan {epoch:string;sequence:number;timeZone:string;issue?:string;entries:WireReturn[];history:WireReturn[];snapshotAt:string}
 export class CloudReturns {
   readonly database:CloudDatabase;readonly now:()=>number;
   constructor(database:CloudDatabase,now:()=>number=Date.now){this.database=database;this.now=now;}
@@ -25,7 +26,8 @@ export class CloudReturns {
         const rows=(await client.query("SELECT kind,id,payload FROM cloud_records WHERE account_id=$1 AND payload IS NOT NULL",[accountID])).rows;
         const library=projectLibrary(rows,now,calendar);
         const past=(await client.query("SELECT slot,decision FROM cloud_return_slots WHERE account_id=$1 AND NOT cancelled AND scheduled_at<=$2",[accountID,new Date(now)])).rows;
-        const merged=new Map(library.past.map(item=>[item.slot.id,item]));
+        const cancelled=new Set((await client.query("SELECT id FROM cloud_return_slots WHERE account_id=$1 AND cancelled",[accountID])).rows.map(row=>row.id));
+        const merged=new Map(library.past.filter(item=>!cancelled.has(item.slot.id)).map(item=>[item.slot.id,item]));
         for(const item of past)merged.set(item.slot.id,{slot:{...item.slot,date:Date.parse(item.slot.date)},decision:item.decision});
         library.past=[...merged.values()];
         const seeds=new Map<string,bigint>();
@@ -50,6 +52,16 @@ export class CloudReturns {
       saved={issue};
     }
     const entries=(await client.query("SELECT slot,decision,revision FROM cloud_return_slots WHERE account_id=$1 AND NOT cancelled AND scheduled_at>=$2 ORDER BY scheduled_at,id",[accountID,new Date(calendar.date(day,0)!)])).rows;
-    return {epoch:state.epoch,sequence:state.sequence,timeZone,...(saved.issue?{issue:saved.issue}:{}),entries};
+    const imported=(await client.query(`SELECT id AS revision,payload->'slot' AS slot,payload->'decision' AS decision
+      FROM cloud_records WHERE account_id=$1 AND kind='returnHistory' AND payload IS NOT NULL
+      AND (payload->'slot'->>'date')::timestamptz<=$2`,[accountID,new Date(now)])).rows as WireReturn[];
+    const server=(await client.query("SELECT id,slot,decision,revision,cancelled FROM cloud_return_slots WHERE account_id=$1 AND scheduled_at<=$2",[accountID,new Date(now)])).rows;
+    const historyByID=new Map(imported.map(entry=>[entry.slot.id,entry]));
+    for(const entry of server){
+      if(entry.cancelled)historyByID.delete(entry.id);
+      else historyByID.set(entry.id,{slot:entry.slot,decision:entry.decision,revision:entry.revision});
+    }
+    return {epoch:state.epoch,sequence:state.sequence,timeZone,...(saved.issue?{issue:saved.issue}:{}),entries,
+      history:compactHistory([...historyByID.values()],now),snapshotAt:new Date(now).toISOString()};
   }
 }
