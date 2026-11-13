@@ -1,0 +1,1547 @@
+{
+  "selections": [
+    {
+      "candidates": [
+        {
+          "createdAt": "2026-11-02T12:00:00.000Z",
+          "id": "00000000-0000-0000-0000-000000000001"
+        },
+        {
+          "createdAt": "2026-11-02T12:00:00.000Z",
+          "id": "00000000-0000-0000-0000-000000000002"
+        }
+      ],
+      "expected": {
+        "automaticOrdinal": 1,
+        "cardID": "00000000-0000-0000-0000-000000000001",
+        "reason": "firstReturn",
+        "waitingDays": 10
+      },
+      "historyEnabled": false,
+      "name": "deterministic hash tie",
+      "previousAutomaticOrdinal": 0,
+      "reservations": [],
+      "settings": {
+        "boostEnabled": false,
+        "channelExclude": {
+          "authorMode": "any",
+          "authors": [],
+          "folders": [],
+          "tagMode": "any",
+          "tags": [],
+          "wordMode": "all",
+          "words": ""
+        },
+        "channelInclude": {
+          "authorMode": "any",
+          "authors": [],
+          "folders": [],
+          "tagMode": "any",
+          "tags": [],
+          "wordMode": "all",
+          "words": ""
+        },
+        "dailyLimit": 3,
+        "enabled": true,
+        "firstMinute": 570,
+        "globalExclude": {
+          "authorMode": "any",
+          "authors": [],
+          "folders": [],
+          "tagMode": "any",
+          "tags": [],
+          "wordMode": "all",
+          "words": ""
+        },
+        "globalInclude": {
+          "authorMode": "any",
+          "authors": [],
+          "folders": [],
+          "tagMode": "any",
+          "tags": [],
+          "wordMode": "all",
+          "words": ""
+        },
+        "jitterMinutes": 30,
+        "lastMinute": 1230,
+        "minimumIntervalMinutes": 60,
+        "notificationsEnabled": true,
+        "weekdays": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7
+        ]
+      },
+      "slot": {
+        "date": "2026-11-12T12:00:00.000Z",
+        "id": "shared-fixture-slot"
+      },
+      "sourcesUsedToday": []
+    },
+    {
+      "candidates": [
+        {
+          "createdAt": "2026-11-02T12:00:00.000Z",
+          "id": "00000000-0000-0000-0000-000000000001"
+        },
+        {
+          "createdAt": "2026-11-02T12:00:00.000Z",
+          "id": "00000000-0000-0000-0000-000000000002"
+        }
+      ],
+      "expected": {
+        "automaticOrdinal": 1,
+        "cardID": "00000000-0000-0000-0000-000000000002",
+        "reason": "longWait",
+        "waitingDays": 3.3333333333333335
+      },
+      "historyEnabled": false,
+      "name": "72 hour cooldown",
+      "previousAutomaticOrdinal": 0,
+      "reservations": [
+        {
+          "cardID": "00000000-0000-0000-0000-000000000001",
+          "date": "2026-11-09T13:00:00.000Z"
+        },
+        {
+          "cardID": "00000000-0000-0000-0000-000000000002",
+          "date": "2026-11-09T04:00:00.000Z"
+        }
+      ],
+      "settings": {
+        "boostEnabled": false,
+        "channelExclude": {
+          "authorMode": "any",
+          "authors": [],
+          "folders": [],
+          "tagMode": "any",
+          "tags": [],
+          "wordMode": "all",
+          "words": ""
+        },
+        "channelInclude": {
+          "authorMode": "any",
+          "authors": [],
+          "folders": [],
+          "tagMode": "any",
+          "tags": [],
+          "wordMode": "all",
+          "words": ""
+        },
+        "dailyLimit": 3,
+        "enabled": true,
+        "firstMinute": 570,
+        "globalExclude": {
+          "authorMode": "any",
+          "authors": [],
+          "folders": [],
+          "tagMode": "any",
+          "tags": [],
+          "wordMode": "all",
+          "words": ""
+        },
+        "globalInclude": {
+          "authorMode": "any",
+          "authors": [],
+          "folders": [],
+          "tagMode": "any",
+          "tags": [],
+          "wordMode": "all",
+          "words": ""
+        },
+        "jitterMinutes": 30,
+        "lastMinute": 1230,
+        "minimumIntervalMinutes": 60,
+        "notificationsEnabled": true,
+        "weekdays": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7
+        ]
+      },
+      "slot": {
+        "date": "2026-11-12T12:00:00.000Z",
+        "id": "shared-fixture-slot"
+      },
+      "sourcesUsedToday": []
+    },
+    {
+      "candidates": [
+        {
+          "createdAt": "2026-11-11T12:00:00.000Z",
+          "id": "00000000-0000-0000-0000-000000000001"
+        },
+        {
+          "createdAt": "2026-04-26T12:00:00.000Z",
+          "id": "00000000-0000-0000-0000-000000000002",
+          "isFavorite": true
+        }
+      ],
+      "expected": {
+        "automaticOrdinal": 5,
+        "cardID": "00000000-0000-0000-0000-000000000001",
+        "reason": "coverage",
+        "waitingDays": 1
+      },
+      "historyEnabled": false,
+      "name": "fifth slot covers never returned",
+      "previousAutomaticOrdinal": 4,
+      "reservations": [
+        {
+          "cardID": "00000000-0000-0000-0000-000000000002",
+          "date": "2026-08-04T12:00:00.000Z"
+        }
+      ],
+      "settings": {
+        "boostEnabled": true,
+        "channelExclude": {
+          "authorMode": "any",
+          "authors": [],
+          "folders": [],
+          "tagMode": "any",
+          "tags": [],
+          "wordMode": "all",
+          "words": ""
+        },
+        "channelInclude": {
+          "authorMode": "any",
+          "authors": [],
+          "folders": [],
+          "tagMode": "any",
+          "tags": [],
+          "wordMode": "all",
+          "words": ""
+        },
+        "dailyLimit": 3,
+        "enabled": true,
+        "firstMinute": 570,
+        "globalExclude": {
+          "authorMode": "any",
+          "authors": [],
+          "folders": [],
+          "tagMode": "any",
+          "tags": [],
+          "wordMode": "all",
+          "words": ""
+        },
+        "globalInclude": {
+          "authorMode": "any",
+          "authors": [],
+          "folders": [],
+          "tagMode": "any",
+          "tags": [],
+          "wordMode": "all",
+          "words": ""
+        },
+        "jitterMinutes": 30,
+        "lastMinute": 1230,
+        "minimumIntervalMinutes": 60,
+        "notificationsEnabled": true,
+        "weekdays": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7
+        ]
+      },
+      "slot": {
+        "date": "2026-11-12T12:00:00.000Z",
+        "id": "shared-fixture-slot"
+      },
+      "sourcesUsedToday": []
+    },
+    {
+      "candidates": [
+        {
+          "createdAt": "2026-11-02T12:00:00.000Z",
+          "id": "00000000-0000-0000-0000-000000000001",
+          "lastManualOpening": "2026-11-11T12:00:00.000Z",
+          "manualOpeningDays": 3
+        },
+        {
+          "createdAt": "2026-11-02T12:00:00.000Z",
+          "id": "00000000-0000-0000-0000-000000000002"
+        }
+      ],
+      "expected": {
+        "automaticOrdinal": 1,
+        "cardID": "00000000-0000-0000-0000-000000000001",
+        "reason": "firstReturn",
+        "waitingDays": 10
+      },
+      "historyEnabled": true,
+      "name": "history affects score",
+      "previousAutomaticOrdinal": 0,
+      "reservations": [],
+      "settings": {
+        "boostEnabled": false,
+        "channelExclude": {
+          "authorMode": "any",
+          "authors": [],
+          "folders": [],
+          "tagMode": "any",
+          "tags": [],
+          "wordMode": "all",
+          "words": ""
+        },
+        "channelInclude": {
+          "authorMode": "any",
+          "authors": [],
+          "folders": [],
+          "tagMode": "any",
+          "tags": [],
+          "wordMode": "all",
+          "words": ""
+        },
+        "dailyLimit": 3,
+        "enabled": true,
+        "firstMinute": 570,
+        "globalExclude": {
+          "authorMode": "any",
+          "authors": [],
+          "folders": [],
+          "tagMode": "any",
+          "tags": [],
+          "wordMode": "all",
+          "words": ""
+        },
+        "globalInclude": {
+          "authorMode": "any",
+          "authors": [],
+          "folders": [],
+          "tagMode": "any",
+          "tags": [],
+          "wordMode": "all",
+          "words": ""
+        },
+        "jitterMinutes": 30,
+        "lastMinute": 1230,
+        "minimumIntervalMinutes": 60,
+        "notificationsEnabled": true,
+        "weekdays": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7
+        ]
+      },
+      "slot": {
+        "date": "2026-11-12T12:00:00.000Z",
+        "id": "shared-fixture-slot"
+      },
+      "sourcesUsedToday": []
+    },
+    {
+      "candidates": [
+        {
+          "createdAt": "2026-11-02T12:00:00.000Z",
+          "id": "00000000-0000-0000-0000-000000000001",
+          "lastManualOpening": "2026-11-11T12:00:00.000Z",
+          "manualOpeningDays": 3
+        },
+        {
+          "createdAt": "2026-11-02T12:00:00.000Z",
+          "id": "00000000-0000-0000-0000-000000000002"
+        }
+      ],
+      "expected": {
+        "automaticOrdinal": 1,
+        "cardID": "00000000-0000-0000-0000-000000000001",
+        "reason": "firstReturn",
+        "waitingDays": 10
+      },
+      "historyEnabled": false,
+      "name": "disabled history is ignored",
+      "previousAutomaticOrdinal": 0,
+      "reservations": [],
+      "settings": {
+        "boostEnabled": false,
+        "channelExclude": {
+          "authorMode": "any",
+          "authors": [],
+          "folders": [],
+          "tagMode": "any",
+          "tags": [],
+          "wordMode": "all",
+          "words": ""
+        },
+        "channelInclude": {
+          "authorMode": "any",
+          "authors": [],
+          "folders": [],
+          "tagMode": "any",
+          "tags": [],
+          "wordMode": "all",
+          "words": ""
+        },
+        "dailyLimit": 3,
+        "enabled": true,
+        "firstMinute": 570,
+        "globalExclude": {
+          "authorMode": "any",
+          "authors": [],
+          "folders": [],
+          "tagMode": "any",
+          "tags": [],
+          "wordMode": "all",
+          "words": ""
+        },
+        "globalInclude": {
+          "authorMode": "any",
+          "authors": [],
+          "folders": [],
+          "tagMode": "any",
+          "tags": [],
+          "wordMode": "all",
+          "words": ""
+        },
+        "jitterMinutes": 30,
+        "lastMinute": 1230,
+        "minimumIntervalMinutes": 60,
+        "notificationsEnabled": true,
+        "weekdays": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7
+        ]
+      },
+      "slot": {
+        "date": "2026-11-12T12:00:00.000Z",
+        "id": "shared-fixture-slot"
+      },
+      "sourcesUsedToday": []
+    },
+    {
+      "candidates": [
+        {
+          "createdAt": "2026-11-02T12:00:00.000Z",
+          "id": "00000000-0000-0000-0000-000000000001",
+          "sourceID": "00000000-0000-0000-0000-00000000000b"
+        },
+        {
+          "createdAt": "2026-11-02T12:00:00.000Z",
+          "id": "00000000-0000-0000-0000-000000000002",
+          "sourceID": "00000000-0000-0000-0000-00000000000c"
+        }
+      ],
+      "expected": {
+        "automaticOrdinal": 1,
+        "cardID": "00000000-0000-0000-0000-000000000002",
+        "reason": "firstReturn",
+        "waitingDays": 10
+      },
+      "historyEnabled": false,
+      "name": "new source today",
+      "previousAutomaticOrdinal": 0,
+      "reservations": [],
+      "settings": {
+        "boostEnabled": false,
+        "channelExclude": {
+          "authorMode": "any",
+          "authors": [],
+          "folders": [],
+          "tagMode": "any",
+          "tags": [],
+          "wordMode": "all",
+          "words": ""
+        },
+        "channelInclude": {
+          "authorMode": "any",
+          "authors": [],
+          "folders": [],
+          "tagMode": "any",
+          "tags": [],
+          "wordMode": "all",
+          "words": ""
+        },
+        "dailyLimit": 3,
+        "enabled": true,
+        "firstMinute": 570,
+        "globalExclude": {
+          "authorMode": "any",
+          "authors": [],
+          "folders": [],
+          "tagMode": "any",
+          "tags": [],
+          "wordMode": "all",
+          "words": ""
+        },
+        "globalInclude": {
+          "authorMode": "any",
+          "authors": [],
+          "folders": [],
+          "tagMode": "any",
+          "tags": [],
+          "wordMode": "all",
+          "words": ""
+        },
+        "jitterMinutes": 30,
+        "lastMinute": 1230,
+        "minimumIntervalMinutes": 60,
+        "notificationsEnabled": true,
+        "weekdays": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7
+        ]
+      },
+      "slot": {
+        "date": "2026-11-12T12:00:00.000Z",
+        "id": "shared-fixture-slot"
+      },
+      "sourcesUsedToday": [
+        "00000000-0000-0000-0000-00000000000b"
+      ]
+    },
+    {
+      "candidates": [
+        {
+          "createdAt": "2026-11-02T12:00:00.000Z",
+          "deferredUntil": "2026-11-12T13:00:00.000Z",
+          "id": "00000000-0000-0000-0000-000000000001"
+        },
+        {
+          "createdAt": "2026-11-02T12:00:00.000Z",
+          "id": "00000000-0000-0000-0000-000000000002"
+        }
+      ],
+      "expected": {
+        "automaticOrdinal": 1,
+        "cardID": "00000000-0000-0000-0000-000000000002",
+        "reason": "firstReturn",
+        "waitingDays": 10
+      },
+      "historyEnabled": false,
+      "name": "deferred automatic excluded",
+      "previousAutomaticOrdinal": 0,
+      "reservations": [],
+      "settings": {
+        "boostEnabled": false,
+        "channelExclude": {
+          "authorMode": "any",
+          "authors": [],
+          "folders": [],
+          "tagMode": "any",
+          "tags": [],
+          "wordMode": "all",
+          "words": ""
+        },
+        "channelInclude": {
+          "authorMode": "any",
+          "authors": [],
+          "folders": [],
+          "tagMode": "any",
+          "tags": [],
+          "wordMode": "all",
+          "words": ""
+        },
+        "dailyLimit": 3,
+        "enabled": true,
+        "firstMinute": 570,
+        "globalExclude": {
+          "authorMode": "any",
+          "authors": [],
+          "folders": [],
+          "tagMode": "any",
+          "tags": [],
+          "wordMode": "all",
+          "words": ""
+        },
+        "globalInclude": {
+          "authorMode": "any",
+          "authors": [],
+          "folders": [],
+          "tagMode": "any",
+          "tags": [],
+          "wordMode": "all",
+          "words": ""
+        },
+        "jitterMinutes": 30,
+        "lastMinute": 1230,
+        "minimumIntervalMinutes": 60,
+        "notificationsEnabled": true,
+        "weekdays": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7
+        ]
+      },
+      "slot": {
+        "date": "2026-11-12T12:00:00.000Z",
+        "id": "shared-fixture-slot"
+      },
+      "sourcesUsedToday": []
+    },
+    {
+      "candidates": [
+        {
+          "createdAt": "2026-11-02T12:00:00.000Z",
+          "id": "00000000-0000-0000-0000-000000000001"
+        }
+      ],
+      "expected": {
+        "cardID": "00000000-0000-0000-0000-000000000001",
+        "reason": "explicit"
+      },
+      "historyEnabled": false,
+      "name": "explicit bypasses filters",
+      "previousAutomaticOrdinal": 0,
+      "reservations": [],
+      "settings": {
+        "boostEnabled": false,
+        "channelExclude": {
+          "authorMode": "any",
+          "authors": [],
+          "folders": [],
+          "tagMode": "any",
+          "tags": [],
+          "wordMode": "all",
+          "words": ""
+        },
+        "channelInclude": {
+          "authorMode": "any",
+          "authors": [],
+          "folders": [],
+          "tagMode": "any",
+          "tags": [],
+          "wordMode": "all",
+          "words": ""
+        },
+        "dailyLimit": 3,
+        "enabled": true,
+        "firstMinute": 570,
+        "globalExclude": {
+          "authorMode": "any",
+          "authors": [],
+          "folders": [],
+          "tagMode": "any",
+          "tags": [],
+          "wordMode": "all",
+          "words": ""
+        },
+        "globalInclude": {
+          "authorMode": "any",
+          "authors": [],
+          "folders": [],
+          "tagMode": "any",
+          "tags": [
+            "00000000-0000-0000-0000-00000000005a"
+          ],
+          "wordMode": "all",
+          "words": ""
+        },
+        "jitterMinutes": 30,
+        "lastMinute": 1230,
+        "minimumIntervalMinutes": 60,
+        "notificationsEnabled": true,
+        "weekdays": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7
+        ]
+      },
+      "slot": {
+        "date": "2026-11-12T12:00:00.000Z",
+        "explicitCardID": "00000000-0000-0000-0000-000000000001",
+        "id": "shared-fixture-slot"
+      },
+      "sourcesUsedToday": []
+    },
+    {
+      "candidates": [
+        {
+          "createdAt": "2026-11-02T12:00:00.000Z",
+          "id": "00000000-0000-0000-0000-000000000001",
+          "isHidden": true
+        }
+      ],
+      "expected": {
+        "reason": "noCandidates"
+      },
+      "historyEnabled": false,
+      "name": "hidden explicit rejected",
+      "previousAutomaticOrdinal": 0,
+      "reservations": [],
+      "settings": {
+        "boostEnabled": false,
+        "channelExclude": {
+          "authorMode": "any",
+          "authors": [],
+          "folders": [],
+          "tagMode": "any",
+          "tags": [],
+          "wordMode": "all",
+          "words": ""
+        },
+        "channelInclude": {
+          "authorMode": "any",
+          "authors": [],
+          "folders": [],
+          "tagMode": "any",
+          "tags": [],
+          "wordMode": "all",
+          "words": ""
+        },
+        "dailyLimit": 3,
+        "enabled": true,
+        "firstMinute": 570,
+        "globalExclude": {
+          "authorMode": "any",
+          "authors": [],
+          "folders": [],
+          "tagMode": "any",
+          "tags": [],
+          "wordMode": "all",
+          "words": ""
+        },
+        "globalInclude": {
+          "authorMode": "any",
+          "authors": [],
+          "folders": [],
+          "tagMode": "any",
+          "tags": [],
+          "wordMode": "all",
+          "words": ""
+        },
+        "jitterMinutes": 30,
+        "lastMinute": 1230,
+        "minimumIntervalMinutes": 60,
+        "notificationsEnabled": true,
+        "weekdays": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7
+        ]
+      },
+      "slot": {
+        "date": "2026-11-12T12:00:00.000Z",
+        "explicitCardID": "00000000-0000-0000-0000-000000000001",
+        "id": "shared-fixture-slot"
+      },
+      "sourcesUsedToday": []
+    },
+    {
+      "candidates": [
+        {
+          "authors": [
+            "00000000-0000-0000-0000-00000000005b"
+          ],
+          "createdAt": "2026-11-02T12:00:00.000Z",
+          "id": "00000000-0000-0000-0000-000000000001",
+          "tags": [
+            "00000000-0000-0000-0000-00000000005a"
+          ],
+          "wordMatches": [
+            "channelInclude"
+          ]
+        },
+        {
+          "authors": [
+            "00000000-0000-0000-0000-00000000005c"
+          ],
+          "createdAt": "2026-11-02T12:00:00.000Z",
+          "id": "00000000-0000-0000-0000-000000000002",
+          "tags": [
+            "00000000-0000-0000-0000-00000000005a"
+          ],
+          "wordMatches": [
+            "channelInclude"
+          ]
+        },
+        {
+          "createdAt": "2026-11-02T12:00:00.000Z",
+          "id": "00000000-0000-0000-0000-000000000003",
+          "tags": [
+            "00000000-0000-0000-0000-00000000005a"
+          ],
+          "wordMatches": []
+        }
+      ],
+      "expected": {
+        "automaticOrdinal": 1,
+        "cardID": "00000000-0000-0000-0000-000000000002",
+        "reason": "firstReturn",
+        "waitingDays": 10
+      },
+      "historyEnabled": false,
+      "name": "include intersection and stronger exclusion",
+      "previousAutomaticOrdinal": 0,
+      "reservations": [],
+      "settings": {
+        "boostEnabled": false,
+        "channelExclude": {
+          "authorMode": "any",
+          "authors": [],
+          "folders": [],
+          "tagMode": "any",
+          "tags": [],
+          "wordMode": "all",
+          "words": ""
+        },
+        "channelInclude": {
+          "authorMode": "any",
+          "authors": [],
+          "folders": [],
+          "tagMode": "any",
+          "tags": [],
+          "wordMode": "all",
+          "words": "Ёлка книга"
+        },
+        "dailyLimit": 3,
+        "enabled": true,
+        "firstMinute": 570,
+        "globalExclude": {
+          "authorMode": "any",
+          "authors": [
+            "00000000-0000-0000-0000-00000000005b"
+          ],
+          "folders": [],
+          "tagMode": "any",
+          "tags": [],
+          "wordMode": "all",
+          "words": ""
+        },
+        "globalInclude": {
+          "authorMode": "any",
+          "authors": [],
+          "folders": [],
+          "tagMode": "any",
+          "tags": [
+            "00000000-0000-0000-0000-00000000005a"
+          ],
+          "wordMode": "all",
+          "words": ""
+        },
+        "jitterMinutes": 30,
+        "lastMinute": 1230,
+        "minimumIntervalMinutes": 60,
+        "notificationsEnabled": true,
+        "weekdays": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7
+        ]
+      },
+      "slot": {
+        "date": "2026-11-12T12:00:00.000Z",
+        "id": "shared-fixture-slot"
+      },
+      "sourcesUsedToday": []
+    }
+  ],
+  "slots": [
+    {
+      "day": "2026-11-12T12:00:00.000Z",
+      "expectedSlots": [
+        {
+          "date": "2026-11-12T07:17:00.000Z",
+          "id": "2026-11-12@Europe/Moscow.a.0.1794467820"
+        },
+        {
+          "date": "2026-11-12T11:37:00.000Z",
+          "id": "2026-11-12@Europe/Moscow.a.1.1794483420"
+        },
+        {
+          "date": "2026-11-12T16:58:00.000Z",
+          "id": "2026-11-12@Europe/Moscow.a.2.1794502680"
+        }
+      ],
+      "explicit": [],
+      "name": "three jittered local slots",
+      "seed": "4294967295",
+      "settings": {
+        "boostEnabled": false,
+        "channelExclude": {
+          "authorMode": "any",
+          "authors": [],
+          "folders": [],
+          "tagMode": "any",
+          "tags": [],
+          "wordMode": "all",
+          "words": ""
+        },
+        "channelInclude": {
+          "authorMode": "any",
+          "authors": [],
+          "folders": [],
+          "tagMode": "any",
+          "tags": [],
+          "wordMode": "all",
+          "words": ""
+        },
+        "dailyLimit": 3,
+        "enabled": true,
+        "firstMinute": 570,
+        "globalExclude": {
+          "authorMode": "any",
+          "authors": [],
+          "folders": [],
+          "tagMode": "any",
+          "tags": [],
+          "wordMode": "all",
+          "words": ""
+        },
+        "globalInclude": {
+          "authorMode": "any",
+          "authors": [],
+          "folders": [],
+          "tagMode": "any",
+          "tags": [],
+          "wordMode": "all",
+          "words": ""
+        },
+        "jitterMinutes": 30,
+        "lastMinute": 1230,
+        "minimumIntervalMinutes": 60,
+        "notificationsEnabled": true,
+        "weekdays": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7
+        ]
+      },
+      "timeZone": "Europe/Moscow"
+    },
+    {
+      "day": "2026-03-08T16:00:00.000Z",
+      "expectedSlots": [
+        {
+          "date": "2026-03-08T06:00:00.000Z",
+          "id": "2026-3-8@America/New_York.a.0.1772949600"
+        },
+        {
+          "date": "2026-03-08T07:00:00.000Z",
+          "explicitCardID": "00000000-0000-0000-0000-000000000001",
+          "id": "2026-3-8@America/New_York.e.00000000-0000-0000-0000-000000000001.150"
+        },
+        {
+          "date": "2026-03-08T08:00:00.000Z",
+          "id": "2026-3-8@America/New_York.a.1.1772956800"
+        }
+      ],
+      "explicit": [
+        {
+          "cardID": "00000000-0000-0000-0000-000000000001",
+          "minutes": [
+            150
+          ],
+          "notificationsEnabled": true,
+          "weekdays": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7
+          ]
+        }
+      ],
+      "name": "spring missing minute",
+      "seed": "4294967295",
+      "settings": {
+        "boostEnabled": false,
+        "channelExclude": {
+          "authorMode": "any",
+          "authors": [],
+          "folders": [],
+          "tagMode": "any",
+          "tags": [],
+          "wordMode": "all",
+          "words": ""
+        },
+        "channelInclude": {
+          "authorMode": "any",
+          "authors": [],
+          "folders": [],
+          "tagMode": "any",
+          "tags": [],
+          "wordMode": "all",
+          "words": ""
+        },
+        "dailyLimit": 3,
+        "enabled": true,
+        "firstMinute": 60,
+        "globalExclude": {
+          "authorMode": "any",
+          "authors": [],
+          "folders": [],
+          "tagMode": "any",
+          "tags": [],
+          "wordMode": "all",
+          "words": ""
+        },
+        "globalInclude": {
+          "authorMode": "any",
+          "authors": [],
+          "folders": [],
+          "tagMode": "any",
+          "tags": [],
+          "wordMode": "all",
+          "words": ""
+        },
+        "jitterMinutes": 0,
+        "lastMinute": 240,
+        "minimumIntervalMinutes": 60,
+        "notificationsEnabled": true,
+        "weekdays": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7
+        ]
+      },
+      "timeZone": "America/New_York"
+    },
+    {
+      "day": "2026-11-01T16:00:00.000Z",
+      "expectedSlots": [
+        {
+          "date": "2026-11-01T05:30:00.000Z",
+          "explicitCardID": "00000000-0000-0000-0000-000000000001",
+          "id": "2026-11-1@America/New_York.e.00000000-0000-0000-0000-000000000001.90"
+        },
+        {
+          "date": "2026-11-01T07:00:00.000Z",
+          "id": "2026-11-1@America/New_York.a.0.1793516400"
+        },
+        {
+          "date": "2026-11-01T08:00:00.000Z",
+          "id": "2026-11-1@America/New_York.a.1.1793520000"
+        }
+      ],
+      "explicit": [
+        {
+          "cardID": "00000000-0000-0000-0000-000000000001",
+          "minutes": [
+            90
+          ],
+          "notificationsEnabled": true,
+          "weekdays": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7
+          ]
+        }
+      ],
+      "name": "autumn first occurrence",
+      "seed": "4294967295",
+      "settings": {
+        "boostEnabled": false,
+        "channelExclude": {
+          "authorMode": "any",
+          "authors": [],
+          "folders": [],
+          "tagMode": "any",
+          "tags": [],
+          "wordMode": "all",
+          "words": ""
+        },
+        "channelInclude": {
+          "authorMode": "any",
+          "authors": [],
+          "folders": [],
+          "tagMode": "any",
+          "tags": [],
+          "wordMode": "all",
+          "words": ""
+        },
+        "dailyLimit": 3,
+        "enabled": true,
+        "firstMinute": 60,
+        "globalExclude": {
+          "authorMode": "any",
+          "authors": [],
+          "folders": [],
+          "tagMode": "any",
+          "tags": [],
+          "wordMode": "all",
+          "words": ""
+        },
+        "globalInclude": {
+          "authorMode": "any",
+          "authors": [],
+          "folders": [],
+          "tagMode": "any",
+          "tags": [],
+          "wordMode": "all",
+          "words": ""
+        },
+        "jitterMinutes": 0,
+        "lastMinute": 240,
+        "minimumIntervalMinutes": 60,
+        "notificationsEnabled": true,
+        "weekdays": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7
+        ]
+      },
+      "timeZone": "America/New_York"
+    },
+    {
+      "day": "2026-11-12T12:00:00.000Z",
+      "expectedError": "conflictingExplicitTimes",
+      "explicit": [
+        {
+          "cardID": "00000000-0000-0000-0000-000000000001",
+          "minutes": [
+            600
+          ],
+          "notificationsEnabled": true,
+          "weekdays": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7
+          ]
+        },
+        {
+          "cardID": "00000000-0000-0000-0000-000000000002",
+          "minutes": [
+            620
+          ],
+          "notificationsEnabled": true,
+          "weekdays": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7
+          ]
+        }
+      ],
+      "name": "explicit collision",
+      "seed": "4294967295",
+      "settings": {
+        "boostEnabled": false,
+        "channelExclude": {
+          "authorMode": "any",
+          "authors": [],
+          "folders": [],
+          "tagMode": "any",
+          "tags": [],
+          "wordMode": "all",
+          "words": ""
+        },
+        "channelInclude": {
+          "authorMode": "any",
+          "authors": [],
+          "folders": [],
+          "tagMode": "any",
+          "tags": [],
+          "wordMode": "all",
+          "words": ""
+        },
+        "dailyLimit": 3,
+        "enabled": true,
+        "firstMinute": 570,
+        "globalExclude": {
+          "authorMode": "any",
+          "authors": [],
+          "folders": [],
+          "tagMode": "any",
+          "tags": [],
+          "wordMode": "all",
+          "words": ""
+        },
+        "globalInclude": {
+          "authorMode": "any",
+          "authors": [],
+          "folders": [],
+          "tagMode": "any",
+          "tags": [],
+          "wordMode": "all",
+          "words": ""
+        },
+        "jitterMinutes": 30,
+        "lastMinute": 1230,
+        "minimumIntervalMinutes": 60,
+        "notificationsEnabled": true,
+        "weekdays": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7
+        ]
+      },
+      "timeZone": "Europe/Moscow"
+    },
+    {
+      "day": "2026-11-12T12:00:00.000Z",
+      "expectedError": "tooManyExplicitTimes",
+      "explicit": [
+        {
+          "cardID": "00000000-0000-0000-0000-000000000001",
+          "minutes": [
+            60,
+            180,
+            300,
+            420
+          ],
+          "notificationsEnabled": true,
+          "weekdays": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7
+          ]
+        }
+      ],
+      "name": "explicit exceeds daily limit",
+      "seed": "4294967295",
+      "settings": {
+        "boostEnabled": false,
+        "channelExclude": {
+          "authorMode": "any",
+          "authors": [],
+          "folders": [],
+          "tagMode": "any",
+          "tags": [],
+          "wordMode": "all",
+          "words": ""
+        },
+        "channelInclude": {
+          "authorMode": "any",
+          "authors": [],
+          "folders": [],
+          "tagMode": "any",
+          "tags": [],
+          "wordMode": "all",
+          "words": ""
+        },
+        "dailyLimit": 3,
+        "enabled": true,
+        "firstMinute": 570,
+        "globalExclude": {
+          "authorMode": "any",
+          "authors": [],
+          "folders": [],
+          "tagMode": "any",
+          "tags": [],
+          "wordMode": "all",
+          "words": ""
+        },
+        "globalInclude": {
+          "authorMode": "any",
+          "authors": [],
+          "folders": [],
+          "tagMode": "any",
+          "tags": [],
+          "wordMode": "all",
+          "words": ""
+        },
+        "jitterMinutes": 30,
+        "lastMinute": 1230,
+        "minimumIntervalMinutes": 60,
+        "notificationsEnabled": true,
+        "weekdays": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7
+        ]
+      },
+      "timeZone": "Europe/Moscow"
+    },
+    {
+      "day": "2026-11-12T12:00:00.000Z",
+      "expectedSlots": [
+        {
+          "date": "2026-11-11T21:15:00.000Z",
+          "explicitCardID": "00000000-0000-0000-0000-000000000001",
+          "id": "2026-11-12@Europe/Moscow.d.00000000-0000-0000-0000-000000000001.1794431700"
+        },
+        {
+          "date": "2026-11-12T07:17:00.000Z",
+          "id": "2026-11-12@Europe/Moscow.a.0.1794467820"
+        },
+        {
+          "date": "2026-11-12T11:37:00.000Z",
+          "id": "2026-11-12@Europe/Moscow.a.1.1794483420"
+        }
+      ],
+      "explicit": [
+        {
+          "cardID": "00000000-0000-0000-0000-000000000001",
+          "deferredUntil": "2026-11-11T21:15:00.000Z",
+          "minutes": [],
+          "notificationsEnabled": true,
+          "weekdays": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7
+          ]
+        }
+      ],
+      "name": "deferred appointment outside window",
+      "seed": "4294967295",
+      "settings": {
+        "boostEnabled": false,
+        "channelExclude": {
+          "authorMode": "any",
+          "authors": [],
+          "folders": [],
+          "tagMode": "any",
+          "tags": [],
+          "wordMode": "all",
+          "words": ""
+        },
+        "channelInclude": {
+          "authorMode": "any",
+          "authors": [],
+          "folders": [],
+          "tagMode": "any",
+          "tags": [],
+          "wordMode": "all",
+          "words": ""
+        },
+        "dailyLimit": 3,
+        "enabled": true,
+        "firstMinute": 570,
+        "globalExclude": {
+          "authorMode": "any",
+          "authors": [],
+          "folders": [],
+          "tagMode": "any",
+          "tags": [],
+          "wordMode": "all",
+          "words": ""
+        },
+        "globalInclude": {
+          "authorMode": "any",
+          "authors": [],
+          "folders": [],
+          "tagMode": "any",
+          "tags": [],
+          "wordMode": "all",
+          "words": ""
+        },
+        "jitterMinutes": 30,
+        "lastMinute": 1230,
+        "minimumIntervalMinutes": 60,
+        "notificationsEnabled": true,
+        "weekdays": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7
+        ]
+      },
+      "timeZone": "Europe/Moscow"
+    },
+    {
+      "day": "2026-11-12T12:00:00.000Z",
+      "expectedSlots": [
+        {
+          "date": "2026-11-12T09:48:00.000Z",
+          "id": "2026-11-12@GMT.a.0.1794476880"
+        },
+        {
+          "date": "2026-11-12T15:09:00.000Z",
+          "id": "2026-11-12@GMT.a.1.1794496140"
+        },
+        {
+          "date": "2026-11-12T20:07:00.000Z",
+          "id": "2026-11-12@GMT.a.2.1794514020"
+        }
+      ],
+      "explicit": [],
+      "name": "maximum unsigned seed",
+      "seed": "18446744073709551615",
+      "settings": {
+        "boostEnabled": false,
+        "channelExclude": {
+          "authorMode": "any",
+          "authors": [],
+          "folders": [],
+          "tagMode": "any",
+          "tags": [],
+          "wordMode": "all",
+          "words": ""
+        },
+        "channelInclude": {
+          "authorMode": "any",
+          "authors": [],
+          "folders": [],
+          "tagMode": "any",
+          "tags": [],
+          "wordMode": "all",
+          "words": ""
+        },
+        "dailyLimit": 3,
+        "enabled": true,
+        "firstMinute": 570,
+        "globalExclude": {
+          "authorMode": "any",
+          "authors": [],
+          "folders": [],
+          "tagMode": "any",
+          "tags": [],
+          "wordMode": "all",
+          "words": ""
+        },
+        "globalInclude": {
+          "authorMode": "any",
+          "authors": [],
+          "folders": [],
+          "tagMode": "any",
+          "tags": [],
+          "wordMode": "all",
+          "words": ""
+        },
+        "jitterMinutes": 30,
+        "lastMinute": 1230,
+        "minimumIntervalMinutes": 60,
+        "notificationsEnabled": true,
+        "weekdays": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7
+        ]
+      },
+      "timeZone": "GMT"
+    },
+    {
+      "day": "2026-11-12T12:00:00.000Z",
+      "expectedSlots": [],
+      "explicit": [],
+      "name": "disabled channel",
+      "seed": "4294967295",
+      "settings": {
+        "boostEnabled": false,
+        "channelExclude": {
+          "authorMode": "any",
+          "authors": [],
+          "folders": [],
+          "tagMode": "any",
+          "tags": [],
+          "wordMode": "all",
+          "words": ""
+        },
+        "channelInclude": {
+          "authorMode": "any",
+          "authors": [],
+          "folders": [],
+          "tagMode": "any",
+          "tags": [],
+          "wordMode": "all",
+          "words": ""
+        },
+        "dailyLimit": 3,
+        "enabled": true,
+        "firstMinute": 570,
+        "globalExclude": {
+          "authorMode": "any",
+          "authors": [],
+          "folders": [],
+          "tagMode": "any",
+          "tags": [],
+          "wordMode": "all",
+          "words": ""
+        },
+        "globalInclude": {
+          "authorMode": "any",
+          "authors": [],
+          "folders": [],
+          "tagMode": "any",
+          "tags": [],
+          "wordMode": "all",
+          "words": ""
+        },
+        "jitterMinutes": 30,
+        "lastMinute": 1230,
+        "minimumIntervalMinutes": 60,
+        "notificationsEnabled": false,
+        "weekdays": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7
+        ]
+      },
+      "timeZone": "Europe/Moscow"
+    }
+  ]
+}
