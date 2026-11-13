@@ -40,7 +40,8 @@ public final class LocalCloudRepository: CloudRepository {
         try await database.writer.read { db in
             try CloudLocalSummary(cards: Int.fetchOne(db, sql: "SELECT COUNT(*) FROM cards") ?? 0,
                 pending: Int.fetchOne(db, sql: "SELECT COUNT(*) FROM cloud_dirty") ?? 0,
-                conflicts: Int.fetchOne(db, sql: "SELECT COUNT(*) FROM cloud_conflicts") ?? 0)
+                conflicts: Int.fetchOne(db, sql: "SELECT COUNT(*) FROM cloud_conflicts") ?? 0,
+                unapplied: Int.fetchOne(db, sql: "SELECT COUNT(*) FROM cloud_projection") ?? 0)
         }
     }
     public func nextPending() async throws -> CloudPending? {

@@ -78,5 +78,6 @@ public enum CloudCoding {
 }
 public enum CloudError: Error, Equatable, Sendable {
     case invalidRecord, epochChanged, conflict, operationReused, missingMedia, corruptedMedia
+    case deviceRevoked, networkRestricted
     case busy, pendingChanges, unavailable, wrongAccount, invalidTransition, quotaExceeded
 }
