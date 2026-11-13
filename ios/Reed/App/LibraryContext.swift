@@ -8,6 +8,7 @@ import ReedPersistence
 @MainActor @Observable
 final class LibraryContext {
     let account: Account
+    let cloud: CloudRuntime
     let repository: any LibraryRepository
     let returns: any ReturnRepository
     let returnCoordinator: ReturnCoordinator
@@ -26,7 +27,7 @@ final class LibraryContext {
     private(set) var draftRevision = 0
     private(set) var maintenanceError: String?
 
-    init(account: Account, database: LibraryDatabase) {
+    init(account: Account, database: LibraryDatabase, cloudConnection: CloudConnectionConfiguration? = nil) {
         self.account = account
         repository = LocalLibraryRepository(database: database)
         catalogManagement = LocalCatalogManagementRepository(database: database)
@@ -49,9 +50,12 @@ final class LibraryContext {
         editor = CardEditingService(library: repository, drafts: drafts, attachments: attachments)
         backupArchive = FileBackupArchive(directory: database.directory)
         transfer = LibraryTransferService(repository: LocalLibraryBackupRepository(database: database), attachments: attachments, archive: backupArchive)
+        cloud = CloudRuntime(accountID: account.id, database: database, files: attachments, returns: returnCoordinator, connection: cloudConnection)
+        cloud.didChange = { [weak self] in self?.revision += 1; self?.draftRevision += 1 }
     }
 
     func prepare() async throws {
+        try await cloud.prepare()
         try await backupArchive.cleanTemporaryFiles()
         let cutoff = Calendar.current.date(byAdding: .day, value: -7, to: Date()) ?? Date().addingTimeInterval(-604800)
         _ = try await repository.purgeTrash(before: cutoff)
@@ -67,10 +71,15 @@ final class LibraryContext {
             if !removed.isEmpty { revision += 1 }
             maintenanceError = nil
         } catch { maintenanceError = "Не удалось выполнить очистку просроченных данных. Повторим при следующем открытии." }
-        returnCoordinator.refresh()
+        await cloud.refresh()
     }
 
-    func markChanged() { revision += 1; returnCoordinator.refresh() }
+    func markChanged() { revision += 1; returnCoordinator.refresh(); cloud.schedule() }
+    func stopSession() async throws {
+        await cloud.stop()
+        try await returnCoordinator.stop()
+    }
+    func resumeAfterFailedSignOut() async throws { try await cloud.resumeAfterFailedSignOut() }
     func markDraftsChanged() { draftRevision += 1 }
 }
 
@@ -78,11 +87,14 @@ final class LibraryContext {
 extension LibraryContext: AccountLocalCleanup {
     func prepareForDeletion() async throws {
         BackgroundReturnRefresh.shared.cancel()
+        await cloud.stop()
         try await returnCoordinator.stop()
     }
     func stopAndClear() async throws {
         BackgroundReturnRefresh.shared.cancel()
+        await cloud.stop()
         try await returnCoordinator.stop()
+        try await cloud.eraseReplicationForAccountDeletion()
         try await transfer.clear()
     }
 }

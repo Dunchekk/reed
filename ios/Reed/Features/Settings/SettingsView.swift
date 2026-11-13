@@ -30,10 +30,10 @@ struct SettingsView: View {
                     Task {
                         defer { signingOut = false }
                         do {
-                            try await context.returnCoordinator.stop()
+                            try await context.stopSession()
                             await authentication.signOut()
-                            if authentication.account != nil { context.returnCoordinator.resume() }
-                        } catch { errorMessage = "Не удалось отменить уведомления. Повторите выход." }
+                            if authentication.account != nil { try await context.resumeAfterFailedSignOut() }
+                        } catch { try? await context.resumeAfterFailedSignOut(); errorMessage = "Не удалось завершить фоновые операции. Повторите выход." }
                     }
                 }.disabled(signingOut)
                 if let error = authentication.errorMessage ?? errorMessage { Text(error).foregroundStyle(.red) }

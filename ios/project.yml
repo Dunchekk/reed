@@ -28,6 +28,8 @@ targets:
         product: ReedApplication
       - package: ReedCore
         product: ReedPersistence
+      - package: ReedCore
+        product: ReedNetworking
     settings:
       base:
         REED_API_BASE_URL: ""

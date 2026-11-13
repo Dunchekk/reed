@@ -46,6 +46,14 @@ public actor CloudSyncEngine {
         operation.task.cancel()
         _ = await operation.task.result
     }
+    public func cancelCurrent() async {
+        guard let operation else { return }
+        operation.task.cancel(); _ = await operation.task.result
+    }
+    public func activate() throws {
+        guard operation == nil else { throw CloudError.busy }
+        stopped = false
+    }
     func exclusively(_ work: @escaping @Sendable () async throws -> Void) async throws {
         guard !stopped else { throw CancellationError() }
         guard operation == nil else { throw CloudError.busy }

@@ -5,6 +5,8 @@ import ReedPersistence
 @MainActor final class LibrarySessionController {
     static let shared = LibrarySessionController()
     private var current: LibraryContext?
+    private var cloudConnection: CloudConnectionConfiguration?
+    func configureCloud(_ connection: CloudConnectionConfiguration?) { cloudConnection = connection }
     private var opening: (id: UUID, task: Task<LibraryContext, Error>)?
     func open(_ account: Account) async throws -> LibraryContext {
         if let current, current.account.id == account.id { return current }
@@ -15,7 +17,7 @@ import ReedPersistence
             return try await open(account)
         }
         let task = Task { @MainActor in
-            if let current { try await current.returnCoordinator.stop() }
+            if let current { try await current.stopSession() }
             var root = try FileManager.default.url(for: .applicationSupportDirectory, in: .userDomainMask,
                 appropriateFor: nil, create: true).appendingPathComponent("Reed", isDirectory: true)
             #if DEBUG
@@ -23,7 +25,7 @@ import ReedPersistence
             #endif
             let databaseRoot = root
             let database = try await Task.detached(priority: .userInitiated) { try LibraryDatabase(root: databaseRoot, accountID: account.id) }.value
-            let context = LibraryContext(account: account, database: database)
+            let context = LibraryContext(account: account, database: database, cloudConnection: cloudConnection)
             try await context.prepare()
             #if DEBUG
             try await UITestBootstrap.seed(context)

@@ -16,6 +16,7 @@ final class ReturnCoordinator {
     @ObservationIgnored private var reconciler: NotificationReconciler
     @ObservationIgnored private var work: Task<Void, Never>?
     @ObservationIgnored private var active = true
+    @ObservationIgnored private var cloudOwnsPlan = false
     @ObservationIgnored private var generation = UUID()
 
     init(repository: any ReturnRepository, queue: any CardNotificationQueue, accountID: UUID) {
@@ -27,6 +28,7 @@ final class ReturnCoordinator {
         permission = await queue.permission()
     }
     func refresh() {
+        if cloudOwnsPlan { refreshCloudSnapshot(); return }
         guard active else { return }
         work?.cancel(); let token = UUID(); generation = token
         work = Task {
@@ -69,16 +71,36 @@ final class ReturnCoordinator {
         await work?.value
         do {
             try await reconciler.stop()
-            try await repository.cancelFuture(now: Date())
+            if !cloudOwnsPlan { try await repository.cancelFuture(now: Date()) }
             report = NotificationQueueReport(count: 0, until: nil, failures: 0)
         } catch {
             // The account remains open after a failed logout, so its coordinator must recover too.
-            resume()
+            if !cloudOwnsPlan { resume() }
             throw error
         }
     }
+    func suspendForCloud() async throws {
+        guard !cloudOwnsPlan else { return }
+        active = false; work?.cancel(); await work?.value
+        try await reconciler.stop()
+        cloudOwnsPlan = true
+        report = NotificationQueueReport(count: 0, until: nil, failures: 0)
+        refreshCloudSnapshot()
+    }
+    private func refreshCloudSnapshot() {
+        work?.cancel()
+        work = Task {
+            do {
+                permission = await queue.permission()
+                let saved = try await repository.currentPlan(now: Date(), calendar: .current)
+                guard !Task.isCancelled, cloudOwnsPlan else { return }
+                plan = saved; errorMessage = nil
+            } catch { if !Task.isCancelled { errorMessage = returnErrorMessage(error) } }
+        }
+    }
     func resume() {
-        guard !active else { return }
+        guard !active || cloudOwnsPlan else { return }
+        cloudOwnsPlan = false
         reconciler = NotificationReconciler(queue: queue, repository: repository, accountID: accountID)
         active = true; refresh()
     }

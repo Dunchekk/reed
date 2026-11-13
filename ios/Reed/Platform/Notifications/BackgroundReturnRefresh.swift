@@ -39,7 +39,7 @@ import Foundation
                 let context = try await LibrarySessionController.shared.open(session.account)
                 guard !Task.isCancelled, token == generation,
                       try KeychainSessionStore().load()?.account.id == session.account.id else { return }
-                success = await context.returnCoordinator.refreshInBackground()
+                success = await context.cloud.refreshInBackground()
                 if token == generation && !Task.isCancelled { schedule() }
             } catch { success = false }
         }

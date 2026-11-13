@@ -25,8 +25,7 @@ enum CloudPayload {
         case .historyPreference:
             return try .encode(CloudHistoryPreference(enabled: Bool.fetchOne(db, sql: "SELECT enabled FROM activity_preferences WHERE id=1") ?? true))
         case .opening:
-            guard try Bool.fetchOne(db, sql: "SELECT enabled FROM activity_preferences WHERE id=1") == true,
-                  let row = try Row.fetchOne(db, sql: "SELECT * FROM openings WHERE id=? AND opened_at>=?", arguments: [id, Date().addingTimeInterval(-90*86400).timeIntervalSince1970]) else { return .null }
+            guard let row = try Row.fetchOne(db, sql: "SELECT * FROM openings WHERE id=? AND opened_at>=?", arguments: [id, Date().addingTimeInterval(-90*86400).timeIntervalSince1970]) else { return .null }
             return try .encode(CloudOpening(id: LocalLibraryRepository.uuid(row["id"]), cardID: LocalLibraryRepository.uuid(row["card_id"]),
                 date: Date(timeIntervalSince1970: row["opened_at"]), origin: OpeningOrigin(rawValue: row["origin"]) ?? .manual))
         case .returnHistory:
@@ -45,10 +44,8 @@ enum CloudPayload {
         }
         if try Bool.fetchOne(db, sql: "SELECT EXISTS(SELECT 1 FROM preferences WHERE key='returns')") == true { try mark(.returns, db: db) }
         if try Bool.fetchOne(db, sql: "SELECT enabled FROM activity_preferences WHERE id=1") == false { try mark(.history, db: db) }
-        else {
-            for id in try String.fetchAll(db, sql: "SELECT id FROM openings WHERE opened_at>=?", arguments: [Date().addingTimeInterval(-90*86400).timeIntervalSince1970]) {
-                try mark(CloudKey(.opening,id), db: db)
-            }
+        for id in try String.fetchAll(db, sql: "SELECT id FROM openings WHERE opened_at>=?", arguments: [Date().addingTimeInterval(-90*86400).timeIntervalSince1970]) {
+            try mark(CloudKey(.opening,id), db: db)
         }
         try harvestHistory(db)
     }

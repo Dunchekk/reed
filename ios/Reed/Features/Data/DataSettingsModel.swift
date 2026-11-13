@@ -44,6 +44,7 @@ final class DataSettingsModel {
     }
     func clear() async {
         await perform {
+            guard try await self.context.cloud.repository.state().mode == .local else { throw CloudError.invalidTransition }
             try await self.context.returnCoordinator.stop()
             do {
                 try await self.context.transfer.clear()

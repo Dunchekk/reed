@@ -26,6 +26,7 @@ public final class LocalCloudRepository: CloudRepository {
             var current = try Self.state(db); try current.begin(epoch: epoch)
             try Self.clearReplication(db)
             try db.execute(sql: "UPDATE cloud_state SET mode='enabling',epoch=?,cursor=0,last_sync=NULL WHERE id=1", arguments: [epoch.uuidString])
+            try db.execute(sql: "UPDATE return_slots SET state='cancelled' WHERE scheduled_at>?", arguments: [Date().timeIntervalSince1970])
             try CloudPayload.seed(db)
         }
     }
@@ -115,6 +116,7 @@ public final class LocalCloudRepository: CloudRepository {
             guard try Int.fetchOne(db, sql: "SELECT COUNT(*) FROM cloud_dirty") == 0,
                   try Int.fetchOne(db, sql: "SELECT COUNT(*) FROM cloud_conflicts") == 0,
                   try Int.fetchOne(db, sql: "SELECT COUNT(*) FROM cloud_outbox") == 0,
+                  try Int.fetchOne(db, sql: "SELECT COUNT(*) FROM cloud_projection") == 0,
                   try Int.fetchOne(db, sql: "SELECT COUNT(*) FROM cloud_media_needed") == 0 else { throw CloudError.pendingChanges }
             try Self.clearReplication(db)
             try db.execute(sql: "UPDATE cloud_state SET mode='leaving',epoch=NULL,cursor=0,last_sync=NULL WHERE id=1")
@@ -131,6 +133,13 @@ public final class LocalCloudRepository: CloudRepository {
             guard try Self.state(db).mode == .revoked else { throw CloudError.invalidTransition }
             try Self.clearReplication(db)
             try db.execute(sql: "UPDATE cloud_state SET mode='leaving',epoch=NULL,cursor=0,last_sync=NULL WHERE id=1")
+        }
+    }
+    /// Only the explicit account-deletion workflow may discard unfinished replication.
+    public func eraseReplicationForAccountDeletion() async throws {
+        try await database.writer.write { db in
+            try Self.clearReplication(db)
+            try db.execute(sql: "UPDATE cloud_state SET mode='local',epoch=NULL,cursor=0,last_sync=NULL WHERE id=1")
         }
     }
     static func clearReplication(_ db: Database) throws {

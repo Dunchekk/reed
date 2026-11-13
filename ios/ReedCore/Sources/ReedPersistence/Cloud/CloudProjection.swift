@@ -49,7 +49,6 @@ enum CloudProjection {
             case .historyPreference:
                 let value = record.isDeleted ? CloudHistoryPreference(enabled: false) : try record.payload.decode(CloudHistoryPreference.self)
                 try db.execute(sql: "UPDATE activity_preferences SET enabled=? WHERE id=1", arguments: [value.enabled])
-                if !value.enabled { try db.execute(sql: "DELETE FROM openings") }
             case .cardReturn:
                 let id = try LocalLibraryRepository.uuid(record.id)
                 if record.isDeleted { try db.execute(sql: "DELETE FROM card_returns WHERE card_id=?", arguments: [id.uuidString]); break }
@@ -63,7 +62,6 @@ enum CloudProjection {
                 let value = try record.payload.decode(CloudOpening.self)
                 guard value.id == id else { throw CloudError.invalidRecord }
                 guard value.date >= Date().addingTimeInterval(-90*86400),
-                      try Bool.fetchOne(db, sql: "SELECT enabled FROM activity_preferences WHERE id=1") == true,
                       try reference(value.cardID, kind: .card, table: "cards", db: db) != nil else { break }
                 try db.execute(sql: "INSERT INTO openings VALUES (?,?,?,?) ON CONFLICT(id) DO UPDATE SET card_id=excluded.card_id,opened_at=excluded.opened_at,origin=excluded.origin",
                     arguments: [id.uuidString,value.cardID.uuidString,value.date.timeIntervalSince1970,value.origin.rawValue])

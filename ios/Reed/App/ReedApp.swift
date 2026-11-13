@@ -19,9 +19,11 @@ struct ReedApp: App {
         #if DEBUG
         if UITestBootstrap.enabled { store = UITestSessionStore(); baseURL = nil }
         #endif
-        _authentication = State(initialValue: AuthenticationModel(
-            client: baseURL.map { HTTPAuthenticationClient(baseURL: $0) }, store: store
-        ))
+        let client = baseURL.map { HTTPAuthenticationClient(baseURL: $0) }
+        let tokens = client.map { SessionTokenProvider(store: store, client: $0) }
+        if let baseURL, let tokens { LibrarySessionController.shared.configureCloud(.init(baseURL: baseURL, tokens: tokens)) }
+        else { LibrarySessionController.shared.configureCloud(nil) }
+        _authentication = State(initialValue: AuthenticationModel(client: client, store: store, tokens: tokens))
     }
 
     var body: some Scene {

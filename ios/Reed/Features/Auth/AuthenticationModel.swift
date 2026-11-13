@@ -16,11 +16,13 @@ final class AuthenticationModel {
     private(set) var serverNeedsSignIn = false
     @ObservationIgnored private let client: (any AuthenticationClient)?
     @ObservationIgnored private let store: any SessionStore
+    @ObservationIgnored private let tokens: SessionTokenProvider?
     @ObservationIgnored private var generation = UUID()
 
-    init(client: (any AuthenticationClient)?, store: any SessionStore) {
+    init(client: (any AuthenticationClient)?, store: any SessionStore, tokens: SessionTokenProvider? = nil) {
         self.client = client
         self.store = store
+        self.tokens = tokens ?? client.map { SessionTokenProvider(store: store, client: $0) }
     }
 
     var accountClient: (any AccountManagementClient)? { client as? any AccountManagementClient }
@@ -43,13 +45,16 @@ final class AuthenticationModel {
         session = newSession; serverNeedsSignIn = false; errorMessage = nil
     }
     func updateAccount(_ account: Account) throws {
-        guard let session, session.account.id == account.id else { throw LibraryError.conflict }
-        try accept(session.withAccount(account))
+        guard let latest = try store.load(), latest.account.id == account.id, session?.account.id == account.id else { throw LibraryError.conflict }
+        try accept(latest.withAccount(account))
     }
     func accessToken() async throws -> String {
-        await refreshIfNeeded()
-        guard let session, session.expiresAt > Date() else { throw URLError(.userAuthenticationRequired) }
-        return session.accessToken
+        guard let current = session, let tokens else { throw URLError(.userAuthenticationRequired) }
+        let expected = generation
+        let refreshed = try await tokens.session(accountID: current.account.id)
+        guard generation == expected, session?.account.id == current.account.id else { throw CloudError.wrongAccount }
+        session = refreshed; serverNeedsSignIn = false
+        return refreshed.accessToken
     }
     func deleteAccount(local: any AccountLocalCleanup, onlyLocal: Bool = false) async throws {
         guard !isWorking, let session else { throw URLError(.userAuthenticationRequired) }
@@ -60,7 +65,12 @@ final class AuthenticationModel {
                 try await AccountDeletionService.finishLocal(sessions: store, local: local)
             } else {
                 guard let accountClient, let client else { throw URLError(.unsupportedURL) }
-                try await AccountDeletionService(client: accountClient, authentication: client, sessions: store, local: local).delete(session)
+                let expected = generation
+                let current: AuthSession
+                if session.deletionProgress == nil, let tokens { current = try await tokens.session(accountID: session.account.id) }
+                else { current = session }
+                guard generation == expected, self.session?.account.id == current.account.id else { throw CloudError.wrongAccount }
+                try await AccountDeletionService(client: accountClient, authentication: client, sessions: store, local: local).delete(current)
             }
             BackgroundReturnRefresh.shared.cancel(); LibrarySessionController.shared.forget()
             self.session = nil; requestedPhone = nil; codeInput = ""; errorMessage = nil
@@ -102,15 +112,13 @@ final class AuthenticationModel {
     }
 
     func refreshIfNeeded() async {
-        guard !isWorking, let current = session, current.deletionProgress == nil, let client,
-              current.expiresAt.timeIntervalSinceNow < 60 else { return }
+        guard !isWorking, let current = session, current.deletionProgress == nil, let tokens else { return }
         let expectedGeneration = generation
         isWorking = true
         defer { if generation == expectedGeneration { isWorking = false } }
         do {
-            let refreshed = try await client.refresh(token: current.refreshToken)
+            let refreshed = try await tokens.session(accountID: current.account.id)
             guard generation == expectedGeneration, refreshed.account.id == current.account.id else { return }
-            try store.save(refreshed)
             session = refreshed
             serverNeedsSignIn = false
         } catch {

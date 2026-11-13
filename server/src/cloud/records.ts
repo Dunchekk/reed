@@ -40,15 +40,11 @@ export class CloudRecords {
         let payload=mutation.payload;
         await this.validateReferences(client,scope.accountID,mutation.kind,payload);
         if(mutation.kind==="opening"&&payload!==null){
-          const history=(await client.query("SELECT payload FROM cloud_records WHERE account_id=$1 AND kind='historyPreference' AND id='global'",[scope.accountID])).rows[0]?.payload;
-          if(history?.enabled===false||Date.parse(String(payload.date))<Date.now()-90*86400000)payload=null;
+          if(Date.parse(String(payload.date))<Date.now()-90*86400000)payload=null;
         }
         const saved=current.version>0&&canonical(current.payload)===canonical(payload)?current:await appendRecord(client,scope.accountID,state,mutation.kind,mutation.id,current.version+1,payload);
         result={outcome:"applied",record:saved};
-        if(mutation.kind==="historyPreference"&&payload?.enabled===false){
-          const openings=await client.query("SELECT id,version FROM cloud_records WHERE account_id=$1 AND kind='opening' AND payload IS NOT NULL",[scope.accountID]);
-          for(const opening of openings.rows)await appendRecord(client,scope.accountID,state,"opening",opening.id,Number(opening.version)+1,null);
-        }
+
       }
       await client.query("INSERT INTO cloud_operations(account_id,operation_id,request_hash,result) VALUES($1,$2,$3,$4)",[scope.accountID,mutation.operationID,fingerprint,JSON.stringify(result)]);
       return result;

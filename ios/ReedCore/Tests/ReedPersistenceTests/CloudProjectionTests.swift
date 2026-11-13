@@ -48,3 +48,17 @@ import ReedApplication
     try await library.save(Card(text: "После ошибки"))
     #expect(try await cloud.summary().pending == 1)
 }
+
+@Test func cloudHistoryPreferenceDoesNotErasePreviouslyCollectedOpenings() async throws {
+    let root = FileManager.default.temporaryDirectory.appendingPathComponent("reed-history-cloud-\(UUID())")
+    defer { try? FileManager.default.removeItem(at: root) }
+    let database = try LibraryDatabase(root: root, accountID: UUID()), epoch = UUID()
+    let library = LocalLibraryRepository(database: database), cloud = LocalCloudRepository(database: database), activity = LocalActivityRepository(database: database)
+    let card = Card(text: "История"), now = Date()
+    try await library.save(card); try await activity.recordOpening(cardID: card.id, origin: .manual, now: now)
+    try await cloud.begin(epoch: epoch)
+    try await cloud.apply(CloudPage(epoch: epoch, records: [.init(key: .history, version: 1, sequence: 1, payload: .encode(CloudHistoryPreference(enabled: false)))], cursor: 1, hasMore: false))
+    #expect(try await activity.activity(now: now).openings.isEmpty)
+    try await activity.setHistoryEnabled(true)
+    #expect(try await activity.activity(now: now).openings.count == 1)
+}
