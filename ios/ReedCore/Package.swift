@@ -12,9 +12,9 @@ let package = Package(
     ],
     dependencies: [.package(url: "https://github.com/groue/GRDB.swift.git", exact: "7.12.0")],
     targets: [
-        .target(name: "ReedDomain", exclude: ["README.md"]),
-        .target(name: "ReedApplication", dependencies: ["ReedDomain"], exclude: ["README.md"]),
-        .target(name: "ReedPersistence", dependencies: ["ReedDomain", "ReedApplication", .product(name: "GRDB", package: "GRDB.swift")], exclude: ["README.md"]),
+        .target(name: "ReedDomain", exclude: ["README.md", "Cloud/README.md"]),
+        .target(name: "ReedApplication", dependencies: ["ReedDomain"], exclude: ["README.md", "Cloud/README.md"]),
+        .target(name: "ReedPersistence", dependencies: ["ReedDomain", "ReedApplication", .product(name: "GRDB", package: "GRDB.swift")], exclude: ["README.md", "Cloud/README.md"]),
         .target(name: "ReedNetworking", dependencies: ["ReedDomain", "ReedApplication"], exclude: ["README.md"]),
         .testTarget(name: "ReedIntegrationTests", dependencies: ["ReedDomain", "ReedApplication", "ReedPersistence", "ReedNetworking"], exclude: ["README.md"]),
         .testTarget(name: "ReedNetworkingTests", dependencies: ["ReedNetworking", "ReedApplication", "ReedDomain"], exclude: ["README.md"]),
