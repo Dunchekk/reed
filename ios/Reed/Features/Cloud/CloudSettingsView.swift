@@ -44,7 +44,10 @@ struct CloudSettingsView: View {
                     }
                     if model.local.pending > 0 { Text("Изменений в очереди: \(model.local.pending)").reedFont(.metadata) }
                     if model.local.pendingMedia > 0 { Text("Фото ожидают проверки или загрузки: \(model.local.pendingMedia)").reedFont(.metadata) }
-                    if model.local.conflicts > 0 { Text("Конфликтующих версий: \(model.local.conflicts)").reedFont(.caption).foregroundStyle(.orange) }
+                    if model.local.conflicts > 0 {
+                        NavigationLink("Выбрать версии · \(model.local.conflicts)") { CloudConflictsView(context: context) }
+                            .reedFont(.caption).foregroundStyle(.orange).accessibilityIdentifier("cloud.conflicts")
+                    }
                     if let error = model.errorMessage { Text(error).reedFont(.caption).foregroundStyle(.red) }
                     if let message = model.connectionMessage { Text(message).reedFont(.metadata).foregroundStyle(ReedTheme.secondary) }
                 }
