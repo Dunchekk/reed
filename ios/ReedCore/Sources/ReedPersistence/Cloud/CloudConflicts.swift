@@ -35,6 +35,7 @@ extension LocalCloudRepository {
                 try CloudProjection.insertCopy(conflict.local.decode(CloudCard.self), db: db)
             }
             try db.execute(sql: "DELETE FROM cloud_conflicts WHERE id=?", arguments: [id.uuidString])
+            try CloudMediaReferences.clear(owner: "conflict", key: key, db: db)
             if choice == .local { try CloudPayload.mark(key, db: db) }
             else {
                 try db.execute(sql: "DELETE FROM cloud_dirty WHERE kind=? AND id=?", arguments: [key.kind.rawValue,key.id])

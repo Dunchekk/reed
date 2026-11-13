@@ -3,7 +3,7 @@ import ReedApplication
 
 /// Paths are derived exclusively from UUIDs, never user filenames or source URLs.
 public actor FileAttachmentStore: AttachmentStore {
-    private let directory: URL
+    let directory: URL
     public init(directory: URL) { self.directory = directory.appendingPathComponent("attachments", isDirectory: true) }
 
     public func write(original: Data, thumbnail: Data) throws -> UUID {
@@ -37,5 +37,5 @@ public actor FileAttachmentStore: AttachmentStore {
             if let id = UUID(uuidString: url.lastPathComponent), !ids.contains(id) { try FileManager.default.removeItem(at: url) }
         }
     }
-    private func path(_ id: UUID) -> URL { directory.appendingPathComponent(id.uuidString.lowercased(), isDirectory: true) }
+    func path(_ id: UUID) -> URL { directory.appendingPathComponent(id.uuidString.lowercased(), isDirectory: true) }
 }

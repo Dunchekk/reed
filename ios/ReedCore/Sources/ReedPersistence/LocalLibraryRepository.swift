@@ -75,9 +75,10 @@ public final class LocalLibraryRepository: Sendable {
     }
 
     public func attachmentIDs() async throws -> Set<UUID> {
-        try await database.writer.read { db in
-            Set(try String.fetchAll(db, sql: "SELECT attachment_id FROM card_attachments UNION SELECT attachment_id FROM draft_attachments").map(Self.uuid))
-        }
+        try await database.writer.read(Self.attachmentIDs)
+    }
+    static func attachmentIDs(_ db: Database) throws -> Set<UUID> {
+        Set(try String.fetchAll(db, sql: "SELECT attachment_id FROM card_attachments UNION SELECT attachment_id FROM draft_attachments UNION SELECT attachment_id FROM cloud_media_references UNION SELECT id FROM cloud_media_needed").map(Self.uuid))
     }
 
     public func catalog() async throws -> LibraryCatalog {

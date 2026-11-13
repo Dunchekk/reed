@@ -26,6 +26,7 @@ extension LocalCloudRepository {
                     if local == remote.payload && pending == nil {
                         try db.execute(sql: "DELETE FROM cloud_dirty WHERE kind=? AND id=?", arguments: [key.kind.rawValue,key.id])
                         try db.execute(sql: "DELETE FROM cloud_conflicts WHERE kind=? AND record_id=?", arguments: [key.kind.rawValue,key.id])
+                        try CloudMediaReferences.clear(owner: "conflict", key: key, db: db)
                     } else if local != remote.payload && !confirmsAttempt && existing?.payload != remote.payload {
                         try Self.storeConflict(remote: remote, local: local, generation: generation, db: db)
                     }

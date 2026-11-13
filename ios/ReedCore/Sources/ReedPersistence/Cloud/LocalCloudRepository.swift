@@ -66,6 +66,7 @@ public final class LocalCloudRepository: CloudRepository {
                 }
                 let pending = CloudPending(mutation: CloudMutation(key: key, baseVersion: shadow?.version ?? 0, payload: payload), generation: generation)
                 try db.execute(sql: "INSERT INTO cloud_outbox VALUES (?,?,?)", arguments: [key.kind.rawValue,key.id,try CloudCoding.encoder().encode(pending)])
+                try CloudMediaReferences.set(owner: "outbox", key: key, payload: payload, db: db)
                 return pending
             }
             return nil
@@ -79,6 +80,7 @@ public final class LocalCloudRepository: CloudRepository {
                   try CloudCoding.decoder().decode(CloudPending.self, from: data) == pending else { throw CloudError.invalidRecord }
             try Self.saveShadow(result.record, db: db)
             try db.execute(sql: "DELETE FROM cloud_outbox WHERE kind=? AND id=?", arguments: [key.kind.rawValue,key.id])
+            try CloudMediaReferences.clear(owner: "outbox", key: key, db: db)
             let local = try CloudPayload.read(key, db: db), remote = try Self.shadow(key, db: db) ?? result.record
             if result.outcome == .applied {
                 try db.execute(sql: "DELETE FROM cloud_dirty WHERE kind=? AND id=? AND generation=?", arguments: [key.kind.rawValue,key.id,pending.generation])
@@ -92,8 +94,14 @@ public final class LocalCloudRepository: CloudRepository {
             if local != remote.payload { try Self.queueProjection(key, db: db) }
         }
     }
+    public func referencedMedia() async throws -> [UUID] {
+        try await database.writer.read { Array(try LocalLibraryRepository.attachmentIDs($0)) }
+    }
     public func mediaToDownload() async throws -> [UUID] {
-        try await database.writer.read { try String.fetchAll($0, sql: "SELECT id FROM cloud_media_needed ORDER BY id").map(LocalLibraryRepository.uuid) }
+        try await database.writer.write { db in
+            try db.execute(sql: "DELETE FROM cloud_media_needed WHERE id NOT IN (SELECT lower(attachment_id) FROM card_attachments UNION SELECT attachment_id FROM cloud_media_references)")
+            return try String.fetchAll(db, sql: "SELECT id FROM cloud_media_needed ORDER BY id").map(LocalLibraryRepository.uuid)
+        }
     }
     public func markMediaAvailable(id: UUID) async throws {
         try await database.writer.write { try $0.execute(sql: "DELETE FROM cloud_media_needed WHERE id=?", arguments: [id.uuidString.lowercased()]) }
@@ -112,7 +120,7 @@ public final class LocalCloudRepository: CloudRepository {
         }
     }
     static func clearReplication(_ db: Database) throws {
-        for table in ["cloud_shadow","cloud_dirty","cloud_outbox","cloud_conflicts","cloud_projection","cloud_media_needed","cloud_return_exports"] {
+        for table in ["cloud_shadow","cloud_dirty","cloud_outbox","cloud_conflicts","cloud_projection","cloud_media_needed","cloud_return_exports","cloud_media_references"] {
             try db.execute(sql: "DELETE FROM \(table)")
         }
     }
@@ -126,11 +134,13 @@ public final class LocalCloudRepository: CloudRepository {
     }
     static func saveShadow(_ record: CloudRecord, db: Database) throws {
         guard record.version >= 0, record.sequence >= 0 else { throw CloudError.invalidRecord }
+        if let previous = try shadow(record.key, db: db), previous.version > record.version { return }
         let canonical = CloudRecord(key: record.key, version: record.version, sequence: record.sequence, payload: record.payload.normalized())
         try db.execute(sql: """
             INSERT INTO cloud_shadow VALUES (?,?,?,?,?) ON CONFLICT(kind,id) DO UPDATE SET version=excluded.version,
                 sequence=excluded.sequence,value=excluded.value WHERE excluded.version>=cloud_shadow.version
             """, arguments: [canonical.kind.rawValue,canonical.id,canonical.version,canonical.sequence,try CloudCoding.encoder().encode(canonical)])
+        try CloudMediaReferences.set(owner: "shadow", key: canonical.key, payload: canonical.payload, db: db)
     }
     static func queueProjection(_ key: CloudKey, db: Database) throws {
         try db.execute(sql: "INSERT OR IGNORE INTO cloud_projection VALUES (?,?)", arguments: [key.kind.rawValue,key.id])
@@ -139,5 +149,6 @@ public final class LocalCloudRepository: CloudRepository {
         let conflict = CloudConflict(remote: remote, local: local, generation: generation)
         try db.execute(sql: "INSERT INTO cloud_conflicts VALUES (?,?,?,?) ON CONFLICT(kind,record_id) DO UPDATE SET id=excluded.id,value=excluded.value",
             arguments: [remote.kind.rawValue,remote.id,conflict.id.uuidString,try CloudCoding.encoder().encode(conflict)])
+        try CloudMediaReferences.set(owner: "conflict", key: remote.key, payload: local, db: db)
     }
 }

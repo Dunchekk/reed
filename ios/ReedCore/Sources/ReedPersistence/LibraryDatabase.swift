@@ -113,6 +113,10 @@ public final class LibraryDatabase: Sendable {
             try db.execute(sql: "CREATE TABLE backup_imports (id TEXT PRIMARY KEY NOT NULL)")
         }
         migrator.registerMigration("011_cloud_replication", migrate: CloudSchema.migrate)
+        migrator.registerMigration("012_cloud_media_references") { db in
+            try db.execute(sql: "CREATE TABLE cloud_media_references (owner TEXT NOT NULL, record_id TEXT NOT NULL, attachment_id TEXT NOT NULL, PRIMARY KEY(owner,record_id,attachment_id))")
+            try CloudMediaReferences.backfill(db)
+        }
         return migrator
     }
 }

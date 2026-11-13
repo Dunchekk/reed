@@ -55,6 +55,7 @@ public protocol CloudRepository: Sendable {
     func apply(_ page: CloudPage) async throws
     func conflicts() async throws -> [CloudConflict]
     func resolve(id: UUID, choice: CloudResolution) async throws
+    func referencedMedia() async throws -> [UUID]
     func mediaToDownload() async throws -> [UUID]
     func markMediaAvailable(id: UUID) async throws
     func completed(at date: Date) async throws
