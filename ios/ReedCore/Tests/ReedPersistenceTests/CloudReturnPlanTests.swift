@@ -53,3 +53,22 @@ import ReedApplication
     #expect(choices.first?.decision.automaticOrdinal == 18)
     #expect(choices.first?.decision.reason == .longWait)
 }
+
+@Test func sameEpochRejoinKeepsOwnershipUntilCancelledServerSlotsAreReconciled() async throws {
+    let root = FileManager.default.temporaryDirectory.appendingPathComponent("reed-history-rejoin-\(UUID())")
+    defer { try? FileManager.default.removeItem(at: root) }
+    let database = try LibraryDatabase(root: root, accountID: UUID()), epoch = UUID(), now = Date()
+    let cloud = LocalCloudRepository(database: database), returns = LocalReturnRepository(database: database), card = Card(text: "Отменённый слот")
+    let record = try CloudRecord(key: CloudKey(.card,card.id), version: 1, sequence: 1, payload: .encode(CloudCard(card)))
+    let page = CloudPage(epoch: epoch, records: [record], cursor: 1, hasMore: false)
+    try await cloud.begin(epoch: epoch); try await cloud.apply(page)
+    let elapsed = CloudReturnPlan.Entry(slot: ReturnTimeSlot(id: "cancelled-while-revoked", date: now.addingTimeInterval(-60)),
+        decision: ReturnDecision(cardID: card.id, reason: .firstReturn, automaticOrdinal: 10), revision: UUID())
+    try await cloud.applyReturnPlan(CloudReturnPlan(epoch: epoch, sequence: 1, timeZone: "UTC", issue: nil, entries: [elapsed]), now: now.addingTimeInterval(-120))
+    try await cloud.setMode(.revoked)
+    try await cloud.begin(epoch: epoch); try await cloud.apply(page)
+    #expect(try await cloud.nextPending() == nil)
+    try await cloud.applyReturnPlan(CloudReturnPlan(epoch: epoch, sequence: 1, timeZone: "UTC", issue: nil, entries: []), now: now)
+    try await cloud.setMode(.disabling); try await cloud.disconnect(); try await cloud.finishDisconnect()
+    #expect(try await returns.currentPlan(now: now, calendar: .current).entries.isEmpty)
+}

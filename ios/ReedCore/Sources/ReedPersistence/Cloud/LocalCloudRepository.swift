@@ -23,8 +23,12 @@ public final class LocalCloudRepository: CloudRepository {
     }
     public func begin(epoch: UUID) async throws {
         try await database.writer.write { db in
-            var current = try Self.state(db); try current.begin(epoch: epoch)
+            var current = try Self.state(db)
+            let sameEpochRejoin = current.mode == .revoked && current.epoch == epoch
+            let owned = sameEpochRejoin ? try String.fetchAll(db, sql: "SELECT id FROM cloud_plan_slots") : []
+            try current.begin(epoch: epoch)
             try Self.clearReplication(db)
+            for id in owned { try db.execute(sql: "INSERT INTO cloud_plan_slots VALUES (?)", arguments: [id]) }
             try db.execute(sql: "UPDATE cloud_state SET mode='enabling',epoch=?,cursor=0,last_sync=NULL WHERE id=1", arguments: [epoch.uuidString])
             try db.execute(sql: "UPDATE return_slots SET state='cancelled' WHERE scheduled_at>?", arguments: [Date().timeIntervalSince1970])
             try CloudPayload.seed(db)

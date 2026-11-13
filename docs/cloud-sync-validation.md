@@ -2,11 +2,11 @@
 
 Ветка `reed/cloud-sync`, база `c23a8d4`. Работа локальная; push, PR и merge не выполнялись.
 
-## Выполнено до независимого ревью
+## Итоговые проверки
 
-- `TEST_DATABASE_URL=... make server-check`: typecheck, 44 Node-теста с PostgreSQL, JS build — успешно, без skipped.
-- `swift test --package-path ios/ReedCore --scratch-path .local/swift-build --disable-sandbox`: 84 теста Swift Testing — успешно; отдельные opt-in integration/performance сценарии не выполняются этим запуском.
-- `TEST_DATABASE_URL=... scripts/cloud-e2e.sh`: успешно. Два независимых SQLite-клиента через настоящий HTTP/PostgreSQL: фото 700 KB, потерянный ответ, восстановление outbox, конфликт правок/сохранение обеих, tombstone, смена epoch и локальная копия.
+- `TEST_DATABASE_URL=... make server-check`: typecheck, 45 Node-тестов с PostgreSQL, JS build — успешно, без skipped.
+- `swift test --package-path ios/ReedCore --scratch-path .local/swift-build --disable-sandbox`: 88 тестов Swift Testing — успешно; отдельные opt-in integration/performance сценарии не выполняются этим запуском.
+- `TEST_DATABASE_URL=... scripts/cloud-e2e.sh`: успешно. Два независимых SQLite-клиента через настоящий HTTP/PostgreSQL: фото 700 KB, потерянный ответ, восстановление outbox, правка текста до завершения скачивания, конфликт правок/сохранение обеих, tombstone, смена epoch и локальная копия.
 - Общие fixtures Swift/TS: jitter, первый/пропущенный час DST, индивидуальные слоты, переполнение квоты, 72 часа, история, охват и источники — успешно.
 - `xcodebuild ... -destination 'generic/platform=iOS Simulator' CODE_SIGNING_ALLOWED=NO build-for-testing`: успешно; новые экраны и AppDelegate компилируются вместе с тестовыми targets.
 - `make ios-project`, проверка diff: конфигурация воспроизводима; секретов и пользовательских данных в коммитах нет.
@@ -19,4 +19,13 @@ Figma просмотрена через интеграцию: экран «Да�
 
 ## Независимое ревью
 
-Будет заполнено по фактическому результату Astra High после завершения реализации и проверок.
+Один независимый reviewer `architecture_researcher`, Astra High, три итерации. Reviewer работал read-only после завершения реализации; исправления и запуск тестов выполнены основным агентом.
+
+1. P1: pending карточки требовал локальное фото раньше receipt/CAS. Исправлено: сначала серверное подтверждение версии, затем recovery/upload только при missing_media актуальной мутации. Regression через настоящий HTTP/PG и отдельный тест stale outbox без исторического blob прошли.
+2. P1: прерванные скачивания оставались после удаления локальных данных/аккаунта. Исправлено: remove и orphan GC охватывают cloud-downloads даже без attachments. Проверены clear дважды, сохранение нужного staging и удаление ненужного.
+3. P2: чистый второй iPhone терял серверный cooldown/ordinal после отключения облака. Исправлено: авторитетный компактный снимок технической истории и ownership слотов; недостающий cursor блокирует завершение перехода. Проверены вчерашний возврат, старый ordinal и отменённый elapsed offline slot.
+4. Во втором проходе найден крайний случай того же P2: same-epoch rejoin после отзыва терял ownership. Исправлено сохранением ownership и исключением owned slots из harvest. Regression `revoked → begin(same epoch) → snapshot → disable` прошёл.
+
+Третий проход подтвердил закрытие замечаний по коду; новых замечаний в ограниченном diff нет. После последней правки выполнены полный Swift-прогон и iOS build-for-testing. Это не обещание отсутствия других дефектов и не замена проверке реальных устройств.
+
+Получилось 32 локальных коммита: дополнительные небольшие фиксации нужны для исправлений ревью. Пользовательский `docs/working-spec-addendum.md` оставлен без изменений и не включён в коммиты.
