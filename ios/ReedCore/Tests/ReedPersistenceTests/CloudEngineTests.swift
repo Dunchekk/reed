@@ -104,3 +104,26 @@ actor LeavingCloudEnvironment: CloudParticipation, CloudNetworkPolicy {
     #expect(try server?.payload.decode(CloudCard.self).text == "Облачная версия")
     #expect(try await library.card(id: card.id)?.text == "Теперь только здесь")
 }
+
+private struct SuspendedSummary: CloudRemote {
+    func summary() async throws -> CloudSummary { try await Task.sleep(for: .seconds(30)); throw CloudError.unavailable }
+    func pull(epoch: UUID, after: Int64, limit: Int) throws -> CloudPage { throw CloudError.unavailable }
+    func push(epoch: UUID, mutation: CloudMutation) throws -> CloudMutationResult { throw CloudError.unavailable }
+    func reset(epoch: UUID) throws -> CloudSummary { throw CloudError.unavailable }
+}
+@Test func cloudCancellationRestoresIdleProgressForTheNextForegroundAttempt() async throws {
+    let root = FileManager.default.temporaryDirectory.appendingPathComponent("reed-cancel-\(UUID())")
+    defer { try? FileManager.default.removeItem(at: root) }
+    let database = try LibraryDatabase(root: root, accountID: UUID()), local = LocalCloudRepository(database: database)
+    try await local.begin(epoch: UUID())
+    let environment = TestCloudEnvironment(), engine = CloudSyncEngine(local: local, remote: SuspendedSummary(), media: NoPhotoTransfer(), participation: environment, network: environment)
+    var events = await engine.events().makeAsyncIterator()
+    _ = await events.next()
+    let task = Task { try await engine.synchronize() }
+    while let event = await events.next() { if event.phase == .preparing { break } }
+    await engine.cancelCurrent()
+    await #expect(throws: CancellationError.self) { try await task.value }
+    var latest = await engine.events().makeAsyncIterator()
+    #expect(await latest.next()?.phase == .idle)
+    #expect(try await local.state().mode == .enabling)
+}
