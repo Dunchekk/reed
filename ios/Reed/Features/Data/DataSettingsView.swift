@@ -16,7 +16,7 @@ struct DataSettingsView: View {
                     LabeledContent("Черновики", value: "\(summary.drafts)")
                     LabeledContent("Фотографии", value: "\(summary.photos)")
                 }
-                Text("Облачная синхронизация пока недоступна. Резервная копия позволяет перенести библиотеку или восстановить её после переустановки.").reedFont(.caption)
+                Text("Резервная копия позволяет перенести библиотеку или восстановить её после переустановки. Перед экспортом завершите загрузку облачных фотографий.").reedFont(.caption)
             }
             Section("Резервная копия") {
                 Button("Создать резервную копию") { Task { await model.export() } }.accessibilityIdentifier("data.export")
@@ -24,7 +24,7 @@ struct DataSettingsView: View {
                 Text("Файл содержит тексты, фото, черновики, историю и настройки. Он не зашифрован; храните его в подходящем месте. Данные входа в файл не включаются.").reedFont(.metadata)
             }
             Section("Восстановление") {
-                Button("Выбрать резервную копию") { imports = true }
+                Button("Выбрать резервную копию") { imports = true }.disabled(!model.allowsLocalChanges)
                 if let prepared = model.prepared {
                     Text("Создана: \(ReedDatePresentation.dateTime(prepared.snapshot.createdAt))")
                     Text("Карточки: \(prepared.snapshot.cards.count) · Черновики: \(prepared.snapshot.drafts.count) · Фото: \(prepared.snapshot.attachmentIDs.count)").reedFont(.caption)
@@ -34,8 +34,9 @@ struct DataSettingsView: View {
                 Text("Восстанавливаем в пустую библиотеку. Существующие данные автоматически не объединяются и не перезаписываются.").reedFont(.metadata)
             }
             Section("Удаление локальных данных") {
+                if !model.allowsLocalChanges { Text("Сначала отключите облако на этом iPhone в разделе синхронизации.").reedFont(.caption) }
                 Text("Будут удалены карточки, фото, черновики, история и настройки на этом iPhone. Аккаунт останется. Сначала сохраните резервную копию за пределами приложения.").reedFont(.caption)
-                Button("Очистить библиотеку на iPhone", role: .destructive) { confirmsClear = true }.accessibilityIdentifier("data.clear")
+                Button("Очистить библиотеку на iPhone", role: .destructive) { confirmsClear = true }.disabled(!model.allowsLocalChanges).accessibilityIdentifier("data.clear")
             }
             if model.working { ProgressView("Выполняем операцию…") }
             if let message = model.message { Text(message).foregroundStyle(ReedTheme.secondary) }

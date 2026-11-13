@@ -14,11 +14,12 @@ enum ReedTheme {
 }
 
 enum ReedTextRole {
-    case display, screen, cardTitle, section, body, caption, metadata
+    case display, screen, settingsTitle, cardTitle, section, body, caption, metadata
     var size: CGFloat {
         switch self {
         case .display: 40
         case .screen: 32
+        case .settingsTitle: 24
         case .cardTitle: 20
         case .section: 18
         case .body: 16
@@ -29,6 +30,7 @@ enum ReedTextRole {
     var relativeStyle: Font.TextStyle {
         switch self {
         case .display, .screen: .largeTitle
+        case .settingsTitle: .title2
         case .cardTitle, .section: .title3
         case .body: .body
         case .caption: .subheadline

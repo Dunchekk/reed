@@ -8,13 +8,14 @@ final class DataSettingsModel {
     private(set) var summary: LibraryStorageSummary?
     private(set) var exportedURL: URL?
     private(set) var prepared: PreparedLibraryBackup?
+    private(set) var allowsLocalChanges = true
     private(set) var working = false
     private(set) var message: String?
     private(set) var errorMessage: String?
     @ObservationIgnored private let context: LibraryContext
     init(context: LibraryContext) { self.context = context }
     func load() async {
-        do { summary = try await context.transfer.summary() }
+        do { summary = try await context.transfer.summary(); allowsLocalChanges = try await context.cloud.repository.state().mode == .local }
         catch { errorMessage = Self.message(error) }
     }
     func export() async {
@@ -64,6 +65,7 @@ final class DataSettingsModel {
         do { try await work() } catch { errorMessage = Self.message(error) }
     }
     private static func message(_ error: any Error) -> String {
+        if error is CloudError { return "Для очистки или восстановления сначала отключите синхронизацию на этом iPhone. Облачная библиотека останется сохранённой." }
         if let error = error as? BackupError {
             return switch error {
             case .invalidArchive: "Файл повреждён или имеет неверную структуру. Данные приложения не заменены."

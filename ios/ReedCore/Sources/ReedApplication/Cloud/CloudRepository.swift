@@ -41,8 +41,11 @@ public struct CloudSummary: Codable, Sendable {
     }
 }
 public struct CloudLocalSummary: Sendable {
-    public let cards: Int, pending: Int, conflicts: Int, unapplied: Int
-    public init(cards: Int, pending: Int, conflicts: Int, unapplied: Int = 0) { self.cards = cards; self.pending = pending; self.conflicts = conflicts; self.unapplied = unapplied }
+    public let cards: Int, pending: Int, conflicts: Int, unapplied: Int, confirmedCards: Int, pendingMedia: Int
+    public init(cards: Int, pending: Int, conflicts: Int, unapplied: Int = 0, confirmedCards: Int = 0, pendingMedia: Int = 0) {
+        self.cards = cards; self.pending = pending; self.conflicts = conflicts; self.unapplied = unapplied
+        self.confirmedCards = confirmedCards; self.pendingMedia = pendingMedia
+    }
 }
 public protocol CloudRepository: Sendable {
     func state() async throws -> CloudState

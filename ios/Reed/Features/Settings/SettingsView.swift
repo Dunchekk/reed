@@ -16,10 +16,9 @@ struct SettingsView: View {
             }
             Section("Хранение") {
                 NavigationLink("Добавление карточек") { CaptureSettingsView(context: context) }
-                NavigationLink("Данные и резервная копия") { DataSettingsView(context: context) }
+                NavigationLink("Данные и синхронизация") { CloudSettingsView(context: context) }
                 if let error = context.maintenanceError { Text(error).foregroundStyle(.red) }
-                Label("На этом iPhone", systemImage: "iphone")
-                Text("Тексты и фотографии хранятся локально. Облачный перенос пока недоступен. Выход сохраняет библиотеку для повторного входа в тот же аккаунт.").reedFont(.caption)
+                Text("Локальная копия доступна без интернета. Выход сохраняет библиотеку для повторного входа в тот же аккаунт.").reedFont(.caption)
             }
             Section("Аккаунт") {
                 NavigationLink("Управление аккаунтом") { AccountSettingsView(authentication: authentication, context: context) }

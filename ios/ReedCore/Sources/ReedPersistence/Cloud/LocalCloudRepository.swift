@@ -42,7 +42,15 @@ public final class LocalCloudRepository: CloudRepository {
             try CloudLocalSummary(cards: Int.fetchOne(db, sql: "SELECT COUNT(*) FROM cards") ?? 0,
                 pending: Int.fetchOne(db, sql: "SELECT COUNT(*) FROM cloud_dirty") ?? 0,
                 conflicts: Int.fetchOne(db, sql: "SELECT COUNT(*) FROM cloud_conflicts") ?? 0,
-                unapplied: Int.fetchOne(db, sql: "SELECT COUNT(*) FROM cloud_projection") ?? 0)
+                unapplied: Int.fetchOne(db, sql: "SELECT COUNT(*) FROM cloud_projection") ?? 0,
+                confirmedCards: Int.fetchOne(db, sql: """
+                    SELECT COUNT(*) FROM cards c JOIN cloud_shadow s ON s.kind='card' AND s.id=lower(c.id) AND s.version>0
+                    WHERE NOT EXISTS(SELECT 1 FROM cloud_dirty d WHERE d.kind='card' AND d.id=s.id)
+                      AND NOT EXISTS(SELECT 1 FROM cloud_outbox o WHERE o.kind='card' AND o.id=s.id)
+                      AND NOT EXISTS(SELECT 1 FROM cloud_projection p WHERE p.kind='card' AND p.id=s.id)
+                      AND NOT EXISTS(SELECT 1 FROM cloud_conflicts f WHERE f.kind='card' AND f.record_id=s.id)
+                    """) ?? 0,
+                pendingMedia: Int.fetchOne(db, sql: "SELECT COUNT(*) FROM cloud_media_needed") ?? 0)
         }
     }
     public func nextPending() async throws -> CloudPending? {
