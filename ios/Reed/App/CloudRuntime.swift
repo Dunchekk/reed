@@ -28,7 +28,7 @@ struct CloudConnectionConfiguration: Sendable {
             let remote = HTTPCloudClient(baseURL: connection.baseURL, accountID: accountID, tokens: connection.tokens, identity: identity, wifiOnly: { try await storage.state().wifiOnly })
             self.remote = remote
             engine = CloudSyncEngine(local: storage, remote: remote, media: CloudMediaTransfer(local: files, remote: remote),
-                participation: AppleCloudParticipation(remote: remote, identity: identity, returns: returns), network: AppleCloudNetworkPolicy())
+                participation: AppleCloudParticipation(remote: remote, identity: identity, returns: returns), network: AppleCloudNetworkPolicy(), plan: CloudPlanSynchronizer(remote: remote, local: storage))
         } else { remote = nil; engine = nil }
     }
     deinit { scheduled?.cancel(); observation?.cancel() }

@@ -94,7 +94,7 @@ final class ReturnCoordinator {
                 permission = await queue.permission()
                 let saved = try await repository.currentPlan(now: Date(), calendar: .current)
                 guard !Task.isCancelled, cloudOwnsPlan else { return }
-                plan = saved; errorMessage = nil
+                plan = saved; errorMessage = saved.issue.map(cloudPlanIssueMessage)
             } catch { if !Task.isCancelled { errorMessage = returnErrorMessage(error) } }
         }
     }
@@ -113,5 +113,15 @@ func returnErrorMessage(_ error: any Error) -> String {
     case .conflictingExplicitTimes: "Индивидуальные назначения слишком близки: между ними должен быть выбранный минимальный интервал."
     case .tooManyExplicitTimes: "Индивидуальных назначений больше дневного лимита. Увеличьте лимит или уберите лишнее время."
     default: "Не удалось обновить возвращения. Попробуйте ещё раз."
+    }
+}
+
+private func cloudPlanIssueMessage(_ issue: ReturnPlanIssue) -> String {
+    switch issue {
+    case .noPrimaryDevice: "Выберите основное устройство в настройках облака, чтобы продолжить возвращения."
+    case .invalidFilter: "Проверьте фильтры возвращений: связанные папки, теги или авторы могли быть удалены на другом устройстве."
+    case .invalidSchedule: returnErrorMessage(ReturnError.invalidSchedule)
+    case .conflictingExplicitTimes: returnErrorMessage(ReturnError.conflictingExplicitTimes)
+    case .tooManyExplicitTimes: returnErrorMessage(ReturnError.tooManyExplicitTimes)
     }
 }

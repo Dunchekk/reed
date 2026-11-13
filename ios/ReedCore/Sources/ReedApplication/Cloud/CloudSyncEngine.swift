@@ -8,15 +8,16 @@ public actor CloudSyncEngine {
     let media: any CloudMediaTransferring
     let participation: any CloudParticipation
     let network: any CloudNetworkPolicy
+    let plan: (any CloudPlanSynchronizing)?
     private var operation: (id: UUID, task: Task<Void, Error>)?
     private var stopped = false
     private var progress = CloudProgress(.idle)
     private var observers: [UUID: AsyncStream<CloudProgress>.Continuation] = [:]
 
     public init(local: any CloudRepository, remote: any CloudRemote, media: any CloudMediaTransferring,
-                participation: any CloudParticipation, network: any CloudNetworkPolicy) {
+                participation: any CloudParticipation, network: any CloudNetworkPolicy, plan: (any CloudPlanSynchronizing)? = nil) {
         self.local = local; self.remote = remote; self.media = media
-        self.participation = participation; self.network = network
+        self.participation = participation; self.network = network; self.plan = plan
     }
 
     public func events() -> AsyncStream<CloudProgress> {
@@ -64,6 +65,7 @@ public actor CloudSyncEngine {
         catch {
             if let error = error as? CloudError, error == .epochChanged || error == .deviceRevoked,
                try await local.state().participates { try await local.setMode(.revoked) }
+            if error is CancellationError { emit(CloudProgress(.idle)) }
             if !(error is CancellationError) { emit(CloudProgress(.failed, error: (error as? CloudError) ?? .unavailable)) }
             throw error
         }
@@ -98,6 +100,7 @@ public actor CloudSyncEngine {
             try await media.download(epoch: epoch, id: id) { await self.emit($0) }
             try await local.markMediaAvailable(id: id)
         }
+        try await plan?.synchronize(epoch: epoch)
         emit(CloudProgress(.finishing))
         let remaining = try await local.summary()
         if remaining.pending == 0 && remaining.conflicts == 0 && remaining.unapplied == 0 {

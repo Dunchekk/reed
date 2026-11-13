@@ -31,6 +31,7 @@ export class CloudDevices {
         VALUES($1,$2,$3,$4,$5,$6) ON CONFLICT(account_id,id) DO UPDATE SET
         name=EXCLUDED.name,time_zone=EXCLUDED.time_zone,push_token=COALESCE(EXCLUDED.push_token,cloud_devices.push_token),last_seen_at=now() RETURNING *`,
         [accountID,id,input.name.trim(),input.timeZone,counts.total === 0,input.pushToken?.toLowerCase() ?? null]);
+      if (!existing || existing.time_zone !== input.timeZone) await client.query("DELETE FROM cloud_return_plans WHERE account_id=$1", [accountID]);
       return device(result.rows[0]);
     });
   }
@@ -47,6 +48,7 @@ export class CloudDevices {
     await this.database.account(scope.accountID, async client => {
       await this.requireActive(client,scope);
       if (!(await client.query("SELECT id FROM cloud_devices WHERE account_id=$1 AND id=$2 AND revoked_at IS NULL", [scope.accountID,target])).rowCount) throw new CloudError("not_found");
+      await client.query("DELETE FROM cloud_return_plans WHERE account_id=$1", [scope.accountID]);
       await client.query("UPDATE cloud_devices SET is_primary=false WHERE account_id=$1 AND is_primary=true", [scope.accountID]);
       await client.query("UPDATE cloud_devices SET is_primary=true WHERE account_id=$1 AND id=$2", [scope.accountID,target]);
     });
@@ -57,6 +59,7 @@ export class CloudDevices {
     await this.database.account(scope.accountID, async client => {
       // Retrying a self-revocation is safe even if its first response was lost.
       if (target !== scope.deviceID.toLowerCase()) await this.requireActive(client,scope);
+      await client.query("DELETE FROM cloud_return_plans WHERE account_id=$1", [scope.accountID]);
       await client.query("UPDATE cloud_devices SET revoked_at=COALESCE(revoked_at,now()),is_primary=false,push_token=NULL WHERE account_id=$1 AND id=$2", [scope.accountID,target]);
     });
   }

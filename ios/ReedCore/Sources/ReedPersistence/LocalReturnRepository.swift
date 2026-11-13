@@ -84,6 +84,11 @@ public final class LocalReturnRepository: ReturnRepository {
             return PlannedReturn(slot: slot, decision: decision, card: card,
                 state: ReturnDeliveryState(rawValue: row["state"]) ?? .planned, revision: try LocalLibraryRepository.uuid(row["revision"]))
         }
-        return ReturnPlan(entries: entries, horizon: entries.filter { $0.card != nil && $0.slot.date > now }.last?.slot.date)
+        var issue: ReturnPlanIssue?
+        if try LocalCloudRepository.state(db).mode != .local,
+           let data = try Data.fetchOne(db, sql: "SELECT value FROM preferences WHERE key='cloud.plan'") {
+            issue = try CloudCoding.decoder().decode(CloudReturnPlan.self, from: data).issue
+        }
+        return ReturnPlan(entries: entries, horizon: entries.filter { $0.card != nil && $0.slot.date > now }.last?.slot.date, issue: issue)
     }
 }

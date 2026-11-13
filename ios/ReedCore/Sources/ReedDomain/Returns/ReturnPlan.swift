@@ -12,8 +12,10 @@ public struct PlannedReturn: Sendable, Identifiable {
         self.slot = slot; self.decision = decision; self.card = card; self.state = state; self.revision = revision
     }
 }
+public enum ReturnPlanIssue: String, Codable, Sendable { case noPrimaryDevice, invalidSchedule, invalidFilter, conflictingExplicitTimes, tooManyExplicitTimes }
 public struct ReturnPlan: Sendable {
     public let entries: [PlannedReturn]
     public let horizon: Date?
-    public init(entries: [PlannedReturn], horizon: Date?) { self.entries = entries; self.horizon = horizon }
+    public let issue: ReturnPlanIssue?
+    public init(entries: [PlannedReturn], horizon: Date?, issue: ReturnPlanIssue? = nil) { self.entries = entries; self.horizon = horizon; self.issue = issue }
 }

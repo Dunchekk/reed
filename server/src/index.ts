@@ -1,3 +1,4 @@
+import {CloudReturns} from "./returns/service.ts";
 import {CloudDatabase} from "./cloud/database.ts";
 import {CloudLibrary} from "./cloud/library.ts";
 import {CloudRecords} from "./cloud/records.ts";
@@ -23,7 +24,7 @@ const accounts = new PostgresAccountRepository(database);
 const cloudDatabase = new CloudDatabase(database);
 const objects = new FileObjectStore(process.env.CLOUD_STORAGE_PATH ?? ".local/cloud-objects");
 const cloud = {library:new CloudLibrary(cloudDatabase),records:new CloudRecords(cloudDatabase),
-  devices:new CloudDevices(cloudDatabase),media:new CloudMedia(cloudDatabase,objects)};
+  returns:new CloudReturns(cloudDatabase),devices:new CloudDevices(cloudDatabase),media:new CloudMedia(cloudDatabase,objects)};
 const app = buildApp({auth, accounts, lifecycle: {provider: auth, repository: accounts}},cloud);
 const deletion = new AccountDeletionWorker(accounts,auth,config.authProvider);
 const retryDeletion = () => deletion.run().catch(() => app.log.error("Account deletion will retry"));

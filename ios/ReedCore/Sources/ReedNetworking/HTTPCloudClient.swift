@@ -3,7 +3,7 @@ import ReedDomain
 import ReedApplication
 
 /// Transport owns authentication and bytes; it never merges records or changes the local library.
-public final class HTTPCloudClient: CloudRemote, CloudMediaRemote, CloudDeviceRemote {
+public final class HTTPCloudClient: CloudRemote, CloudMediaRemote, CloudDeviceRemote, CloudReturnRemote {
     private let baseURL: URL
     private let accountID: UUID
     private let tokens: any AccountTokenProvider
@@ -22,6 +22,7 @@ public final class HTTPCloudClient: CloudRemote, CloudMediaRemote, CloudDeviceRe
             self.session = URLSession(configuration: configuration, delegate: CloudRedirectPolicy(), delegateQueue: nil)
         }
     }
+    public func returnPlan(epoch: UUID) async throws -> CloudReturnPlan { try await json("returns", method: "GET", epoch: epoch) }
     public func summary() async throws -> CloudSummary { try await json("", method: "GET") }
     public func push(epoch: UUID, mutation: CloudMutation) async throws -> CloudMutationResult {
         try await json("mutations", method: "POST", epoch: epoch, body: CloudCoding.encoder().encode(mutation))

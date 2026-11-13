@@ -3,6 +3,7 @@ import rateLimit from "@fastify/rate-limit";
 import {bearer} from "../auth/http-contract.ts";
 import {AuthError} from "../auth/provider.ts";
 import type {AuthDependencies} from "../auth/routes.ts";
+import type {CloudReturns} from "../returns/service.ts";
 import type {CloudLibrary} from "./library.ts";
 import type {CloudRecords} from "./records.ts";
 import type {CloudDevices} from "./devices.ts";
@@ -10,7 +11,7 @@ import type {CloudMedia} from "./media/service.ts";
 import {chunkLimit, variant} from "./media/service.ts";
 import {integer, object, string, uuid, validateManifest, validateMutation} from "./validation.ts";
 
-export interface CloudDependencies {library: CloudLibrary; records: CloudRecords; devices: CloudDevices; media: CloudMedia}
+export interface CloudDependencies {library: CloudLibrary; records: CloudRecords; devices: CloudDevices; media: CloudMedia; returns?: CloudReturns}
 
 export async function registerCloudRoutes(app: FastifyInstance, auth: AuthDependencies, cloud: CloudDependencies): Promise<void> {
   const accounts = new WeakMap<FastifyRequest,string>();
@@ -26,6 +27,7 @@ export async function registerCloudRoutes(app: FastifyInstance, auth: AuthDepend
   const scope = (request: FastifyRequest) => ({accountID:account(request),deviceID:uuid(request.headers["x-reed-device"])});
   const epoch = (request: FastifyRequest) => uuid(request.headers["x-reed-epoch"]);
 
+  if (cloud.returns) app.get("/v1/cloud/returns", request => cloud.returns!.plan(scope(request),epoch(request)));
   app.get("/v1/cloud", request => cloud.library.summary(account(request)));
   app.get<{Querystring:{after?:string;limit?:string}}>("/v1/cloud/changes", request =>
     cloud.library.pull(scope(request),epoch(request),integer(Number(request.query.after ?? 0)),integer(Number(request.query.limit ?? 20),1,100)));
