@@ -71,3 +71,36 @@ struct TestCloudEnvironment: CloudParticipation, CloudNetworkPolicy {
     #expect(try await replica.summary().pending == 0)
     #expect(await remote.journal.count == 3)
 }
+
+actor LeavingCloudEnvironment: CloudParticipation, CloudNetworkPolicy {
+    var failsLeave = true
+    func allowLeave() { failsLeave = false }
+    func allowsTransfer(wifiOnly: Bool) -> Bool { true }
+    func prepareJoin() {}
+    func refreshRegistration() {}
+    func leave() throws { if failsLeave { throw CloudError.unavailable } }
+    func suspendLocalNotifications() {}
+    func resumeLocalNotifications() {}
+}
+
+@Test func cloudDisableCanResumeAfterRevocationResponseFailsWithoutSendingLaterLocalEdits() async throws {
+    let root = FileManager.default.temporaryDirectory.appendingPathComponent("reed-disable-\(UUID())")
+    defer { try? FileManager.default.removeItem(at: root) }
+    let database = try LibraryDatabase(root: root, accountID: UUID())
+    let local = LocalCloudRepository(database: database), library = LocalLibraryRepository(database: database)
+    let remote = InMemoryCloud(), environment = LeavingCloudEnvironment()
+    let engine = CloudSyncEngine(local: local, remote: remote, media: NoPhotoTransfer(), participation: environment, network: environment)
+    let card = Card(text: "Облачная версия")
+    try await library.save(card)
+    try await engine.enable(expectedEpoch: remote.epoch)
+    await #expect(throws: CloudError.unavailable) { try await engine.disable() }
+    #expect(try await local.state().mode == .leaving)
+    var edited = try #require(await library.card(id: card.id)); edited.text = "Теперь только здесь"; try await library.save(edited)
+    #expect(try await local.summary().pending == 0)
+    await environment.allowLeave()
+    try await engine.disable()
+    #expect(try await local.state().mode == .local)
+    let server = await remote.records[CloudKey(.card,card.id)]
+    #expect(try server?.payload.decode(CloudCard.self).text == "Облачная версия")
+    #expect(try await library.card(id: card.id)?.text == "Теперь только здесь")
+}

@@ -50,6 +50,7 @@ export class CloudLibrary {
       for (const table of ["cloud_operations", "cloud_changes", "cloud_records", "cloud_uploads", "cloud_media"]) {
         await client.query(`DELETE FROM ${table} WHERE account_id=$1`, [scope.accountID]);
       }
+      await client.query("UPDATE cloud_devices SET is_primary=false WHERE account_id=$1", [scope.accountID]);
       const next = randomUUID();
       await client.query("UPDATE cloud_libraries SET epoch=$2,sequence=0 WHERE account_id=$1", [scope.accountID, next]);
       return {epoch: next, sequence: 0, cards: 0, mediaBytes: 0, notificationsAvailable: this.notificationsAvailable};

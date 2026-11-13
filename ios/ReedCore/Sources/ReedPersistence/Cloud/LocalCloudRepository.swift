@@ -95,7 +95,7 @@ public final class LocalCloudRepository: CloudRepository {
         }
     }
     public func referencedMedia() async throws -> [UUID] {
-        try await database.writer.read { Array(try LocalLibraryRepository.attachmentIDs($0)) }
+        try await database.writer.read { try String.fetchAll($0, sql: "SELECT attachment_id FROM card_attachments UNION SELECT attachment_id FROM draft_attachments").map(LocalLibraryRepository.uuid) }
     }
     public func mediaToDownload() async throws -> [UUID] {
         try await database.writer.write { db in
@@ -111,12 +111,26 @@ public final class LocalCloudRepository: CloudRepository {
     }
     public func disconnect() async throws {
         try await database.writer.write { db in
+            guard try Self.state(db).mode == .disabling else { throw CloudError.invalidTransition }
             guard try Int.fetchOne(db, sql: "SELECT COUNT(*) FROM cloud_dirty") == 0,
                   try Int.fetchOne(db, sql: "SELECT COUNT(*) FROM cloud_conflicts") == 0,
                   try Int.fetchOne(db, sql: "SELECT COUNT(*) FROM cloud_outbox") == 0,
                   try Int.fetchOne(db, sql: "SELECT COUNT(*) FROM cloud_media_needed") == 0 else { throw CloudError.pendingChanges }
             try Self.clearReplication(db)
-            try db.execute(sql: "UPDATE cloud_state SET mode='local',epoch=NULL,cursor=0,last_sync=NULL WHERE id=1")
+            try db.execute(sql: "UPDATE cloud_state SET mode='leaving',epoch=NULL,cursor=0,last_sync=NULL WHERE id=1")
+        }
+    }
+    public func finishDisconnect() async throws {
+        try await database.writer.write { db in
+            guard try Self.state(db).mode == .leaving else { throw CloudError.invalidTransition }
+            try db.execute(sql: "UPDATE cloud_state SET mode='local' WHERE id=1")
+        }
+    }
+    public func abandonRevoked() async throws {
+        try await database.writer.write { db in
+            guard try Self.state(db).mode == .revoked else { throw CloudError.invalidTransition }
+            try Self.clearReplication(db)
+            try db.execute(sql: "UPDATE cloud_state SET mode='leaving',epoch=NULL,cursor=0,last_sync=NULL WHERE id=1")
         }
     }
     static func clearReplication(_ db: Database) throws {
@@ -141,6 +155,11 @@ public final class LocalCloudRepository: CloudRepository {
                 sequence=excluded.sequence,value=excluded.value WHERE excluded.version>=cloud_shadow.version
             """, arguments: [canonical.kind.rawValue,canonical.id,canonical.version,canonical.sequence,try CloudCoding.encoder().encode(canonical)])
         try CloudMediaReferences.set(owner: "shadow", key: canonical.key, payload: canonical.payload, db: db)
+        if canonical.kind == .card && !canonical.isDeleted {
+            for id in try canonical.payload.decode(CloudCard.self).attachmentIDs {
+                try db.execute(sql: "INSERT OR IGNORE INTO cloud_media_needed VALUES (?)", arguments: [id.uuidString.lowercased()])
+            }
+        }
     }
     static func queueProjection(_ key: CloudKey, db: Database) throws {
         try db.execute(sql: "INSERT OR IGNORE INTO cloud_projection VALUES (?,?)", arguments: [key.kind.rawValue,key.id])

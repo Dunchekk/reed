@@ -60,6 +60,8 @@ public protocol CloudRepository: Sendable {
     func markMediaAvailable(id: UUID) async throws
     func completed(at date: Date) async throws
     func disconnect() async throws
+    func finishDisconnect() async throws
+    func abandonRevoked() async throws
 }
 public protocol CloudRemote: Sendable {
     func summary() async throws -> CloudSummary

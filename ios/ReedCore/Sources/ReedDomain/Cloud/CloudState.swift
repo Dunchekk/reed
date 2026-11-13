@@ -1,6 +1,6 @@
 import Foundation
 
-public enum CloudMode: String, Codable, Sendable { case local, enabling, cloud, disabling, revoked }
+public enum CloudMode: String, Codable, Sendable { case local, enabling, cloud, disabling, leaving, revoked }
 public struct CloudState: Codable, Equatable, Sendable {
     public var mode: CloudMode = .local
     public var epoch: UUID?

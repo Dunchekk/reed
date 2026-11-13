@@ -117,6 +117,7 @@ public final class LibraryDatabase: Sendable {
             try db.execute(sql: "CREATE TABLE cloud_media_references (owner TEXT NOT NULL, record_id TEXT NOT NULL, attachment_id TEXT NOT NULL, PRIMARY KEY(owner,record_id,attachment_id))")
             try CloudMediaReferences.backfill(db)
         }
+        migrator.registerMigration("013_cloud_leaving", migrate: CloudSchema.installTriggers)
         return migrator
     }
 }

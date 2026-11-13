@@ -22,6 +22,10 @@ enum CloudSchema {
             CREATE TABLE cloud_media_needed (id TEXT PRIMARY KEY NOT NULL);
             CREATE TABLE cloud_return_exports (slot_id TEXT PRIMARY KEY NOT NULL, id TEXT NOT NULL UNIQUE);
             """)
+        try installTriggers(db)
+    }
+
+    static func installTriggers(_ db: Database) throws {
         for (table, kind, key) in [
             ("authors","author","id"), ("sources","source","id"), ("folders","folder","id"),
             ("tags","tag","id"), ("cards","card","id"), ("card_returns","cardReturn","card_id"),
@@ -40,9 +44,10 @@ enum CloudSchema {
             let row = action == "DELETE" ? "OLD" : "NEW"
             let id = constant.map { "'\($0)'" } ?? "lower(\(row).\(key))"
             let predicate = condition.replacingOccurrences(of: "$ROW", with: row)
+            try db.execute(sql: "DROP TRIGGER IF EXISTS cloud_\(table)_\(action.lowercased())")
             try db.execute(sql: """
                 CREATE TRIGGER cloud_\(table)_\(action.lowercased()) AFTER \(action) ON \(table)
-                WHEN (SELECT suppress=0 AND mode!='local' FROM cloud_state WHERE id=1) AND (\(predicate))
+                WHEN (SELECT suppress=0 AND mode IN ('enabling','cloud','disabling','revoked') FROM cloud_state WHERE id=1) AND (\(predicate))
                 BEGIN
                     UPDATE cloud_state SET generation=generation+1 WHERE id=1;
                     INSERT INTO cloud_dirty(kind,id,generation) VALUES('\(kind)',\(id),(SELECT generation FROM cloud_state WHERE id=1))

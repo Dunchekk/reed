@@ -44,6 +44,7 @@ public struct LocalLibraryBackupRepository: LibraryBackupRepository {
     public func restore(_ backup: LibraryBackup) async throws -> RestoreResult {
         try backup.validate()
         return try await database.writer.write { db in
+            guard try LocalCloudRepository.state(db).mode == .local else { throw CloudError.invalidTransition }
             if try Bool.fetchOne(db, sql: "SELECT EXISTS(SELECT 1 FROM backup_imports WHERE id=?)", arguments: [backup.id.uuidString]) == true { return .alreadyImported }
             for table in ["cards", "sources", "authors", "tags", "folders"] {
                 guard try Int.fetchOne(db, sql: "SELECT COUNT(*) FROM \(table)") == 0 else { throw BackupError.nonemptyLibrary }
@@ -82,6 +83,7 @@ public struct LocalLibraryBackupRepository: LibraryBackupRepository {
     }
     public func clearLibrary() async throws -> Set<UUID> {
         try await database.writer.write { db in
+            guard try LocalCloudRepository.state(db).mode == .local else { throw CloudError.invalidTransition }
             let photos = Set(try String.fetchAll(db, sql: "SELECT attachment_id FROM card_attachments UNION SELECT attachment_id FROM draft_attachments").map(LocalLibraryRepository.uuid))
             try db.execute(sql: """
                 DELETE FROM card_search; DELETE FROM return_slots; DELETE FROM return_days;

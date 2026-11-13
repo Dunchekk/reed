@@ -18,9 +18,11 @@ test("cursor preserves intervening versions; reset fences out old devices", {ski
     const page3 = await library.pull(f.scope,f.epoch,page2.cursor,1);
     assert.equal(page3.records[0]?.payload?.name,"v3");
     assert.equal(page3.hasMore,false);
+    await f.pool.query("UPDATE cloud_devices SET is_primary=true WHERE account_id=$1",[f.scope.accountID]);
     const reset = await library.reset(f.scope,f.epoch);
     assert.notEqual(reset.epoch,f.epoch);
     assert.equal(reset.sequence,0);
+    assert.equal((await f.pool.query("SELECT COUNT(*)::int AS count FROM cloud_devices WHERE account_id=$1 AND is_primary=true",[f.scope.accountID])).rows[0].count,0);
     await assert.rejects(records.push(f.scope,f.epoch,first),{code:"epoch_changed"});
     await assert.rejects(library.pull(f.scope,f.epoch,0,10),{code:"epoch_changed"});
     assert.equal((await library.pull(f.scope,reset.epoch,0,10)).records.length,0);
